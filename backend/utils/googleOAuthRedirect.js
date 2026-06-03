@@ -22,6 +22,12 @@ function isGoogleRedirectConfigured() {
 function getAppBaseUrl(req) {
   const fromEnv = String(process.env.PUBLIC_APP_URL || "").trim().replace(/\/$/, "");
   if (fromEnv) return fromEnv;
+
+  const railwayHost = String(process.env.RAILWAY_PUBLIC_DOMAIN || "").trim();
+  if (railwayHost) {
+    return `https://${railwayHost.replace(/^https?:\/\//, "")}`;
+  }
+
   const proto = req.get("x-forwarded-proto") || req.protocol || "http";
   const host = req.get("x-forwarded-host") || req.get("host");
   return `${proto}://${host}`;

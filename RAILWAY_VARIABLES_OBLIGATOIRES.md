@@ -31,6 +31,9 @@ Supprime les variables incorrectes si tu les vois :
 | **DATABASE_URL** | **Add Reference** (ou Variable Reference) → Service : **MySQL** → Variable : **MYSQL_URL** |
 | **JWT_SECRET** | Tape une longue chaîne, ex. `medicare_production_jwt_2026_secret` |
 | **NODE_ENV** | `production` |
+| **GOOGLE_CLIENT_ID** | `1011224579860-8udm6jio641o2o4a6ribtcjffi10tv7r.apps.googleusercontent.com` |
+| **GOOGLE_CLIENT_SECRET** | Code secret actuel (Google Cloud → Clients) — **ne pas** mettre `GOOGLE_OAUTH_RELAX_TLS` en prod |
+| **PUBLIC_APP_URL** | URL publique **https** de l’app, ex. `https://medicare-xxxx.up.railway.app` (Settings → Networking → domaine généré) |
 
 Optionnel si pas de référence :
 
@@ -60,6 +63,50 @@ MediCare+ → port xxxx (0.0.0.0)
 ### 6. Tester
 
 `https://TON-DOMAINE-RAILWAY/api/health`
+
+---
+
+## Connexion Google (app en ligne)
+
+### A. Google Cloud Console
+
+Client OAuth **Application Web** → **Origines JavaScript autorisées** et **URI de redirection** (remplacez par **votre** domaine Railway) :
+
+| Champ | Valeur |
+|--------|--------|
+| Origine JavaScript | `https://VOTRE-DOMAINE.up.railway.app` |
+| URI de redirection | `https://VOTRE-DOMAINE.up.railway.app/api/auth/google/callback` |
+
+Gardez aussi `http://localhost:3000` et `http://localhost:3000/api/auth/google/callback` si vous testez en local.
+
+### B. Variables Railway (service MediCare-, pas MySQL)
+
+Mêmes `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` qu’en local.  
+`PUBLIC_APP_URL` = **exactement** l’URL https affichée par Railway (sans `/` à la fin).
+
+### C. Base Railway
+
+Au redémarrage, l’app ajoute `google_id` et `notifications.lien` si besoin.  
+Sinon dans Workbench sur la base `railway` : réexécuter `Railway_REIMPORT_COMPLET.sql` ou :
+
+```bash
+cd backend
+npm run migrate:google-auth
+npm run migrate:notifications
+```
+
+(avec `DATABASE_URL` Railway dans les variables locales ou via Workbench.)
+
+### D. Déployer le code
+
+```bash
+git add .
+git commit -m "Google OAuth production Railway"
+git push origin main
+```
+
+Railway redéploie → test :  
+`https://VOTRE-DOMAINE/Utilisateur/html/login.html` → **Continuer avec Google**.
 
 ---
 

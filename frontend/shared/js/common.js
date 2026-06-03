@@ -514,9 +514,42 @@ function pharmacyDirectionsUrl(p, options = {}) {
   return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
+const PHARMACY_ACTION_ICON = {
+  call:
+    '<svg class="pharmacy-detail-action-btn__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+    '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  locate:
+    '<svg class="pharmacy-detail-action-btn__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+    '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/></svg>',
+  route:
+    '<svg class="pharmacy-detail-action-btn__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+    '<polygon points="3 11 22 2 13 21 11 13 3 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  details:
+    '<svg class="pharmacy-detail-action-btn__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+    '<path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+
+function pharmacyDetailActionLinkHtml({ href, variant, icon, label, title, ariaLabel, extraAttrs = "" }) {
+  const a11y = ariaLabel || title;
+  return (
+    `<a href="${escapeHtml(href)}" class="pharmacy-detail-action-btn pharmacy-detail-action-btn--${variant}"` +
+    ` title="${escapeHtml(title)}" aria-label="${escapeHtml(a11y)}"${extraAttrs}>` +
+    `${icon}<span class="pharmacy-detail-action-btn__text">${escapeHtml(label)}</span></a>`
+  );
+}
+
 function pharmacyLocateButtonHtml(p, options = {}) {
   const url = pharmacyMapUrl(p, options);
   if (!url) return "";
+  if (options.detailSheet) {
+    return pharmacyDetailActionLinkHtml({
+      href: url,
+      variant: "outline",
+      icon: PHARMACY_ACTION_ICON.locate,
+      label: "Localiser",
+      title: "Voir sur la carte MediCare+",
+    });
+  }
   const btnClass = options.enhancedCard
     ? "btn btn-outline btn-small pharmacy-card-btn"
     : "btn btn-outline btn-small";
@@ -526,6 +559,16 @@ function pharmacyLocateButtonHtml(p, options = {}) {
 function pharmacyDirectionsButtonHtml(p, options = {}) {
   const url = pharmacyDirectionsUrl(p, options);
   if (!url) return "";
+  if (options.detailSheet || options.mapPopup) {
+    return pharmacyDetailActionLinkHtml({
+      href: url,
+      variant: "outline",
+      icon: PHARMACY_ACTION_ICON.route,
+      label: "Itinéraire",
+      title: "Ouvrir le trajet dans Google Maps",
+      extraAttrs: ' target="_blank" rel="noopener noreferrer"',
+    });
+  }
   const btnClass = options.enhancedCard
     ? "btn btn-outline btn-small pharmacy-card-btn"
     : "btn btn-outline btn-small";
@@ -539,7 +582,47 @@ function pharmacyLocateAndDirectionsHtml(p, options = {}) {
   if (options.enhancedCard) {
     return `${locate}${directions}`;
   }
-  return `${locate ? ` ${locate}` : ""}${directions ? ` ${directions}` : ""}`;
+  return `${locate}${directions}`;
+}
+
+function pharmacyMapPopupActionsHtml(p, { detailUrl, geo }) {
+  const detail = pharmacyDetailActionLinkHtml({
+    href: detailUrl,
+    variant: "primary",
+    icon: PHARMACY_ACTION_ICON.details,
+    label: "Détails",
+    title: "Voir la fiche complète",
+    ariaLabel: p?.nom ? `Détails — ${p.nom}` : "Voir la fiche pharmacie",
+  });
+  const directions = pharmacyDirectionsButtonHtml(p, { geo, mapPopup: true });
+  return `<div class="popup-actions popup-actions--enhanced">${detail}${directions}</div>`;
+}
+
+function pharmacyCallButtonHtml(p, pharmacyId) {
+  const raw = String(p?.telephone || "").trim();
+  if (!raw) return "";
+  const telHref = `tel:${raw.replace(/[\s().-]/g, "")}`;
+  const label = p?.nom ? `Appeler ${p.nom}` : "Appeler la pharmacie";
+  return pharmacyDetailActionLinkHtml({
+    href: telHref,
+    variant: "primary",
+    icon: PHARMACY_ACTION_ICON.call,
+    label: "Appeler",
+    title: raw,
+    ariaLabel: label,
+    extraAttrs: ` data-track-call="${escapeHtml(String(pharmacyId || ""))}"`,
+  });
+}
+
+function pharmacyDetailCtaRowHtml(p, options = {}) {
+  const sheetOpts = { ...options, detailSheet: true };
+  const parts = [
+    pharmacyCallButtonHtml(p, options.id),
+    pharmacyLocateButtonHtml(p, sheetOpts),
+    pharmacyDirectionsButtonHtml(p, sheetOpts),
+  ].filter(Boolean);
+  if (!parts.length) return "";
+  return `<div class="pharmacy-detail-sheet__cta-row">${parts.join("")}</div>`;
 }
 
 function pharmacyEnhancedActionsHtml(p, options, detailUrl) {
@@ -561,87 +644,169 @@ function renderPharmacyDetailHero(p, options = {}) {
     showFavori = false,
   } = options;
   const imgUrl = pharmacyImageUrl(p.image);
-  const dist =
+  const distChip =
     p.distance_km != null
-      ? `<span class="pharmacy-detail-distance">À ${formatDistance(Number(p.distance_km))}</span>`
+      ? `<span class="pharmacy-detail-sheet__chip pharmacy-detail-sheet__chip--dist">À ${formatDistance(Number(p.distance_km))}</span>`
       : "";
   const loc = formatQuartierVille(p);
   const hours = formatPharmacyHours(p.heure_ouverture, p.heure_fermeture);
   const gardeRange = formatGardePlanningRange(p.garde_date_debut, p.garde_date_fin);
 
-  const mediaHtml = imgUrl
-    ? `<img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.nom)}" class="pharmacy-detail-hero__img" />`
-    : `<div class="pharmacy-detail-hero__placeholder" aria-hidden="true">🏥</div>`;
+  const thumbLabel = `Agrandir la photo de ${p.nom || "la pharmacie"}`;
+  const thumbHtml = imgUrl
+    ? `<button
+        type="button"
+        class="pharmacy-detail-sheet__thumb pharmacy-detail-sheet__thumb--photo"
+        data-pharmacy-photo="${escapeHtml(imgUrl)}"
+        data-pharmacy-photo-title="${escapeHtml(p.nom || "Pharmacie")}"
+        aria-label="${escapeHtml(thumbLabel)}"
+      >
+        <img src="${escapeHtml(imgUrl)}" alt="" class="pharmacy-detail-sheet__thumb-img" />
+        <span class="pharmacy-detail-sheet__thumb-zoom" aria-hidden="true"></span>
+      </button>`
+    : `<div class="pharmacy-detail-sheet__thumb" aria-hidden="true">
+        <span class="pharmacy-detail-sheet__thumb-fallback">🏥</span>
+      </div>`;
 
-  const gardeInfo = p.est_de_garde
-    ? `<div class="pharmacy-detail-info-item pharmacy-detail-info-item--garde">
-        <span class="pharmacy-detail-info-item__icon" aria-hidden="true">🌙</span>
-        <div>
-          <span class="pharmacy-detail-info-item__label">Garde</span>
-          <strong>${escapeHtml(gardeRange || "En cours")}</strong>
-        </div>
-      </div>`
+  const gardeChip = p.est_de_garde
+    ? `<span class="pharmacy-detail-sheet__chip pharmacy-detail-sheet__chip--garde">🌙 De garde</span>`
     : "";
 
   const favoriBtn = showFavori
-    ? `<button type="button" id="btn-favori" class="btn btn-outline btn-favori pharmacy-detail-action-btn">…</button>`
+    ? `<button type="button" id="btn-favori" class="btn btn-outline btn-small btn-favori">☆ Favoris</button>`
     : "";
 
   return `
-    <article class="pharmacy-detail-hero card">
-      <div class="pharmacy-detail-hero__media">
-        ${mediaHtml}
-        <div class="pharmacy-detail-hero__overlay">
-          <a href="${escapeHtml(backHref)}" class="pharmacy-detail-back">${escapeHtml(backLabel)}</a>
-          <div class="pharmacy-detail-hero__badges">${pharmacyBadges(p)} ${dist}</div>
+      <div class="pharmacy-detail-sheet__toolbar">
+        <a href="${escapeHtml(backHref)}" class="pharmacy-detail-sheet__back">${escapeHtml(backLabel)}</a>
+      </div>
+
+      <div class="pharmacy-detail-sheet__identity">
+        ${thumbHtml}
+        <div class="pharmacy-detail-sheet__meta">
+          <h1 class="pharmacy-detail-sheet__title">${escapeHtml(p.nom)}</h1>
+          ${loc !== "—" ? `<p class="pharmacy-detail-sheet__loc">${escapeHtml(loc)}</p>` : ""}
+          <div class="pharmacy-detail-sheet__chips">
+            ${pharmacyBadges(p)}
+            ${distChip}
+            ${gardeChip}
+          </div>
         </div>
       </div>
-      <div class="pharmacy-detail-hero__content">
-        <h1 class="pharmacy-detail-hero__title">${escapeHtml(p.nom)}</h1>
+
+      <ul class="pharmacy-detail-sheet__facts">
+        <li>
+          <span class="pharmacy-detail-sheet__fact-icon" aria-hidden="true">📞</span>
+          <span class="pharmacy-detail-sheet__fact-label">Téléphone</span>
+          <strong>${escapeHtml(p.telephone || "—")}</strong>
+        </li>
+        <li>
+          <span class="pharmacy-detail-sheet__fact-icon" aria-hidden="true">🕐</span>
+          <span class="pharmacy-detail-sheet__fact-label">Horaires</span>
+          <strong>${escapeHtml(hours)}</strong>
+        </li>
+        <li class="pharmacy-detail-sheet__facts-item--wide">
+          <span class="pharmacy-detail-sheet__fact-icon" aria-hidden="true">📍</span>
+          <span class="pharmacy-detail-sheet__fact-label">Adresse</span>
+          <strong>${escapeHtml(p.adresse || "—")}</strong>
+        </li>
         ${
-          loc !== "—"
-            ? `<p class="pharmacy-detail-hero__subtitle">${escapeHtml(loc)}</p>`
+          p.est_de_garde
+            ? `<li>
+          <span class="pharmacy-detail-sheet__fact-icon" aria-hidden="true">🌙</span>
+          <span class="pharmacy-detail-sheet__fact-label">Garde</span>
+          <strong>${escapeHtml(gardeRange || "En cours")}</strong>
+        </li>`
             : ""
         }
+      </ul>
 
-        <div class="pharmacy-detail-info-grid">
-          <div class="pharmacy-detail-info-item">
-            <span class="pharmacy-detail-info-item__icon" aria-hidden="true">📍</span>
-            <div>
-              <span class="pharmacy-detail-info-item__label">Adresse</span>
-              <strong>${escapeHtml(p.adresse || "—")}</strong>
-            </div>
-          </div>
-          <div class="pharmacy-detail-info-item">
-            <span class="pharmacy-detail-info-item__icon" aria-hidden="true">📞</span>
-            <div>
-              <span class="pharmacy-detail-info-item__label">Téléphone</span>
-              <strong>${escapeHtml(p.telephone || "—")}</strong>
-            </div>
-          </div>
-          <div class="pharmacy-detail-info-item">
-            <span class="pharmacy-detail-info-item__icon" aria-hidden="true">🕐</span>
-            <div>
-              <span class="pharmacy-detail-info-item__label">Horaires</span>
-              <strong>${escapeHtml(hours)}</strong>
-            </div>
-          </div>
-          ${gardeInfo}
-        </div>
+      <div class="pharmacy-detail-sheet__actions">
+        ${pharmacyDetailCtaRowHtml(p, { id, relativeUrl: true, geoQuery })}
+        ${favoriBtn}
+      </div>`;
+}
 
-        <div class="pharmacy-detail-actions">
-          ${favoriBtn}
-          ${
-            p.telephone
-              ? `<a href="tel:${escapeHtml(String(p.telephone))}" class="btn btn-teal pharmacy-detail-action-btn" data-track-call="${id}">
-                  <span aria-hidden="true">📞</span> Appeler
-                </a>`
-              : ""
-          }
-          ${pharmacyLocateAndDirectionsHtml(p, { relativeUrl: true, geoQuery })}
-        </div>
-      </div>
-    </article>`;
+function ensurePharmacyPhotoLightbox() {
+  let lb = document.getElementById("pharmacy-photo-lightbox");
+  if (lb) return lb;
+
+  lb = document.createElement("div");
+  lb.id = "pharmacy-photo-lightbox";
+  lb.className = "pharmacy-photo-lightbox";
+  lb.hidden = true;
+  lb.setAttribute("role", "dialog");
+  lb.setAttribute("aria-modal", "true");
+  lb.innerHTML = `
+    <button type="button" class="pharmacy-photo-lightbox__backdrop" aria-label="Fermer"></button>
+    <figure class="pharmacy-photo-lightbox__figure">
+      <button type="button" class="pharmacy-photo-lightbox__close" aria-label="Fermer">×</button>
+      <img class="pharmacy-photo-lightbox__img" src="" alt="" />
+      <figcaption class="pharmacy-photo-lightbox__caption"></figcaption>
+    </figure>`;
+  document.body.appendChild(lb);
+  return lb;
+}
+
+function openPharmacyPhotoLightbox(src, title) {
+  const lb = ensurePharmacyPhotoLightbox();
+  const img = lb.querySelector(".pharmacy-photo-lightbox__img");
+  const caption = lb.querySelector(".pharmacy-photo-lightbox__caption");
+  if (!img) return;
+
+  img.src = src;
+  img.alt = title ? `Photo de ${title}` : "Photo de la pharmacie";
+  if (caption) caption.textContent = title || "";
+
+  lb.hidden = false;
+  document.body.classList.add("pharmacy-photo-lightbox-open");
+  lb.querySelector(".pharmacy-photo-lightbox__close")?.focus();
+}
+
+function closePharmacyPhotoLightbox() {
+  const lb = document.getElementById("pharmacy-photo-lightbox");
+  if (!lb || lb.hidden) return;
+
+  lb.hidden = true;
+  document.body.classList.remove("pharmacy-photo-lightbox-open");
+  const img = lb.querySelector(".pharmacy-photo-lightbox__img");
+  if (img) img.removeAttribute("src");
+}
+
+let pharmacyPhotoLightboxBound = false;
+
+function initPharmacyDetailPhotoZoom() {
+  ensurePharmacyPhotoLightbox();
+
+  if (!pharmacyPhotoLightboxBound) {
+    pharmacyPhotoLightboxBound = true;
+
+    document.addEventListener("click", (e) => {
+      const zoomBtn = e.target.closest("[data-pharmacy-photo]");
+      if (zoomBtn) {
+        const src = zoomBtn.getAttribute("data-pharmacy-photo");
+        if (src) {
+          e.preventDefault();
+          openPharmacyPhotoLightbox(src, zoomBtn.getAttribute("data-pharmacy-photo-title") || "");
+        }
+        return;
+      }
+
+      if (
+        e.target.closest(".pharmacy-photo-lightbox__close") ||
+        e.target.closest(".pharmacy-photo-lightbox__backdrop")
+      ) {
+        e.preventDefault();
+        closePharmacyPhotoLightbox();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      const lb = document.getElementById("pharmacy-photo-lightbox");
+      if (!lb || lb.hidden) return;
+      if (e.key === "Escape") closePharmacyPhotoLightbox();
+    });
+  }
 }
 
 function renderPharmacyStockGrid(stock) {
@@ -649,6 +814,273 @@ function renderPharmacyStockGrid(stock) {
     return '<p class="muted pharmacy-detail-stock-empty">Aucun médicament en stock publié pour le moment.</p>';
   }
   return `<div class="med-results-grid">${stock.map((s) => renderPublicMedicamentStockCard(s)).join("")}</div>`;
+}
+
+function filterPharmacyStockByQuery(stock, query) {
+  if (!Array.isArray(stock)) return [];
+  const q = String(query || "").trim();
+  if (q.length < 2) return [];
+
+  if (typeof rankMedicamentRows === "function") {
+    const fuzzyHits = rankMedicamentRows(stock, q);
+    if (fuzzyHits.length) return fuzzyHits;
+  }
+
+  const qLower = q.toLowerCase();
+  return stock.filter((item) => {
+    const nom = String(item.nom || "").toLowerCase();
+    const desc = String(item.description || "").toLowerCase();
+    return nom.includes(qLower) || desc.includes(qLower);
+  });
+}
+
+function pharmacyDetailStockPromptHtml(count) {
+  const n = Number(count) || 0;
+  const label = n === 1 ? "1 médicament référencé" : `${n} médicaments référencés`;
+  return `<div class="pharmacy-detail-stock-prompt">
+    <span class="pharmacy-detail-stock-prompt__icon" aria-hidden="true">🔍</span>
+    <p class="pharmacy-detail-stock-prompt__title">Vérifiez la disponibilité ici</p>
+    <p class="muted">Tapez le nom du médicament ci-dessus.${n ? ` <strong>${label}</strong> dans cette officine.` : ""}</p>
+  </div>`;
+}
+
+function pharmacyDetailStockNoMatchHtml(query) {
+  return `<div class="pharmacy-detail-stock-empty pharmacy-detail-stock-empty--nomatch">
+    <p>Aucun résultat pour « <strong>${escapeHtml(query)}</strong> » dans cette pharmacie.</p>
+    <p class="muted">Vérifiez l'orthographe ou cherchez sur toutes les pharmacies.</p>
+  </div>`;
+}
+
+/**
+ * Stock pharmacie : recherche inline, pas de liste complète au chargement.
+ */
+function initPharmacyDetailStock({ zone, pharmacyId }) {
+  const stockEl = document.getElementById("stock-list");
+  const summaryEl = document.getElementById("stock-summary");
+  const countEl = document.getElementById("stock-count");
+  const form = document.getElementById("pharmacy-stock-search-form");
+  const input = document.getElementById("pharmacy-med-q");
+  const inputWrap = input?.closest(".pharmacy-detail-search-input-wrap");
+  const clearBtn = document.getElementById("btn-pharmacy-med-clear");
+  const showAllBtn = document.getElementById("btn-stock-show-all");
+  const toolbarEl = document.getElementById("stock-toolbar");
+  const globalLink = document.getElementById("link-med-global-search");
+  const hintEl = document.getElementById("stock-search-hint");
+  const datalistEl = document.getElementById("pharmacy-med-suggestions");
+  const resultsSection = document.getElementById("pharmacy-stock-results");
+
+  if (!stockEl || !pharmacyId) return { load: async () => {} };
+
+  function scrollToStockResults() {
+    if (!resultsSection || currentQuery.length < 2) return;
+    resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  let stockCache = [];
+  let offlineNotice = "";
+  let showAll = false;
+  let currentQuery = "";
+
+  function syncSearchInputUi() {
+    const len = (input?.value || "").trim().length;
+
+    if (clearBtn) clearBtn.hidden = len === 0;
+    if (inputWrap) {
+      inputWrap.classList.toggle("has-value", len > 0);
+      inputWrap.classList.toggle("is-ready", len >= 2);
+    }
+  }
+
+  function applySearchQuery(q, { focusInput = false } = {}) {
+    currentQuery = String(q || "").trim();
+    if (input) input.value = currentQuery;
+    if (currentQuery.length >= 2) showAll = false;
+    syncSearchInputUi();
+    updateChrome();
+    refreshView();
+    if (focusInput) input?.focus();
+  }
+
+  function populateSearchSuggestions() {
+    const names = [
+      ...new Set(stockCache.map((item) => item.nom).filter(Boolean)),
+    ].slice(0, 14);
+
+    if (datalistEl) {
+      datalistEl.innerHTML = names
+        .map((nom) => `<option value="${escapeHtml(nom)}"></option>`)
+        .join("");
+    }
+  }
+
+  function setHintMessage(text, tone = "") {
+    if (!hintEl) return;
+    hintEl.textContent = text;
+    hintEl.classList.remove("is-warn", "is-ok", "is-empty");
+    if (tone) hintEl.classList.add(tone);
+  }
+
+  function medicamentSearchPageUrl() {
+    const page =
+      zone === "utilisateur"
+        ? "Utilisateur/html/rechercheMedicament.html"
+        : "Public/html/rechercheMedicament.html";
+    return pageUrl(page);
+  }
+
+  function updateGlobalLink() {
+    if (!globalLink) return;
+    const q = currentQuery.trim();
+    globalLink.textContent =
+      q.length >= 2
+        ? `Chercher « ${q} » sur tout MediCare+`
+        : "Chercher un médicament sur tout MediCare+";
+    globalLink.href = q.length >= 2 ? medicamentSearchResultsUrl(zone, q) : medicamentSearchPageUrl();
+  }
+
+  function updateChrome() {
+    const n = stockCache.length;
+    if (n > 0) {
+      countEl.hidden = false;
+      countEl.textContent = `${n} réf.`;
+      summaryEl.textContent = `${n} médicament${n > 1 ? "s" : ""} référencé${n > 1 ? "s" : ""} dans cette officine.`;
+      if (toolbarEl) toolbarEl.hidden = false;
+      if (showAllBtn) {
+        showAllBtn.hidden = false;
+        showAllBtn.textContent = showAll
+          ? "Masquer le catalogue"
+          : `Afficher tout le stock (${n})`;
+        showAllBtn.setAttribute("aria-pressed", showAll ? "true" : "false");
+      }
+    } else {
+      countEl.hidden = true;
+      summaryEl.textContent = "Aucune disponibilité publiée pour le moment.";
+      if (toolbarEl) toolbarEl.hidden = true;
+      if (showAllBtn) showAllBtn.hidden = true;
+    }
+    updateGlobalLink();
+  }
+
+  function refreshView() {
+    if (!stockCache.length) {
+      stockEl.innerHTML = offlineNotice + renderPharmacyStockGrid([]);
+      setHintMessage("", "");
+      syncSearchInputUi();
+      return;
+    }
+
+    if (showAll) {
+      stockEl.innerHTML = offlineNotice + renderPharmacyStockGrid(stockCache);
+      setHintMessage("Catalogue complet de cette officine.", "is-ok");
+      syncSearchInputUi();
+      scrollToStockResults();
+      return;
+    }
+
+    if (currentQuery.length < 2) {
+      stockEl.innerHTML = offlineNotice + pharmacyDetailStockPromptHtml(stockCache.length);
+      const len = (input?.value || "").trim().length;
+      if (len === 0) {
+        setHintMessage(
+          "Saisissez au moins 2 lettres.",
+          "is-empty"
+        );
+      } else {
+        setHintMessage("Encore 1 lettre minimum pour lancer la recherche.", "is-warn");
+      }
+      syncSearchInputUi();
+      return;
+    }
+
+    const filtered = filterPharmacyStockByQuery(stockCache, currentQuery);
+    if (!filtered.length) {
+      stockEl.innerHTML = offlineNotice + pharmacyDetailStockNoMatchHtml(currentQuery);
+      setHintMessage(
+        `Aucun résultat pour « ${currentQuery} » dans cette pharmacie.`,
+        "is-warn"
+      );
+      scrollToStockResults();
+    } else {
+      stockEl.innerHTML = offlineNotice + renderPharmacyStockGrid(filtered);
+      const nb = filtered.length;
+      setHintMessage(
+        `${nb} résultat${nb > 1 ? "s" : ""} pour « ${currentQuery} ».`,
+        "is-ok"
+      );
+      scrollToStockResults();
+    }
+    syncSearchInputUi();
+  }
+
+  showAllBtn?.addEventListener("click", () => {
+    showAll = !showAll;
+    updateChrome();
+    refreshView();
+  });
+
+  clearBtn?.addEventListener("click", () => {
+    applySearchQuery("", { focusInput: true });
+  });
+
+  input?.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      applySearchQuery("", { focusInput: true });
+    }
+  });
+
+  let debounceTimer;
+  input?.addEventListener("input", () => {
+    syncSearchInputUi();
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      currentQuery = (input?.value || "").trim();
+      if (currentQuery.length >= 2) showAll = false;
+      updateChrome();
+      refreshView();
+    }, 220);
+  });
+
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = (input?.value || "").trim();
+    if (q.length < 2) {
+      setHintMessage("Encore 1 lettre minimum pour lancer la recherche.", "is-warn");
+      syncSearchInputUi();
+      input?.focus();
+      return;
+    }
+    applySearchQuery(q, { focusInput: false });
+  });
+
+  return {
+    async load() {
+      stockEl.innerHTML = '<p class="muted pharmacy-detail-stock-loading">Chargement du stock…</p>';
+      try {
+        const stock = await MediCareAPI.getStock(pharmacyId);
+        offlineNotice =
+          stock._offlineCache && typeof medicareOfflineNoticeHtml === "function"
+            ? medicareOfflineNoticeHtml()
+            : "";
+        stockCache = Array.isArray(stock) ? stock : [];
+      } catch {
+        stockCache = [];
+        stockEl.innerHTML =
+          '<p class="error pharmacy-detail-stock-empty">Impossible de charger le stock pour le moment.</p>';
+        return;
+      }
+      populateSearchSuggestions();
+
+      const urlQ = new URLSearchParams(location.search).get("q");
+      if (urlQ) {
+        currentQuery = urlQ.trim();
+        if (input) input.value = currentQuery;
+      }
+      updateChrome();
+      refreshView();
+      syncSearchInputUi();
+    },
+  };
 }
 
 function renderPharmacyCard(p, options = {}) {

@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Connexion — MediCare+</title>
+    <meta
+      name="medicare-google-client-id"
+      content="1011224579860-8udm6jio641o2o4a6ribtcjffi10tv7r.apps.googleusercontent.com"
+    />
     <link rel="stylesheet" href="../../shared/css/base.css" />
     <link rel="stylesheet" href="../../shared/css/layout.css" />
     <link rel="stylesheet" href="../../shared/css/auth.css" />
@@ -44,9 +48,8 @@
             <button type="submit" class="auth-submit">Se connecter</button>
           </form>
 
-          <p class="auth-demo">
-            Compte démo : <code>user@medicare.ma</code> / <code>admin123</code>
-          </p>
+          <p id="auth-google-divider" class="auth-divider" hidden aria-hidden="true">ou</p>
+          <div id="google-signin-mount" class="auth-google-mount" hidden></div>
 
           <div class="auth-panel-foot">
             <p class="muted">Pas encore de compte ?</p>
@@ -59,6 +62,7 @@
     <script src="../../shared/js/api.js"></script>
     <script src="../../shared/js/common.js"></script>
     <script src="../../shared/js/userAuth.js"></script>
+    <script src="../../shared/js/googleAuth.js?v=5"></script>
     <script src="../js/login.js"></script>
   </body>
 </html>

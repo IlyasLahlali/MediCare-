@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
+  GoogleAuth.initButton({ errorElId: "register-error" }).catch((err) => {
+    const errEl = document.getElementById("register-error");
+    if (errEl && err?.message) {
+      errEl.textContent = err.message;
+      errEl.hidden = false;
+    }
+  });
+
   document.getElementById("register-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const errEl = document.getElementById("register-error");

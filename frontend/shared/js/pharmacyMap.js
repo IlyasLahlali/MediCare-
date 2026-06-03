@@ -81,10 +81,7 @@ const PharmacyMap = (() => {
             )}</p>`
           : ""
       }
-      <div class="popup-actions">
-        <a href="${detailUrl}" class="btn btn-teal btn-small">Détails</a>
-        ${pharmacyDirectionsButtonHtml(p, { geo })}
-      </div>`;
+      ${pharmacyMapPopupActionsHtml(p, { detailUrl, geo })}`;
   }
 
   function placeUserMarker(geo) {

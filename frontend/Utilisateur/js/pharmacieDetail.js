@@ -24,32 +24,13 @@ function setupStarRating(initial = 0) {
   render();
 }
 
-function updateStockSection(stock, stockEl, stockCountEl, stockSummaryEl) {
-  const stockNotice =
-    stock._offlineCache && typeof medicareOfflineNoticeHtml === "function"
-      ? medicareOfflineNoticeHtml()
-      : "";
-
-  stockEl.innerHTML = stockNotice + renderPharmacyStockGrid(stock);
-
-  if (stock.length) {
-    stockCountEl.hidden = false;
-    stockCountEl.textContent = `${stock.length} médicament${stock.length > 1 ? "s" : ""}`;
-    stockSummaryEl.textContent = "Disponibilités actuelles dans cette officine.";
-  } else {
-    stockCountEl.hidden = true;
-    stockSummaryEl.textContent = "Aucune disponibilité publiée pour le moment.";
-  }
-}
-
 document.addEventListener("DOMContentLoaded", async () => {
+  initPharmacyDetailPhotoZoom();
+
   if (!initUtilisateurPage()) return;
 
   const id = new URLSearchParams(location.search).get("id");
   const detailEl = document.getElementById("pharmacy-detail");
-  const stockEl = document.getElementById("stock-list");
-  const stockCountEl = document.getElementById("stock-count");
-  const stockSummaryEl = document.getElementById("stock-summary");
 
   if (!id) {
     detailEl.innerHTML = '<p class="error">Pharmacie non spécifiée.</p>';
@@ -62,11 +43,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const geoQuery = lat && lon ? `&lat=${lat}&lon=${lon}` : "";
 
   let estFavori = false;
+  const stockCtrl = initPharmacyDetailStock({ zone: "utilisateur", pharmacyId: id });
+  const stockPromise = stockCtrl.load();
 
   async function refreshFavoriButton(btn) {
     const data = await MediCareAPI.checkFavori(id);
     estFavori = data.est_favori;
-    btn.textContent = estFavori ? "★ Retirer des favoris" : "☆ Ajouter aux favoris";
+    btn.textContent = estFavori ? "★ Favori" : "☆ Favoris";
     btn.classList.toggle("active", estFavori);
   }
 
@@ -87,6 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         backHref: "recherchePharmacie.html",
         showFavori: true,
       });
+    document.getElementById("pharmacy-detail-unified")?.classList.add("is-ready");
 
     detailEl.addEventListener("click", (e) => {
       const call = e.target.closest("[data-track-call]");
@@ -105,22 +89,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    const stock = await MediCareAPI.getStock(id);
-    updateStockSection(stock, stockEl, stockCountEl, stockSummaryEl);
-
-    await loadAvisSection(id);
+    await Promise.all([stockPromise, loadAvisSection(id)]);
   } catch (err) {
     detailEl.innerHTML = `<p class="error">${escapeHtml(err.message)}</p>`;
-    stockEl.innerHTML = "";
+    const stockEl = document.getElementById("stock-list");
+    if (stockEl) stockEl.innerHTML = "";
   }
-
-  document.getElementById("search-med-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const q = document.getElementById("med-q").value.trim();
-    if (q.length < 2) return;
-    const onlyHere = document.getElementById("med-this-pharmacy")?.checked;
-    window.location.href = medicamentSearchResultsUrl("utilisateur", q, onlyHere ? id : undefined);
-  });
 
   document.getElementById("avis-form").addEventListener("submit", async (e) => {
     e.preventDefault();

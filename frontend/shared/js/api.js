@@ -82,6 +82,12 @@ window.MediCareAPI = {
   },
   getStock: (pharmacyId) => apiFetch(`/stock/pharmacie/${pharmacyId}`),
 
+  getGoogleClientId: () => apiFetch("/auth/google/client-id"),
+  loginWithGoogle: (credential) =>
+    apiFetch("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ credential }),
+    }),
   login: (email, mot_de_passe) =>
     apiFetch("/auth/login", {
       method: "POST",

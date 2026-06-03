@@ -43,6 +43,14 @@ async function ensureNotificationsSchema() {
     }
   }
 
+  const [lienCols] = await pool.query("SHOW COLUMNS FROM notifications LIKE 'lien'");
+  if (lienCols.length === 0) {
+    await pool.query(`
+      ALTER TABLE notifications
+      ADD COLUMN lien VARCHAR(255) NULL
+    `);
+  }
+
   ensured = true;
   return true;
 }

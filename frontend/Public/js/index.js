@@ -106,9 +106,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (document.getElementById("filter-ouvertes")?.checked) {
       params.set("ouvertes", "1");
     }
-    if (document.getElementById("filter-garde")?.checked) {
-      params.set("garde", "1");
-    }
     window.location.href = `recherchePharmacie.html?${params.toString()}`;
   });
 

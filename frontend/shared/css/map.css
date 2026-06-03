@@ -143,16 +143,24 @@
   box-shadow: 0 0 0 2px #3b82f6;
 }
 
+.leaflet-popup-content-wrapper {
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+}
+
 .leaflet-popup-content {
-  margin: 0.65rem 0.85rem;
+  margin: 0.75rem 0.9rem;
   font-size: 0.85rem;
   line-height: 1.45;
-  min-width: 200px;
+  min-width: 248px;
 }
 
 .leaflet-popup-content h3 {
   margin: 0 0 0.35rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
 }
 
 .popup-badges {
@@ -169,6 +177,50 @@
 .popup-actions .btn {
   font-size: 0.78rem;
   padding: 0.35rem 0.65rem;
+}
+
+.popup-actions--enhanced {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.popup-actions--enhanced .pharmacy-detail-action-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8rem;
+  border-radius: 10px;
+}
+
+.popup-actions--enhanced .pharmacy-detail-action-btn__icon {
+  width: 16px;
+  height: 16px;
+}
+
+.popup-actions--enhanced .pharmacy-detail-action-btn--primary,
+.leaflet-popup-content .pharmacy-detail-action-btn--primary,
+.leaflet-popup-content .pharmacy-detail-action-btn--primary:hover,
+.leaflet-popup-content .pharmacy-detail-action-btn--primary:focus,
+.leaflet-popup-content .pharmacy-detail-action-btn--primary:visited {
+  color: #fff;
+  text-decoration: none;
+}
+
+.leaflet-popup-content .pharmacy-detail-action-btn--primary .pharmacy-detail-action-btn__text {
+  color: #fff;
+}
+
+.popup-actions--enhanced .pharmacy-detail-action-btn--primary {
+  box-shadow: 0 3px 10px rgba(13, 148, 136, 0.28);
+}
+
+.popup-actions--enhanced .pharmacy-detail-action-btn--outline {
+  border-width: 1.5px;
 }
 
 @media (min-width: 768px) {

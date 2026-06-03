@@ -1,6 +1,6 @@
-const CACHE_STATIC = "medicare-static-v5";
-const CACHE_PAGES = "medicare-pages-v5";
-const CACHE_API = "medicare-api-v5";
+const CACHE_STATIC = "medicare-static-v6";
+const CACHE_PAGES = "medicare-pages-v6";
+const CACHE_API = "medicare-api-v6";
 
 const PRECACHE_STATIC = [
   "/manifest.webmanifest",
@@ -19,6 +19,7 @@ const PRECACHE_STATIC = [
   "/shared/css/scrollHint.css",
   "/Public/css/style.css",
   "/shared/js/api.js",
+  "/shared/js/medSearchFuzzy.js",
   "/shared/js/common.js",
   "/shared/js/pwa.js",
   "/shared/js/pharmacyMap.js",

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connexion Google — MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="../../shared/css/auth.css" />
+  </head>
+  <body class="auth-page auth-page--user">
+    <main class="auth-shell" style="grid-template-columns: 1fr; max-width: 420px">
+      <section class="auth-panel">
+        <p class="muted" style="text-align: center; margin: 1.5rem 0">Connexion Google en cours…</p>
+        <p id="cb-error" class="error" hidden></p>
+      </section>
+    </main>
+    <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/userAuth.js"></script>
+    <script>
+      (async function () {
+        const params = new URLSearchParams(location.search);
+        const token = params.get("token");
+        const next = params.get("next") || "Utilisateur/html/Dashboard.html";
+        const errEl = document.getElementById("cb-error");
+
+        if (!token) {
+          errEl.textContent = "Jeton de connexion manquant.";
+          errEl.hidden = false;
+          return;
+        }
+
+        try {
+          localStorage.setItem("token", token);
+          const user = await MediCareAPI.me();
+          saveSession(token, user);
+          window.location.href = pageUrl(next);
+        } catch (err) {
+          localStorage.removeItem("token");
+          errEl.textContent = err.message || "Connexion impossible.";
+          errEl.hidden = false;
+        }
+      })();
+    </script>
+  </body>
+</html>

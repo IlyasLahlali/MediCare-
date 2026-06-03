@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inscription — MediCare+</title>
+    <meta
+      name="medicare-google-client-id"
+      content="1011224579860-8udm6jio641o2o4a6ribtcjffi10tv7r.apps.googleusercontent.com"
+    />
     <link rel="stylesheet" href="../../shared/css/base.css" />
     <link rel="stylesheet" href="../../shared/css/layout.css" />
     <link rel="stylesheet" href="../../shared/css/auth.css" />
@@ -57,6 +61,9 @@
             <button type="submit" class="auth-submit">Créer mon compte</button>
           </form>
 
+          <p id="auth-google-divider" class="auth-divider" hidden aria-hidden="true">ou</p>
+          <div id="google-signin-mount" class="auth-google-mount" hidden></div>
+
           <div class="auth-panel-foot">
             <p class="muted">Déjà inscrit ?</p>
             <a href="login.html" class="auth-link-btn">J'ai un compte</a>
@@ -68,6 +75,7 @@
     <script src="../../shared/js/api.js"></script>
     <script src="../../shared/js/common.js"></script>
     <script src="../../shared/js/userAuth.js"></script>
+    <script src="../../shared/js/googleAuth.js?v=5"></script>
     <script src="../js/register.js"></script>
   </body>
 </html>

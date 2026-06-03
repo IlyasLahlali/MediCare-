@@ -33,6 +33,15 @@ async function run() {
     if (err.code !== "ER_DUP_FIELDNAME") console.warn("ALTER notifications.type:", err.message);
   }
 
+  const [lienCols] = await pool.query("SHOW COLUMNS FROM notifications LIKE 'lien'");
+  if (lienCols.length === 0) {
+    await pool.query(`
+      ALTER TABLE notifications
+      ADD COLUMN lien VARCHAR(255) NULL
+    `);
+    console.log("Colonne notifications.lien ajoutée.");
+  }
+
   console.log("OK — table notifications prête (types AVIS, STATS inclus).");
   process.exit(0);
 }

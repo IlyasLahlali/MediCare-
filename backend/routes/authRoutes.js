@@ -1,10 +1,21 @@
 const express = require("express");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
 const { authRequired } = require("../middleware/authMiddleware");
 const { createNotification } = require("../utils/notificationHelper");
+const { signAuthToken, authUserPayload } = require("../utils/authToken");
+const {
+  getGoogleClientId,
+  verifyGoogleCredential,
+  findOrCreateGoogleUser,
+  googleAuthErrorMessage,
+} = require("../utils/googleAuth");
+const {
+  isGoogleRedirectConfigured,
+  startGoogleOAuth,
+  handleGoogleOAuthCallback,
+} = require("../utils/googleOAuthRedirect");
 
 const router = express.Router();
 
@@ -27,6 +38,52 @@ async function ensureResetTable() {
     )
   `);
 }
+
+router.get("/google/client-id", (req, res) => {
+  const clientId = getGoogleClientId();
+  const { getGoogleRedirectUri } = require("../utils/googleOAuthRedirect");
+  res.json({
+    clientId: clientId || null,
+    enabled: !!clientId,
+    redirectEnabled: isGoogleRedirectConfigured(),
+    redirectUri: clientId ? getGoogleRedirectUri(req) : null,
+    pageOrigin: req.get("origin") || null,
+  });
+});
+
+router.get("/google/start", (req, res) => startGoogleOAuth(req, res));
+
+router.get("/google/callback", (req, res) => handleGoogleOAuthCallback(req, res));
+
+router.post("/google", async (req, res) => {
+  const credential = req.body?.credential || req.body?.idToken;
+  if (!credential) {
+    return res.status(400).json({ error: "credential requis (jeton Google)" });
+  }
+
+  try {
+    const profile = await verifyGoogleCredential(credential);
+    const user = await findOrCreateGoogleUser(profile);
+
+    if (user.statut === "REFUSE") {
+      return res.status(403).json({ error: "Compte refusé par l'administrateur" });
+    }
+    if (user.statut === "EN_ATTENTE" && user.role !== "PHARMACIEN") {
+      return res.status(403).json({ error: "Compte en attente de validation" });
+    }
+
+    const token = signAuthToken(user);
+    res.json({ token, user: authUserPayload(user) });
+  } catch (err) {
+    if (err.code) {
+      const status =
+        err.code === "PRO_ACCOUNT" || err.code === "REFUSED" ? 403 : 401;
+      return res.status(status).json({ error: googleAuthErrorMessage(err.code) });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
 
 router.get("/me", authRequired, async (req, res) => {
   try {
@@ -164,6 +221,11 @@ router.patch("/email", authRequired, async (req, res) => {
         req.user.id,
       ]);
       if (!rows.length) return res.status(404).json({ error: "Utilisateur introuvable" });
+      if (!rows[0].mot_de_passe) {
+        return res.status(400).json({
+          error: "Compte Google : modifiez l'email sans mot de passe ou définissez un mot de passe d'abord.",
+        });
+      }
       const ok = await bcrypt.compare(mot_de_passe, rows[0].mot_de_passe);
       if (!ok) return res.status(401).json({ error: "Mot de passe actuel incorrect" });
     } catch (err) {
@@ -190,6 +252,13 @@ router.patch("/password", authRequired, async (req, res) => {
       [req.user.id]
     );
     if (!rows.length) return res.status(404).json({ error: "Utilisateur introuvable" });
+    if (!rows[0].mot_de_passe) {
+      const hash = await bcrypt.hash(mot_de_passe_nouveau, 10);
+      await pool.query(`UPDATE utilisateurs SET mot_de_passe = ? WHERE id = ?`, [hash, req.user.id]);
+      return res.json({
+        message: "Mot de passe créé. Vous pouvez aussi vous connecter avec Google.",
+      });
+    }
     const ok = await bcrypt.compare(mot_de_passe_actuel, rows[0].mot_de_passe);
     if (!ok) return res.status(401).json({ error: "Mot de passe actuel incorrect" });
 
@@ -297,6 +366,11 @@ router.post("/login", async (req, res) => {
     if (!rows.length) return res.status(401).json({ error: "Identifiants invalides" });
 
     const user = rows[0];
+    if (!user.mot_de_passe) {
+      return res.status(401).json({
+        error: "Ce compte utilise la connexion Google. Cliquez sur « Continuer avec Google ».",
+      });
+    }
     const ok = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
     if (!ok) return res.status(401).json({ error: "Identifiants invalides" });
 
@@ -307,22 +381,8 @@ router.post("/login", async (req, res) => {
       return res.status(403).json({ error: "Compte en attente de validation" });
     }
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role, nom: user.nom, statut: user.statut },
-      process.env.JWT_SECRET || "dev_secret",
-      { expiresIn: "7d" }
-    );
-
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        nom: user.nom,
-        email: user.email,
-        role: user.role,
-        statut: user.statut,
-      },
-    });
+    const token = signAuthToken(user);
+    res.json({ token, user: authUserPayload(user) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });

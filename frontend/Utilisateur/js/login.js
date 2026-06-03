@@ -5,6 +5,27 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  const urlErr = new URLSearchParams(location.search).get("google_error");
+  if (urlErr) {
+    const errEl = document.getElementById("login-error");
+    if (errEl) {
+      errEl.textContent = decodeURIComponent(urlErr);
+      errEl.hidden = false;
+    }
+    history.replaceState(null, "", location.pathname);
+  }
+
+  GoogleAuth.initButton({
+    errorElId: "login-error",
+    nextPath: "/Utilisateur/html/Dashboard.html",
+  }).catch((err) => {
+    const errEl = document.getElementById("login-error");
+    if (errEl && err?.message) {
+      errEl.textContent = err.message;
+      errEl.hidden = false;
+    }
+  });
+
   document.getElementById("login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const errEl = document.getElementById("login-error");

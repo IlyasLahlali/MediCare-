@@ -12,6 +12,7 @@
     "migrate:admin-statut": "node scripts/runMigrationAdminStatut.js",
     "migrate:notifications": "node scripts/runMigrationNotifications.js",
     "migrate:quartier-ville": "node scripts/runMigrationQuartierVille.js",
+    "migrate:google-auth": "node scripts/runMigrationGoogleAuth.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

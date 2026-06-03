@@ -13,7 +13,7 @@ function initAppHeader() {
   }
   if (hash === "pharmacies-proches") activePage = "pharmacies-proches";
   if (hash === "hero-search") activePage = "hero-search";
-  if (hash === "mc-zone-footer") activePage = "a-propos";
+  if (hash === "mc-zone-footer") activePage = "contact";
 
   header.querySelectorAll("[data-nav-page]").forEach((link) => {
     link.classList.toggle("is-active", link.dataset.navPage === activePage);

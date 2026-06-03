@@ -6,19 +6,77 @@
     <title>Détail pharmacie — MediCare+</title>
     <link rel="stylesheet" href="../../shared/css/base.css" />
     <link rel="stylesheet" href="../../shared/css/notifications.css" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/style.css?v=26" />
   </head>
   <body class="pharmacy-detail-page">
     <header class="site-header"></header>
 
     <main class="pharmacy-detail-main">
-      <div id="pharmacy-detail" class="pharmacy-detail-wrap">
-        <p class="muted pharmacy-detail-loading">Chargement…</p>
-      </div>
+      <article class="pharmacy-detail-sheet card" id="pharmacy-detail-unified">
+        <div id="pharmacy-detail" class="pharmacy-detail-sheet__hero">
+          <p class="muted pharmacy-detail-loading">Chargement…</p>
+        </div>
 
-      <section class="pharmacy-detail-panel pharmacy-detail-avis-panel">
+        <section class="pharmacy-detail-sheet__search" id="pharmacy-detail-search-anchor" aria-labelledby="sheet-search-title">
+          <h2 class="pharmacy-detail-sheet__search-title" id="sheet-search-title">
+            <span aria-hidden="true">💊</span> Ce médicament est-il disponible ici ?
+          </h2>
+          <form id="pharmacy-stock-search-form" class="pharmacy-detail-med-search-form pharmacy-detail-med-search-form--sheet" role="search">
+            <div class="pharmacy-detail-search-compose">
+              <div class="pharmacy-detail-search-input-wrap">
+                <span class="pharmacy-detail-search-input-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M20 20L16.5 16.5" />
+                  </svg>
+                </span>
+                <input
+                  type="search"
+                  id="pharmacy-med-q"
+                  name="q"
+                  class="pharmacy-detail-search-input"
+                  placeholder="Nom du médicament…"
+                  minlength="2"
+                  autocomplete="off"
+                  enterkeyhint="search"
+                  aria-describedby="stock-search-hint"
+                  list="pharmacy-med-suggestions"
+                />
+                <button type="button" class="pharmacy-detail-search-clear" id="btn-pharmacy-med-clear" hidden aria-label="Effacer">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+                <datalist id="pharmacy-med-suggestions"></datalist>
+              </div>
+              <button type="submit" class="btn btn-teal pharmacy-detail-search-submit">Vérifier</button>
+            </div>
+            <p class="pharmacy-detail-search-hint muted" id="stock-search-hint" role="status">2 lettres minimum</p>
+          </form>
+        </section>
+
+        <section class="pharmacy-detail-sheet__results pharmacy-detail-stock-section" id="pharmacy-stock-results" aria-labelledby="stock-title">
+          <header class="pharmacy-detail-sheet__results-head">
+            <h2 id="stock-title">Résultats</h2>
+            <span class="pharmacy-detail-stock-count" id="stock-count" hidden></span>
+            <p class="muted" id="stock-summary">Les correspondances s'affichent ici.</p>
+          </header>
+          <div class="pharmacy-detail-stock-toolbar" id="stock-toolbar" hidden>
+            <button type="button" class="btn btn-outline btn-small" id="btn-stock-show-all" aria-pressed="false">
+              Tout le stock
+            </button>
+            <a href="rechercheMedicament.html" class="pharmacy-detail-global-search-link" id="link-med-global-search">
+              Toutes les pharmacies
+            </a>
+          </div>
+          <div id="stock-list" class="pharmacy-detail-stock-grid" aria-live="polite"></div>
+        </section>
+      </article>
+
+      <section class="pharmacy-detail-panel pharmacy-detail-avis-panel" aria-labelledby="avis-title">
         <header class="pharmacy-detail-panel__head">
-          <h2>Votre avis</h2>
+          <p class="pharmacy-detail-panel__kicker">Communauté</p>
+          <h2 id="avis-title">Votre avis</h2>
           <p class="muted">Partagez votre expérience avec cette pharmacie.</p>
         </header>
         <p id="rating-summary" class="rating-summary"></p>
@@ -35,44 +93,10 @@
         </form>
         <div id="avis-list" class="pharmacy-detail-avis-list"></div>
       </section>
-
-      <section class="pharmacy-detail-panel pharmacy-detail-med-search">
-        <header class="pharmacy-detail-panel__head">
-          <h2>Rechercher un médicament</h2>
-          <p class="muted">Trouvez un médicament dans cette pharmacie ou partout sur MediCare+.</p>
-        </header>
-        <form id="search-med-form" class="pharmacy-detail-med-search-form">
-          <div class="pharmacy-detail-med-search-row">
-            <input
-              type="search"
-              id="med-q"
-              placeholder="Ex. Paracétamol, Doliprane…"
-              required
-              minlength="2"
-              autocomplete="off"
-            />
-            <button type="submit" class="btn btn-teal">Rechercher</button>
-          </div>
-          <label class="pharmacy-detail-med-search-check">
-            <input type="checkbox" id="med-this-pharmacy" />
-            Uniquement cette pharmacie
-          </label>
-        </form>
-      </section>
-
-      <section class="pharmacy-detail-panel pharmacy-detail-stock-section">
-        <header class="pharmacy-detail-panel__head pharmacy-detail-stock-head">
-          <div>
-            <h2>Médicaments en stock</h2>
-            <p class="muted" id="stock-summary">Liste des médicaments disponibles dans cette officine.</p>
-          </div>
-          <span class="pharmacy-detail-stock-count" id="stock-count" hidden></span>
-        </header>
-        <div id="stock-list" class="pharmacy-detail-stock-grid"></div>
-      </section>
     </main>
 
     <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/medSearchFuzzy.js"></script>
     <script src="../../shared/js/common.js"></script>
     <script src="../../shared/js/notifications.js"></script>
     <script src="../../shared/js/userAuth.js"></script>

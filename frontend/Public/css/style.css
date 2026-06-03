@@ -697,26 +697,51 @@
   scroll-behavior: smooth;
 }
 
-#hero-search {
+#hero-search,
+#pharmacies-proches {
   scroll-margin-top: 5rem;
 }
 
 .public-cta {
+  position: relative;
   margin: 2rem 0 3rem;
   padding: 3rem 1.5rem;
   text-align: center;
   background: #fff;
   border-radius: 20px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 8px 32px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.public-cta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0d9488, #14b8a6, #2dd4bf);
+  pointer-events: none;
+}
+
+.public-cta:hover {
+  border-color: #cbd5e1;
+  box-shadow:
+    0 10px 36px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
 }
 
 .public-cta__title {
   margin: 0 0 0.75rem;
   font-size: clamp(1.35rem, 3vw, 1.85rem);
   font-weight: 800;
-  color: #1e293b;
+  color: #0f172a;
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .public-cta__lead {
@@ -727,6 +752,11 @@
   color: #64748b;
 }
 
+.public-cta__lead strong {
+  color: #0f766e;
+  font-weight: 600;
+}
+
 .btn-cta-search {
   display: inline-flex;
   align-items: center;
@@ -734,20 +764,42 @@
   gap: 0.5rem;
   padding: 0.85rem 1.75rem;
   border-radius: 12px;
-  background: linear-gradient(135deg, #0d9488, #14b8a6);
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 55%, #0d9488 100%);
+  background-size: 200% 100%;
   color: #fff !important;
   font-size: 1rem;
   font-weight: 700;
   text-decoration: none;
   border: none;
   box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
-  transition: filter 0.15s ease, transform 0.15s ease;
+  transition:
+    filter 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-position 0.35s ease;
+}
+
+.btn-cta-search__icon {
+  flex-shrink: 0;
+  opacity: 0.95;
 }
 
 .btn-cta-search:hover {
   filter: brightness(1.06);
   transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.42);
+  background-position: 100% 0;
   text-decoration: none;
+}
+
+.btn-cta-search:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(13, 148, 136, 0.3);
+}
+
+.btn-cta-search:focus-visible {
+  outline: 3px solid rgba(45, 212, 191, 0.55);
+  outline-offset: 2px;
 }
 
 /* Section résultats proches */

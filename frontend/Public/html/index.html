@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MediCare+ — Pharmacies ouvertes près de vous</title>
     <link rel="stylesheet" href="/shared/css/base.css" />
-    <link rel="stylesheet" href="/shared/css/scrollHint.css?v=3" />
-    <link rel="stylesheet" href="/Public/css/style.css?v=15" />
+    <link rel="stylesheet" href="/shared/css/scrollHint.css?v=5" />
+    <link rel="stylesheet" href="/Public/css/style.css?v=20" />
   </head>
   <body class="public-home">
     <header class="site-header">
@@ -211,6 +211,21 @@
           <p class="muted public-stats__loading">Chargement des statistiques…</p>
         </div>
       </section>
+
+      <section class="public-cta" aria-labelledby="cta-title">
+        <h2 id="cta-title" class="public-cta__title">Besoin d&apos;aide pour trouver une pharmacie ?</h2>
+        <p class="public-cta__lead">
+          Recherche par <strong>ville</strong>, <strong>quartier</strong> ou <strong>médicament</strong>
+          — disponible à tout moment sur MediCare+.
+        </p>
+        <a href="#hero-search" class="btn btn-cta-search">
+          <svg class="btn-cta-search__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20L16.5 16.5" />
+          </svg>
+          Rechercher maintenant
+        </a>
+      </section>
     </main>
 
     <div class="public-pharma-invite-wrap">
@@ -273,18 +288,6 @@
         </div>
       </section>
     </div>
-
-    <main class="container public-main">
-      <section class="public-cta" aria-labelledby="cta-title">
-        <h2 id="cta-title" class="public-cta__title">Besoin d'aide pour trouver une pharmacie ?</h2>
-        <p class="public-cta__lead">
-          Utilisez la recherche par ville, quartier ou médicament — disponible à tout moment sur MediCare+.
-        </p>
-        <a href="#hero-search" class="btn btn-cta-search">
-          <span aria-hidden="true">🔍</span> Rechercher maintenant
-        </a>
-      </section>
-    </main>
 
     <script src="/shared/js/api.js"></script>
     <script src="/shared/js/common.js"></script>

@@ -1,35 +1,44 @@
-/* Bouton « Descendez » — premier accès (accueil public & dashboard client) */
+/* Mode « Descendez » : page d’accueil en plein écran, contenu du bas masqué */
 
 html.mc-scroll-hint-active,
 html.mc-scroll-hint-active body {
-  overflow: hidden;
+  overflow: hidden !important;
   height: 100%;
+  max-height: 100dvh;
 }
 
-html.mc-scroll-hint-active.public-home,
-html.mc-scroll-hint-active body.public-home {
-  overflow: hidden;
-}
-
-html.mc-scroll-hint-active .public-hero {
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding-bottom: 6rem;
-  box-sizing: border-box;
-}
-
-html.mc-scroll-hint-active .public-main {
-  visibility: hidden;
-  height: 0;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  margin: 0;
-  padding: 0;
+html.mc-scroll-hint-active .public-main,
+html.mc-scroll-hint-active #mc-zone-footer,
+html.mc-scroll-hint-active .site-footer {
+  display: none !important;
 }
 
 html.mc-scroll-hint-active .public-hero {
   position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 5rem 1.25rem 7rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html.mc-scroll-hint-active .public-hero__inner {
+  width: 100%;
+  max-height: calc(100dvh - 8rem);
+  overflow: hidden;
+}
+
+html.mc-scroll-hint-active .hero-search-card {
+  box-shadow:
+    0 24px 48px rgba(15, 23, 42, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.35);
+  transform: scale(1.01);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
 
 html.mc-scroll-hint-active .public-hero::after {
@@ -48,7 +57,52 @@ html.mc-scroll-hint-active .public-hero::after {
   );
 }
 
-/* ——— Bouton flottant ——— */
+.scroll-hint-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.scroll-hint-stage--hide {
+  opacity: 0;
+}
+
+.scroll-hint-stage__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 118, 110, 0.08) 0%,
+    rgba(15, 118, 110, 0.15) 35%,
+    rgba(15, 23, 42, 0.45) 72%,
+    rgba(15, 23, 42, 0.62) 100%
+  );
+}
+
+html.mc-scroll-hint-leaving .public-main {
+  display: block !important;
+  animation: scroll-hint-reveal-main 0.45s ease forwards;
+}
+
+html.mc-scroll-hint-leaving #mc-zone-footer,
+html.mc-scroll-hint-leaving .site-footer {
+  display: block !important;
+}
+
+@keyframes scroll-hint-reveal-main {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .scroll-down-hint {
   position: fixed;
   left: 50%;
@@ -80,9 +134,7 @@ html.mc-scroll-hint-active .public-hero::after {
   opacity: 0;
   transition:
     opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .scroll-down-hint--visible {
@@ -100,20 +152,11 @@ html.mc-scroll-hint-active .public-hero::after {
   border-color: rgba(153, 246, 228, 0.9);
   box-shadow:
     0 6px 10px rgba(15, 118, 110, 0.12),
-    0 20px 44px rgba(15, 118, 110, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-}
-
-.scroll-down-hint:active {
-  transform: translate(-50%, 2px);
+    0 20px 44px rgba(15, 118, 110, 0.22);
 }
 
 .scroll-down-hint--visible:active {
   transform: translate(-50%, 2px);
-}
-
-.scroll-down-hint:focus {
-  outline: none;
 }
 
 .scroll-down-hint:focus-visible {
@@ -146,33 +189,16 @@ html.mc-scroll-hint-active .public-hero::after {
 }
 
 .scroll-down-hint__icon svg {
-  display: block;
   animation: scroll-hint-arrow 1.8s ease-in-out infinite;
 }
 
-.scroll-down-hint__copy {
+.scroll-down-hint__label {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.1rem;
-  padding-right: 0.15rem;
-  text-align: left;
-}
-
-.scroll-down-hint__label {
-  font-size: 0.94rem;
+  font-size: 0.98rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
   color: #0f172a;
-}
-
-.scroll-down-hint__sub {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #64748b;
-  letter-spacing: 0.01em;
+  padding-right: 0.2rem;
 }
 
 @keyframes scroll-hint-arrow {
@@ -200,30 +226,13 @@ html.mc-scroll-hint-active .public-hero::after {
   }
 }
 
-@media (max-width: 380px) {
-  .scroll-down-hint__sub {
-    display: none;
-  }
-
-  .scroll-down-hint {
-    padding-right: 0.85rem;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .scroll-down-hint__icon svg,
   .scroll-down-hint__ring {
     animation: none;
   }
 
-  .scroll-down-hint,
-  .scroll-down-hint--visible,
-  .scroll-down-hint--hide {
-    transition: opacity 0.15s ease;
-  }
-
-  .scroll-down-hint:active,
-  .scroll-down-hint--visible:active {
-    transform: translate(-50%, 0);
+  html.mc-scroll-hint-active .hero-search-card {
+    transform: none;
   }
 }

@@ -1,6 +1,6 @@
-const CACHE_STATIC = "medicare-static-v3";
-const CACHE_PAGES = "medicare-pages-v3";
-const CACHE_API = "medicare-api-v3";
+const CACHE_STATIC = "medicare-static-v5";
+const CACHE_PAGES = "medicare-pages-v5";
+const CACHE_API = "medicare-api-v5";
 
 const PRECACHE_STATIC = [
   "/manifest.webmanifest",

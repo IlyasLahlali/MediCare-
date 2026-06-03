@@ -747,15 +747,15 @@ function renderPharmacyCard(p, options = {}) {
 }
 
 /**
- * Bouton « Descendez » au premier accès : hero plein écran, contenu masqué jusqu’à interaction.
- * options.storageKey — clé localStorage ; targetId — section cible.
- * Forcer l’affichage : ajouter ?scrollhint=1 à l’URL.
+ * Bouton « Descendez » : hero plein écran, contenu masqué jusqu’à interaction.
+ * Réaffiché à chaque chargement de page (pas de mémorisation).
+ * ?scrollhint=1 pour forcer l’affichage.
  */
 function ensureScrollHintCss() {
   if (document.querySelector('link[data-mc-scroll-hint="1"]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "/shared/css/scrollHint.css?v=3";
+  link.href = "/shared/css/scrollHint.css?v=5";
   link.dataset.mcScrollHint = "1";
   document.head.appendChild(link);
 }
@@ -771,23 +771,22 @@ function isPublicHomePage() {
 
 function initScrollDownHint(options = {}) {
   ensureScrollHintCss();
-  const storageKey = options.storageKey || "medicare_scroll_hint";
   const targetId = options.targetId || "pharmacies-proches";
-  const forceShow =
-    options.force === true || new URLSearchParams(location.search).has("scrollhint");
-
-  if (forceShow) {
-    try {
-      localStorage.removeItem(storageKey);
-    } catch {
-      /* ignore */
-    }
-  } else {
-    try {
-      if (localStorage.getItem(storageKey)) return;
-    } catch {
-      /* mode privé : on affiche quand même */
-    }
+  const legacyKeys = [
+    options.storageKey,
+    "medicare_scroll_hint",
+    "medicare_scroll_hint_public_home",
+    "medicare_scroll_hint_user_home",
+    "medicare_scroll_hint_public_session",
+    "medicare_scroll_hint_user_session",
+  ].filter(Boolean);
+  try {
+    legacyKeys.forEach((k) => {
+      localStorage.removeItem(k);
+      sessionStorage.removeItem(k);
+    });
+  } catch {
+    /* ignore */
   }
 
   function mountHint() {
@@ -795,7 +794,10 @@ function initScrollDownHint(options = {}) {
     const hero = document.querySelector(".public-hero");
     if (!target || !hero) return false;
 
-    if (document.getElementById("scroll-down-hint")) return true;
+    const existing = document.getElementById("scroll-down-hint");
+    if (existing && !new URLSearchParams(location.search).has("scrollhint")) return true;
+    document.getElementById("scroll-hint-stage")?.remove();
+    if (existing) existing.remove();
 
     let dismissed = false;
     let guardsReady = false;
@@ -811,10 +813,15 @@ function initScrollDownHint(options = {}) {
       '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
       '<path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>' +
       "</svg></span>" +
-      '<span class="scroll-down-hint__copy">' +
-      '<span class="scroll-down-hint__label">Descendez</span>' +
-      '<span class="scroll-down-hint__sub">Pharmacies à proximité</span>' +
-      "</span>";
+      '<span class="scroll-down-hint__label">Descendez</span>';
+
+    const stage = document.createElement("div");
+    stage.id = "scroll-hint-stage";
+    stage.className = "scroll-hint-stage";
+    stage.setAttribute("aria-hidden", "true");
+    stage.innerHTML = '<div class="scroll-hint-stage__veil"></div>';
+
+    document.body.appendChild(stage);
     document.body.appendChild(btn);
 
     const root = document.documentElement;
@@ -823,49 +830,87 @@ function initScrollDownHint(options = {}) {
     window.scrollTo(0, 0);
 
     const cleanups = [];
+    let touchStartY = null;
 
-    function dismiss() {
+    function scrollToTarget() {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function dismiss(scrollAfter = false) {
       if (dismissed) return;
       dismissed = true;
-      try {
-        localStorage.setItem(storageKey, "1");
-      } catch {
-        /* ignore */
-      }
+      root.classList.add("mc-scroll-hint-leaving");
+      document.body.classList.add("mc-scroll-hint-leaving");
       root.classList.remove("mc-scroll-hint-active");
       document.body.classList.remove("mc-scroll-hint-active");
       btn.classList.remove("scroll-down-hint--visible");
       btn.classList.add("scroll-down-hint--hide");
+      stage.classList.add("scroll-hint-stage--hide");
       cleanups.forEach((fn) => fn());
-      setTimeout(() => btn.remove(), 380);
+      setTimeout(() => {
+        stage.remove();
+        btn.remove();
+        root.classList.remove("mc-scroll-hint-leaving");
+        document.body.classList.remove("mc-scroll-hint-leaving");
+        if (scrollAfter) scrollToTarget();
+      }, 420);
     }
 
     function onScroll() {
-      if (!guardsReady) return;
-      if (window.scrollY > 48) dismiss();
+      if (!guardsReady || dismissed) return;
+      if (window.scrollY > 32) dismiss(true);
+    }
+
+    function onWheel(e) {
+      if (dismissed) return;
+      if (Math.abs(e.deltaY) < 2) return;
+      if (e.deltaY > 0) dismiss(true);
+      else dismiss(false);
+    }
+
+    function onTouchStart(e) {
+      if (e.touches.length) touchStartY = e.touches[0].clientY;
+    }
+
+    function onTouchMove(e) {
+      if (dismissed || touchStartY == null || !e.touches.length) return;
+      const delta = touchStartY - e.touches[0].clientY;
+      if (Math.abs(delta) < 14) return;
+      if (delta > 0) dismiss(true);
+      else dismiss(false);
     }
 
     function onInteract(e) {
-      if (!guardsReady) return;
+      if (!guardsReady || dismissed) return;
       if (e.target.closest(".scroll-down-hint")) return;
-      dismiss();
+      dismiss(false);
     }
 
     function onKeydown(e) {
-      if (!guardsReady) return;
-      if (e.key === "Escape") dismiss();
+      if (dismissed) return;
+      if (e.key === "Escape") dismiss(false);
+      if (e.key === "ArrowDown" || e.key === "PageDown" || e.key === " ") {
+        e.preventDefault();
+        dismiss(true);
+      }
     }
 
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      dismiss();
-      setTimeout(() => {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 50);
+      dismiss(true);
     });
 
     document.addEventListener("scroll", onScroll, { passive: true });
     cleanups.push(() => document.removeEventListener("scroll", onScroll));
+
+    document.addEventListener("wheel", onWheel, { passive: true });
+    cleanups.push(() => document.removeEventListener("wheel", onWheel));
+
+    document.addEventListener("touchstart", onTouchStart, { passive: true });
+    cleanups.push(() => document.removeEventListener("touchstart", onTouchStart));
+
+    document.addEventListener("touchmove", onTouchMove, { passive: true });
+    cleanups.push(() => document.removeEventListener("touchmove", onTouchMove));
 
     document.addEventListener("click", onInteract, true);
     cleanups.push(() => document.removeEventListener("click", onInteract, true));
@@ -875,13 +920,12 @@ function initScrollDownHint(options = {}) {
 
     setTimeout(() => {
       guardsReady = true;
-    }, 800);
+    }, 500);
 
     return true;
   }
 
   if (mountHint()) return;
-
   document.addEventListener("DOMContentLoaded", () => mountHint(), { once: true });
 }
 

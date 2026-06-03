@@ -50,7 +50,7 @@ app.use("/api/pharmacien", pharmacienRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(frontendPath, "Public/html/index.html"));
+  res.redirect(302, "/Public/html/index.html");
 });
 
 app.use(

@@ -751,7 +751,26 @@ function renderPharmacyCard(p, options = {}) {
  * options.storageKey — clé localStorage ; targetId — section cible.
  * Forcer l’affichage : ajouter ?scrollhint=1 à l’URL.
  */
+function ensureScrollHintCss() {
+  if (document.querySelector('link[data-mc-scroll-hint="1"]')) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/shared/css/scrollHint.css?v=3";
+  link.dataset.mcScrollHint = "1";
+  document.head.appendChild(link);
+}
+
+function isPublicHomePage() {
+  const path = location.pathname.replace(/\/+$/, "") || "/";
+  return (
+    path === "/" ||
+    path === "/index.html" ||
+    /\/Public\/html\/index\.html$/i.test(location.pathname)
+  );
+}
+
 function initScrollDownHint(options = {}) {
+  ensureScrollHintCss();
   const storageKey = options.storageKey || "medicare_scroll_hint";
   const targetId = options.targetId || "pharmacies-proches";
   const forceShow =
@@ -1147,6 +1166,20 @@ function mountPharmacyList(container, list, options = {}) {
     document.addEventListener("DOMContentLoaded", run);
   } else {
     run();
+  }
+})();
+
+(function autoInitScrollDownHint() {
+  if (!isPublicHomePage()) return;
+
+  function boot() {
+    initScrollDownHint({ storageKey: "medicare_scroll_hint_public_home" });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
   }
 })();
 

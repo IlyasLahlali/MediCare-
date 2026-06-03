@@ -82,7 +82,8 @@ CREATE TABLE stock_pharmacie (
     id_pharmacie INT NOT NULL,
     id_medicament INT NOT NULL,
 
-    quantite INT DEFAULT 0,
+    prix DECIMAL(10, 2) NULL,
+    disponible TINYINT(1) NOT NULL DEFAULT 1,
 
     date_mise_a_jour TIMESTAMP
     DEFAULT CURRENT_TIMESTAMP

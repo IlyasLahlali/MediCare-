@@ -640,7 +640,7 @@ function renderPharmacyDetailHero(p, options = {}) {
     geoQuery = "",
     id,
     backHref = "recherchePharmacie.html",
-    backLabel = "← Retour aux résultats",
+    backLabel = "Retour",
     showFavori = false,
   } = options;
   const imgUrl = pharmacyImageUrl(p.image);
@@ -673,18 +673,50 @@ function renderPharmacyDetailHero(p, options = {}) {
     : "";
 
   const favoriBtn = showFavori
-    ? `<button type="button" id="btn-favori" class="btn btn-outline btn-small btn-favori">☆ Favoris</button>`
+    ? `<button
+        type="button"
+        id="btn-favori"
+        class="btn-favori btn-favori--toggle"
+        aria-pressed="false"
+        aria-label="Ajouter aux favoris"
+        title="Ajouter aux favoris"
+      >
+        <svg class="btn-favori__icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            class="btn-favori__outline"
+            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+          <path
+            class="btn-favori__fill"
+            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+            fill="currentColor"
+            stroke="none"
+          />
+        </svg>
+      </button>`
     : "";
 
   return `
       <div class="pharmacy-detail-sheet__toolbar">
-        <a href="${escapeHtml(backHref)}" class="pharmacy-detail-sheet__back">${escapeHtml(backLabel)}</a>
+        <a href="${escapeHtml(backHref)}" class="pharmacy-detail-sheet__back" aria-label="${escapeHtml(backLabel)}">
+          <svg class="pharmacy-detail-sheet__back-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+          <span>${escapeHtml(backLabel)}</span>
+        </a>
       </div>
 
       <div class="pharmacy-detail-sheet__identity">
         ${thumbHtml}
         <div class="pharmacy-detail-sheet__meta">
-          <h1 class="pharmacy-detail-sheet__title">${escapeHtml(p.nom)}</h1>
+          <div class="pharmacy-detail-sheet__headline">
+            <h1 class="pharmacy-detail-sheet__title">${escapeHtml(p.nom)}</h1>
+            ${favoriBtn}
+          </div>
           ${loc !== "—" ? `<p class="pharmacy-detail-sheet__loc">${escapeHtml(loc)}</p>` : ""}
           <div class="pharmacy-detail-sheet__chips">
             ${pharmacyBadges(p)}
@@ -723,7 +755,6 @@ function renderPharmacyDetailHero(p, options = {}) {
 
       <div class="pharmacy-detail-sheet__actions">
         ${pharmacyDetailCtaRowHtml(p, { id, relativeUrl: true, geoQuery })}
-        ${favoriBtn}
       </div>`;
 }
 
@@ -807,6 +838,32 @@ function initPharmacyDetailPhotoZoom() {
       if (e.key === "Escape") closePharmacyPhotoLightbox();
     });
   }
+}
+
+/** Retour : page précédente si même site, sinon lien de secours (fallbackHref). */
+function initPharmacyDetailBackLink(fallbackHref) {
+  const back = document.querySelector(".pharmacy-detail-sheet__back");
+  if (!back || back.dataset.backBound === "1") return;
+  back.dataset.backBound = "1";
+
+  const fallback = fallbackHref || back.getAttribute("href") || "recherchePharmacie.html";
+  if (fallbackHref) back.setAttribute("href", fallback);
+
+  back.addEventListener("click", (e) => {
+    const ref = document.referrer;
+    let sameOrigin = false;
+    if (ref) {
+      try {
+        sameOrigin = new URL(ref).origin === location.origin;
+      } catch {
+        sameOrigin = false;
+      }
+    }
+    if (sameOrigin && window.history.length > 1) {
+      e.preventDefault();
+      history.back();
+    }
+  });
 }
 
 function renderPharmacyStockGrid(stock) {

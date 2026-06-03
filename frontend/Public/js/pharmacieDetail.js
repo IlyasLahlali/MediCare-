@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     detailEl.innerHTML =
       offlineNotice +
       renderPharmacyDetailHero(p, { geoQuery, id, backHref: "recherchePharmacie.html" });
+    initPharmacyDetailBackLink("recherchePharmacie.html");
     document.getElementById("pharmacy-detail-unified")?.classList.add("is-ready");
 
   } catch (err) {

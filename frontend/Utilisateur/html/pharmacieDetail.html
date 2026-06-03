@@ -6,7 +6,7 @@
     <title>Détail pharmacie — MediCare+</title>
     <link rel="stylesheet" href="../../shared/css/base.css" />
     <link rel="stylesheet" href="../../shared/css/notifications.css" />
-    <link rel="stylesheet" href="../css/style.css?v=26" />
+    <link rel="stylesheet" href="../css/style.css?v=29" />
   </head>
   <body class="pharmacy-detail-page">
     <header class="site-header"></header>
@@ -76,23 +76,88 @@
       <section class="pharmacy-detail-panel pharmacy-detail-avis-panel" aria-labelledby="avis-title">
         <header class="pharmacy-detail-panel__head">
           <p class="pharmacy-detail-panel__kicker">Communauté</p>
-          <h2 id="avis-title">Votre avis</h2>
+          <div class="pharmacy-detail-avis-list-head">
+            <h2 id="avis-title" class="pharmacy-detail-avis-list__title">Avis</h2>
+            <div id="avis-add-trigger" class="pharmacy-detail-avis-add-trigger">
+              <button type="button" id="btn-avis-add" class="btn btn-teal btn-small btn-avis-add">
+                Ajouter un avis
+              </button>
+            </div>
+          </div>
           <p class="muted">Partagez votre expérience avec cette pharmacie.</p>
         </header>
         <p id="rating-summary" class="rating-summary"></p>
-        <form id="avis-form" class="pharmacy-detail-avis-form">
-          <label>Note (1 à 5)</label>
-          <div class="star-rating" id="star-rating" aria-label="Note"></div>
-          <input type="hidden" id="avis-note" value="0" />
-          <label>
-            Commentaire (optionnel)
-            <textarea id="avis-commentaire" rows="3" placeholder="Décrivez votre expérience…"></textarea>
-          </label>
-          <button type="submit" class="btn btn-teal">Enregistrer mon avis</button>
-          <p id="avis-msg" class="muted"></p>
-        </form>
+
+        <div id="avis-form-wrap" class="pharmacy-detail-avis-form-wrap" hidden>
+          <h3 class="pharmacy-detail-avis-form__title">Ajout d'avis</h3>
+          <form id="avis-form" class="pharmacy-detail-avis-form">
+            <label>Note (1 à 5)</label>
+            <div class="star-rating" id="star-rating" aria-label="Note"></div>
+            <input type="hidden" id="avis-note" value="0" />
+            <label>
+              Commentaire (optionnel)
+              <textarea id="avis-commentaire" rows="3" placeholder="Décrivez votre expérience…"></textarea>
+            </label>
+            <div class="pharmacy-detail-avis-form__actions">
+              <button type="button" id="btn-avis-cancel" class="btn btn-outline">Annuler</button>
+              <button type="submit" class="btn btn-teal">Publier mon avis</button>
+            </div>
+            <p id="avis-msg" class="muted" role="status"></p>
+          </form>
+        </div>
+
         <div id="avis-list" class="pharmacy-detail-avis-list"></div>
       </section>
+
+      <div id="avis-edit-modal" class="user-avis-modal" hidden aria-hidden="true">
+        <div class="user-avis-modal__backdrop" data-close-avis-modal="avis-edit-modal"></div>
+        <div class="user-avis-modal__panel" role="dialog" aria-labelledby="avis-edit-modal-title" aria-modal="true">
+          <header class="user-avis-modal__header">
+            <h2 id="avis-edit-modal-title">Modifier mon avis</h2>
+            <button type="button" class="user-avis-modal__close" data-close-avis-modal="avis-edit-modal" aria-label="Fermer">×</button>
+          </header>
+          <form id="avis-edit-form" class="pharmacy-detail-avis-form pharmacy-detail-avis-form--modal">
+            <label>Note (1 à 5)</label>
+            <div class="star-rating" id="star-rating-edit" aria-label="Note"></div>
+            <input type="hidden" id="avis-note-edit" value="0" />
+            <label>
+              Commentaire (optionnel)
+              <textarea id="avis-commentaire-edit" rows="3" placeholder="Décrivez votre expérience…"></textarea>
+            </label>
+            <p id="avis-edit-msg" class="muted" role="status"></p>
+            <div class="user-avis-modal__footer">
+              <button type="button" class="btn btn-outline" data-close-avis-modal="avis-edit-modal">Annuler</button>
+              <button type="submit" class="btn btn-teal">Enregistrer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="avis-delete-modal" class="user-avis-modal user-avis-modal--confirm" hidden aria-hidden="true">
+        <div class="user-avis-modal__backdrop" data-close-avis-modal="avis-delete-modal"></div>
+        <div class="user-avis-modal__panel user-avis-modal__panel--confirm" role="alertdialog" aria-labelledby="avis-delete-modal-title" aria-modal="true">
+          <header class="user-avis-modal__header">
+            <span class="user-avis-modal__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M12 3L2 20h20L12 3z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                />
+                <path d="M12 9v5M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </span>
+            <h2 id="avis-delete-modal-title">Supprimer mon avis</h2>
+          </header>
+          <p class="user-avis-modal__text">Voulez-vous vraiment supprimer ton avis ?</p>
+          <p class="user-avis-modal__hint muted">Cette action est définitive.</p>
+          <div class="user-avis-modal__footer">
+            <button type="button" class="btn btn-outline" data-close-avis-modal="avis-delete-modal">Annuler</button>
+            <button type="button" id="btn-avis-delete-confirm" class="btn btn-danger">Supprimer</button>
+          </div>
+        </div>
+      </div>
     </main>
 
     <script src="../../shared/js/api.js"></script>

@@ -439,14 +439,6 @@ const UserAccountMenu = (() => {
           </a>`
               : ""
           }
-          ${
-            forgotUrl
-              ? `<a href="${escapeHtml(forgotUrl)}" class="user-account-menu-item" role="menuitem">
-            ${ICON.key}
-            <span>Mot de passe oublié</span>
-          </a>`
-              : ""
-          }
           <div class="user-account-menu-divider"></div>
           <button type="button" class="user-account-menu-item user-account-menu-item--danger" data-action="logout" role="menuitem">
             ${ICON.logout}

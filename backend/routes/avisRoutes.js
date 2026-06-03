@@ -1,8 +1,31 @@
 const express = require("express");
 const pool = require("../config/db");
-const { authRequired, requireRole } = require("../middleware/authMiddleware");
+const { authRequired, optionalAuth, requireRole } = require("../middleware/authMiddleware");
 const { getPublicPharmacySql } = require("../utils/publicPharmacy");
+const { getPharmacySchema } = require("../utils/pharmacySchema");
 const { notifyPharmacienNewAvis } = require("../utils/pharmaNotificationService");
+const { createNotification } = require("../utils/notificationHelper");
+
+async function getPharmacyName(pharmacyId) {
+  const [rows] = await pool.query(`SELECT nom FROM pharmacies WHERE id = ?`, [pharmacyId]);
+  return rows[0]?.nom || "cette pharmacie";
+}
+
+async function notifyUserAvisAction(userId, pharmacyId, { titre, message }) {
+  const payload = {
+    userId,
+    type: "AVIS",
+    titre,
+    message,
+    lien: `/Utilisateur/html/pharmacieDetail.html?id=${pharmacyId}`,
+  };
+  try {
+    return await createNotification(payload);
+  } catch (err) {
+    console.error("Notification avis (type AVIS):", err.message);
+    return await createNotification({ ...payload, type: "INFO" });
+  }
+}
 
 const router = express.Router();
 
@@ -14,35 +37,56 @@ async function pharmacyIsPublic(pharmacyId) {
   return rows.length > 0;
 }
 
-router.get("/pharmacie/:id", async (req, res) => {
+/** Avis visibles uniquement pour les pharmacies validées (fiche publique + statut admin si présent). */
+async function canReadPharmacyAvis(pharmacyId) {
+  if (!(await pharmacyIsPublic(pharmacyId))) return false;
+  const s = getPharmacySchema();
+  if (!s.hasStatutAdmin) return true;
+  const [rows] = await pool.query(
+    `SELECT id FROM pharmacies WHERE id = ? AND statut_admin = 'valide'`,
+    [pharmacyId]
+  );
+  return rows.length > 0;
+}
+
+async function queryAvisPharmacieList(pharmacyId) {
+  const [stats] = await pool.query(
+    `SELECT ROUND(AVG(note), 1) AS note_moyenne, COUNT(*) AS nb_avis
+     FROM avis_pharmacie WHERE id_pharmacie = ?`,
+    [pharmacyId]
+  );
+  const [avis] = await pool.query(
+    `SELECT a.id, a.note, a.commentaire, a.date_creation, u.nom AS nom_utilisateur
+     FROM avis_pharmacie a
+     INNER JOIN utilisateurs u ON u.id = a.id_utilisateur
+     WHERE a.id_pharmacie = ?
+     ORDER BY a.date_creation DESC`,
+    [pharmacyId]
+  );
+  return {
+    note_moyenne: stats[0]?.note_moyenne ?? null,
+    nb_avis: Number(stats[0]?.nb_avis) || 0,
+    avis,
+  };
+}
+
+router.get("/pharmacie/:id", optionalAuth, async (req, res) => {
   if (!/^\d+$/.test(String(req.params.id))) {
     return res.status(400).json({ error: "Identifiant invalide" });
   }
   try {
-    if (!(await pharmacyIsPublic(req.params.id))) {
+    if (!(await canReadPharmacyAvis(req.params.id))) {
       return res.status(404).json({ error: "Pharmacie introuvable" });
     }
 
-    const [stats] = await pool.query(
-      `SELECT ROUND(AVG(note), 1) AS note_moyenne, COUNT(*) AS nb_avis
-       FROM avis_pharmacie WHERE id_pharmacie = ?`,
-      [req.params.id]
-    );
-
-    const [avis] = await pool.query(
-      `SELECT a.id, a.note, a.commentaire, a.date_creation, u.nom AS nom_utilisateur
-       FROM avis_pharmacie a
-       INNER JOIN utilisateurs u ON u.id = a.id_utilisateur
-       WHERE a.id_pharmacie = ?
-       ORDER BY a.date_creation DESC`,
-      [req.params.id]
-    );
-
-    res.json({
-      note_moyenne: stats[0].note_moyenne,
-      nb_avis: stats[0].nb_avis,
-      avis,
-    });
+    try {
+      res.json(await queryAvisPharmacieList(req.params.id));
+    } catch (err) {
+      if (err.code === "ER_NO_SUCH_TABLE") {
+        return res.json({ note_moyenne: null, nb_avis: 0, avis: [] });
+      }
+      throw err;
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });
@@ -78,7 +122,7 @@ router.post("/pharmacie/:id", authRequired, requireRole("UTILISATEUR"), async (r
   }
 
   try {
-    if (!(await pharmacyIsPublic(req.params.id))) {
+    if (!(await canReadPharmacyAvis(req.params.id))) {
       return res.status(404).json({ error: "Pharmacie introuvable" });
     }
 
@@ -95,6 +139,8 @@ router.post("/pharmacie/:id", authRequired, requireRole("UTILISATEUR"), async (r
       [req.user.id, req.params.id, n, commentaire || null]
     );
 
+    const nom = await getPharmacyName(req.params.id);
+
     try {
       await notifyPharmacienNewAvis(req.params.id, {
         note: n,
@@ -102,10 +148,98 @@ router.post("/pharmacie/:id", authRequired, requireRole("UTILISATEUR"), async (r
         isUpdate,
       });
     } catch (notifErr) {
-      console.error("Notification avis:", notifErr.message);
+      console.error("Notification avis pharmacien:", notifErr.message);
     }
 
-    res.json({ success: true, note: n, commentaire: commentaire || null });
+    const notificationId = await notifyUserAvisAction(req.user.id, req.params.id, {
+      titre: isUpdate ? "Avis modifié" : "Avis publié",
+      message: `${nom} — votre note ${n}/5 est enregistrée.`,
+    }).catch((notifErr) => {
+      console.error("Notification avis utilisateur:", notifErr.message);
+      return null;
+    });
+
+    res.json({
+      success: true,
+      note: n,
+      commentaire: commentaire || null,
+      notificationId: notificationId || null,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+router.put("/pharmacie/:id/mine", authRequired, requireRole("UTILISATEUR"), async (req, res) => {
+  if (!/^\d+$/.test(String(req.params.id))) {
+    return res.status(400).json({ error: "Identifiant invalide" });
+  }
+
+  const { note, commentaire } = req.body;
+  const n = parseInt(note, 10);
+  if (!n || n < 1 || n > 5) {
+    return res.status(400).json({ error: "note entre 1 et 5 requise" });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE avis_pharmacie SET note = ?, commentaire = ?
+       WHERE id_pharmacie = ? AND id_utilisateur = ?`,
+      [n, commentaire || null, req.params.id, req.user.id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Avis introuvable" });
+    }
+
+    const nom = await getPharmacyName(req.params.id);
+
+    try {
+      await notifyPharmacienNewAvis(req.params.id, {
+        note: n,
+        commentaire: commentaire || null,
+        isUpdate: true,
+      });
+    } catch (notifErr) {
+      console.error("Notification avis pharmacien:", notifErr.message);
+    }
+
+    const notificationId = await notifyUserAvisAction(req.user.id, req.params.id, {
+      titre: "Avis modifié",
+      message: `${nom} — votre note ${n}/5 a été mise à jour.`,
+    }).catch((notifErr) => {
+      console.error("Notification avis utilisateur:", notifErr.message);
+      return null;
+    });
+
+    res.json({ success: true, note: n, commentaire: commentaire || null, notificationId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+router.delete("/pharmacie/:id/mine", authRequired, requireRole("UTILISATEUR"), async (req, res) => {
+  if (!/^\d+$/.test(String(req.params.id))) {
+    return res.status(400).json({ error: "Identifiant invalide" });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `DELETE FROM avis_pharmacie WHERE id_pharmacie = ? AND id_utilisateur = ?`,
+      [req.params.id, req.user.id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Avis introuvable" });
+    }
+
+    await pool
+      .query(`DELETE FROM notifications WHERE id_utilisateur = ? AND titre = 'Avis supprimé'`, [
+        req.user.id,
+      ])
+      .catch(() => {});
+
+    res.json({ success: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });

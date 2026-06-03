@@ -1,0 +1,946 @@
+/* ——— Détail pharmacie (espace pro) ——— */
+
+.pharma-detail-page {
+  background: linear-gradient(180deg, #f0f4f8 0%, #f8fafc 28%, #f1f5f9 100%);
+  min-height: 100vh;
+}
+
+.pharma-detail-main {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem;
+}
+
+.pd-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin: 0 0 1.15rem;
+  font-size: 0.88rem;
+}
+
+.pd-breadcrumb a {
+  color: #0d9488;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pd-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.pd-breadcrumb__sep {
+  color: #94a3b8;
+  user-select: none;
+}
+
+.pd-breadcrumb__current {
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Hero */
+.pd-hero {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(15, 118, 110, 0.12);
+  box-shadow:
+    0 4px 6px rgba(15, 118, 110, 0.04),
+    0 24px 48px rgba(15, 23, 42, 0.08);
+  margin-bottom: 1.25rem;
+}
+
+.pd-hero__media {
+  position: relative;
+  min-height: 200px;
+  max-height: 280px;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 45%, #14b8a6 100%);
+}
+
+.pd-hero__media img {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  max-height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+.pd-hero__media--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.pd-hero__media--placeholder svg {
+  width: 72px;
+  height: 72px;
+  opacity: 0.35;
+  color: #fff;
+}
+
+.pd-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.05) 0%,
+    rgba(15, 23, 42, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+.pd-hero__body {
+  position: relative;
+  z-index: 1;
+  padding: 1.35rem 1.5rem 1.5rem;
+  margin-top: -2.5rem;
+  background: #fff;
+  border-radius: 22px 22px 0 0;
+}
+
+.pd-hero__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pd-hero__title-block {
+  flex: 1;
+  min-width: min(100%, 16rem);
+}
+
+.pd-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
+  padding: 0.28rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f766e;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 999px;
+}
+
+.pd-hero h1 {
+  margin: 0 0 0.65rem;
+  font-size: clamp(1.45rem, 4vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: #0f172a;
+}
+
+.pd-hero__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.pd-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.pd-hero__stock-link {
+  white-space: nowrap;
+}
+
+.pd-hero__garde-btn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  box-shadow: 0 8px 20px rgba(217, 119, 6, 0.25);
+}
+
+.pd-hero__garde-btn.is-active {
+  background: #fff !important;
+  color: #b45309 !important;
+  border: 2px solid #fbbf24 !important;
+}
+
+.pd-hero .btn-outline {
+  color: #0f766e;
+  border-color: #0d9488;
+  background: #fff;
+}
+
+.pd-hero .btn-outline:hover {
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.pd-hero__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pd-hero__toolbar .btn {
+  font-weight: 600;
+}
+
+/* Status tiles */
+.pd-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.pd-status-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.05rem;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pd-status-tile:hover {
+  border-color: #99f6e4;
+  box-shadow: 0 6px 20px rgba(15, 118, 110, 0.08);
+}
+
+.pd-status-tile__icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f0fdfa;
+  color: #0d9488;
+}
+
+.pd-status-tile--garde .pd-status-tile__icon {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.pd-status-tile--closed .pd-status-tile__icon {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.pd-status-tile--pending .pd-status-tile__icon {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.pd-status-tile__label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.pd-status-tile__value {
+  margin: 0.15rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.pd-status-tile__hint {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+/* Stats */
+.pd-stats {
+  margin-bottom: 1.25rem;
+}
+
+.pd-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.pd-section-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.pd-section-head .muted {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.pd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.85rem;
+}
+
+.pd-stats-grid .stat-card {
+  border-radius: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pd-stats-grid .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.pd-stats-grid .stat-card--rating .stat-value {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Info cards */
+.pd-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.35rem;
+}
+
+.pd-info-card {
+  display: flex;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.pd-info-card__icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f0fdfa, #ccfbf1);
+  color: #0f766e;
+}
+
+.pd-info-card__label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.pd-info-card__value {
+  margin: 0.25rem 0 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.pd-info-card--wide {
+  grid-column: 1 / -1;
+}
+
+.pd-gps {
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Stock section — boutons outline lisibles sur fond clair (pas le style header blanc) */
+.pd-stock .btn-outline,
+.pd-stock__card .btn-outline {
+  color: #0f766e;
+  border-color: #0d9488;
+  background: #fff;
+}
+
+.pd-stock .btn-outline:hover,
+.pd-stock__card .btn-outline:hover {
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.pd-stock .btn-outline:disabled,
+.pd-stock__card .btn-outline:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pd-stock__header-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  width: 100%;
+}
+
+.pd-stock__header-top h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.pd-stock__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.pd-stock__legend {
+  margin: 0.4rem 0 0.55rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.pd-stock-filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.pd-stock-filters-bar .pharma-filters {
+  margin-bottom: 0;
+  flex: 1 1 auto;
+}
+
+.pd-stock-filters-bar .btn-toggle-stock-list {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.btn-toggle-stock-list.is-collapsed {
+  background: #f0fdfa !important;
+  border-color: #14b8a6 !important;
+  color: #0f766e !important;
+}
+
+#pd-stock-meds-panel.hidden {
+  display: none;
+}
+
+.pd-stock {
+  margin-top: 1.5rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.pd-stock__card {
+  background: #fff;
+  border-radius: 22px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.pd-stock__header {
+  padding: 1.35rem 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f0fdfa 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.pd-stock-search {
+  margin-bottom: 1rem;
+}
+
+.pd-stock-search__label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 0.4rem;
+}
+
+.pd-stock-search__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  position: relative;
+}
+
+.pd-stock-search__icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pd-stock-search__input {
+  flex: 1;
+  min-width: min(100%, 14rem);
+  padding: 0.65rem 0.85rem 0.65rem 2.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 1rem;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pd-stock-search__input:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+}
+
+.pd-import-template-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+}
+
+.pd-import-file-label input[type="file"] {
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+  max-width: 100%;
+}
+
+.pd-import-status {
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
+}
+
+.pd-import-preview {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 0.88rem;
+}
+
+.pd-import-preview ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.pd-import-preview li {
+  margin: 0.2rem 0;
+}
+
+.stock-status-toggle {
+  display: inline-flex;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+}
+
+.stock-status-btn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.stock-status-btn:hover:not(.is-active) {
+  background: #f1f5f9;
+}
+
+.stock-status-btn--dispo.is-active {
+  background: #0d9488;
+  color: #fff;
+}
+
+.stock-status-btn--rupture.is-active {
+  background: #fef2f2;
+  color: #b91c1c;
+  box-shadow: inset 0 0 0 1px #fecaca;
+}
+
+.pd-stock .stock-item-actions {
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: auto;
+}
+
+.pd-stock .stock-item-actions__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.pd-stock .stock-item-edit-btn {
+  min-height: 2.15rem;
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+  white-space: nowrap;
+}
+
+.pd-stock__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.pd-stock__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.pd-stock__chip--dispo {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+.pd-stock__chip--rupture {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.pd-stock__body {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+
+.pd-stock .pharma-list-count {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+}
+
+.pd-stock .stock-items {
+  gap: 0.65rem;
+}
+
+.pd-stock .stock-item {
+  border-radius: 14px;
+  padding: 1rem 1.15rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  border-left: 4px solid #14b8a6;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.pd-stock .stock-item:hover {
+  box-shadow: 0 6px 20px rgba(15, 118, 110, 0.1);
+}
+
+.pd-stock .stock-item.stock-rupture {
+  border-left-color: #f87171;
+  background: #fffbfb;
+}
+
+.pd-stock .stock-item-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.pd-stock .stock-item-meta strong {
+  color: #0f766e;
+}
+
+.pd-stock-empty {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  color: #64748b;
+}
+
+/* Avis clients */
+.pd-avis {
+  margin-top: 1.5rem;
+}
+
+.pd-avis__card {
+  background: #fff;
+  border-radius: 22px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.pd-avis__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.35rem 1.5rem;
+  background: linear-gradient(135deg, #faf5ff 0%, #f8fafc 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.pd-avis__header h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.pd-avis-summary {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.pd-avis__score {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  padding: 0.5rem 0.85rem;
+  background: #fff;
+  border: 1px solid #e9d5ff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
+}
+
+.pd-avis__score-value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #7c3aed;
+  line-height: 1;
+}
+
+.pd-avis__score-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.pd-avis-list {
+  padding: 1.15rem 1.5rem 1.5rem;
+}
+
+.pd-avis-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pd-avis-card {
+  padding: 1rem 1.1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.pd-avis-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.pd-avis-card__name {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.pd-avis-card__stars {
+  color: #f59e0b;
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+}
+
+.pd-avis-card__text {
+  margin: 0 0 0.45rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.pd-avis-card__text--empty {
+  font-style: italic;
+}
+
+.pd-avis-card__date {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.pd-avis-empty {
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+
+.pd-stock-empty__icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.7;
+}
+
+.pd-loading {
+  padding: 2rem;
+  text-align: center;
+}
+
+.pd-error {
+  padding: 1.5rem;
+  border-radius: 14px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+@media (max-width: 640px) {
+  .pharma-detail-main {
+    padding: 1rem 0.85rem 2.5rem;
+  }
+
+  .pd-hero__body {
+    padding: 1.1rem 1.1rem 1.25rem;
+    margin-top: -1.75rem;
+  }
+
+  .pd-hero__top {
+    flex-direction: column;
+  }
+
+  .pd-hero__actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pd-hero__stock-link,
+  .pd-hero__garde-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pd-hero__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pd-hero__toolbar .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pd-stock__header {
+    padding: 1.1rem 1.15rem;
+  }
+
+  .pd-stock__body {
+    padding: 1rem 1.15rem 1.25rem;
+  }
+
+  .pd-stock__header-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pd-stock__toolbar {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pd-stock__toolbar .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pd-stock-filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pd-stock-filters-bar .btn-toggle-stock-list {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .pd-stock .stock-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pd-stock .stock-item-actions {
+    width: 100%;
+    margin-left: 0;
+    align-self: stretch;
+  }
+
+  .pd-stock .stock-item-actions__tools {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .pd-stock .stock-status-toggle {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pd-stock .stock-status-btn {
+    flex: 1;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .pd-stock .stock-item-edit-btn {
+    flex-shrink: 0;
+  }
+}

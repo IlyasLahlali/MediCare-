@@ -278,6 +278,12 @@
   font-size: 1.1rem;
 }
 
+.notif-item-icon-svg {
+  width: 1.28rem;
+  height: 1.28rem;
+  display: block;
+}
+
 .notif-item-icon.type-system {
   background: #ede9fe;
   color: #6d28d9;
@@ -291,8 +297,9 @@
   color: #1d4ed8;
 }
 .notif-item-icon.type-favori {
-  background: #fce7f3;
-  color: #be185d;
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #99f6e4;
 }
 .notif-item-icon.type-alert {
   background: #fee2e2;
@@ -303,8 +310,9 @@
   color: #0369a1;
 }
 .notif-item-icon.type-avis {
-  background: #fef9c3;
-  color: #a16207;
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
 }
 .notif-item-icon.type-stats {
   background: #d1fae5;
@@ -346,6 +354,14 @@
   margin-top: 0.35rem;
   font-size: 0.72rem;
   color: #94a3b8;
+}
+
+.notif-item--has-link {
+  cursor: pointer;
+}
+
+.notif-item--has-link:hover {
+  border-color: #99f6e4;
 }
 
 .notif-item-dot {
@@ -420,11 +436,13 @@
   border-radius: 8px;
 }
 
-/* Toasts */
+/* Toasts — sous la barre du haut, près de la cloche */
 .notif-toast-stack {
   position: fixed;
-  bottom: 1.25rem;
-  left: 1.25rem;
+  top: 4.75rem;
+  right: 1rem;
+  left: auto;
+  bottom: auto;
   z-index: 300;
   display: flex;
   flex-direction: column;
@@ -456,11 +474,25 @@
 @keyframes notif-toast-in {
   from {
     opacity: 0;
-    transform: translateX(-12px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
+  }
+}
+
+.notif-toast.type-avis {
+  border-left-color: #f59e0b;
+}
+
+@media (max-width: 640px) {
+  .notif-toast-stack {
+    top: auto;
+    bottom: 1rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    max-width: none;
   }
 }
 

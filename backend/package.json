@@ -13,6 +13,7 @@
     "migrate:notifications": "node scripts/runMigrationNotifications.js",
     "migrate:quartier-ville": "node scripts/runMigrationQuartierVille.js",
     "migrate:google-auth": "node scripts/runMigrationGoogleAuth.js",
+    "migrate:stock": "node scripts/runMigrationStock.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

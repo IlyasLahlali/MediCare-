@@ -290,7 +290,7 @@ router.get("/public-stats", async (req, res) => {
     const [[medicamentsRow]] = await pool.query(
       `SELECT COUNT(DISTINCT m.id) AS n
        FROM medicaments m
-       INNER JOIN stock_pharmacie st ON st.id_medicament = m.id AND st.quantite > 0
+       INNER JOIN stock_pharmacie st ON st.id_medicament = m.id AND st.disponible = 1
        INNER JOIN pharmacies p ON p.id = st.id_pharmacie
        WHERE ${publicWhere}`
     );

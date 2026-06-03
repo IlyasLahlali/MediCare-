@@ -51,6 +51,17 @@ async function ensureNotificationsSchema() {
     `);
   }
 
+  try {
+    const [del] = await pool.query(`DELETE FROM notifications WHERE titre = 'Avis supprimé'`);
+    if (del.affectedRows > 0) {
+      console.log(
+        `Notifications : ${del.affectedRows} entrée(s) « Avis supprimé » supprimée(s) de la base.`
+      );
+    }
+  } catch (err) {
+    if (err.code !== "ER_NO_SUCH_TABLE") console.warn("cleanup Avis supprimé:", err.message);
+  }
+
   ensured = true;
   return true;
 }

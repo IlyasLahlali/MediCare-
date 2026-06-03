@@ -3,17 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Détail pharmacie — Pharmacien</title>
+    <title>Détail pharmacie — MediCare+ Pro</title>
     <link rel="stylesheet" href="../../shared/css/base.css" />
-<link rel="stylesheet" href="../../shared/css/notifications.css" />
+    <link rel="stylesheet" href="../../shared/css/notifications.css" />
     <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/pharmacieDetail.css?v=24" />
   </head>
-  <body>
-    <header class="site-header">
+  <body class="pharma-detail-page">
+    <header class="site-header pharma-dashboard-header">
       <div class="inner">
         <a href="Dashboard.html" class="logo">MediCare+ Pro</a>
         <div class="header-actions pharma-header-actions">
-          <span id="pharma-name"></span>
+          <span id="pharma-name" class="pharma-header-name"></span>
           <div id="notif-center-mount" class="notif-center-mount"></div>
           <a href="pharmacie.html" class="btn btn-outline">Pharmacies</a>
           <a href="ajouterPharmacie.html" class="btn btn-outline">+ Pharmacie</a>
@@ -22,26 +23,103 @@
       </div>
     </header>
 
-    <main class="container">
-      <div id="pharmacy-detail"><p class="muted">Chargement…</p></div>
+    <main class="pharma-detail-main">
+      <nav class="pd-breadcrumb" aria-label="Fil d'Ariane">
+        <a href="Dashboard.html">Tableau de bord</a>
+        <span class="pd-breadcrumb__sep" aria-hidden="true">›</span>
+        <a href="pharmacie.html">Mes pharmacies</a>
+        <span class="pd-breadcrumb__sep" aria-hidden="true">›</span>
+        <span class="pd-breadcrumb__current" id="pd-breadcrumb-name">Détail</span>
+      </nav>
 
-      <section class="card stock-section" style="margin-top: 1rem">
-        <div class="section-header">
-          <h2>Stock médicaments</h2>
-          <button type="button" id="btn-add-stock" class="btn btn-teal btn-small">Ajouter un médicament</button>
-        </div>
-        <p class="muted stock-section-hint">
-          Ajouter = visible pour les clients (<strong>Disponible</strong>). Utilisez
-          <strong>Rupture</strong> si le produit n’est plus en vente — pas besoin de changer la quantité à chaque vente.
-        </p>
+      <div id="pharmacy-detail">
+        <p class="muted pd-loading">Chargement de la pharmacie…</p>
+      </div>
 
-        <div id="stock-filters" class="pharma-filters hidden" role="tablist" aria-label="Filtrer le stock">
-          <button type="button" class="pharma-filter-btn active" data-stock-statut="">Tous</button>
-          <button type="button" class="pharma-filter-btn" data-stock-statut="disponible">Disponibles</button>
-          <button type="button" class="pharma-filter-btn" data-stock-statut="rupture">Rupturés</button>
+      <section class="pd-stock" id="pd-stock-section" aria-labelledby="pd-stock-title">
+        <div class="pd-stock__card">
+          <header class="pd-stock__header">
+            <div class="pd-stock__header-top">
+              <h2 id="pd-stock-title">Stock médicaments</h2>
+              <div class="pd-stock__toolbar">
+                <button type="button" id="btn-reimport-stock" class="btn btn-outline btn-small">
+                  Importer une liste
+                </button>
+                <button type="button" id="btn-add-stock" class="btn btn-teal btn-small">
+                  + Ajouter un médicament
+                </button>
+              </div>
+            </div>
+            <p class="muted pd-stock__legend">
+              <strong>Disponible</strong> = visible pour les clients.
+              <strong>Rupture</strong> = masqué sans retirer le produit.
+            </p>
+            <div class="pd-stock__summary" id="pd-stock-summary" hidden>
+              <span class="pd-stock__chip pd-stock__chip--dispo" id="pd-chip-dispo">0 disponible</span>
+              <span class="pd-stock__chip pd-stock__chip--rupture" id="pd-chip-rupture">0 en rupture</span>
+            </div>
+          </header>
+
+          <div class="pd-stock__body">
+            <div id="stock-filters-bar" class="pd-stock-filters-bar hidden" role="toolbar" aria-label="Filtres et affichage du stock">
+              <div id="stock-filters" class="pharma-filters" role="tablist" aria-label="Filtrer le stock">
+                <button type="button" class="pharma-filter-btn active" data-stock-statut="">Tous</button>
+                <button type="button" class="pharma-filter-btn" data-stock-statut="disponible">Disponibles</button>
+                <button type="button" class="pharma-filter-btn" data-stock-statut="rupture">En rupture</button>
+              </div>
+              <button
+                type="button"
+                id="btn-toggle-stock-list"
+                class="btn btn-outline btn-small btn-toggle-stock-list"
+                aria-expanded="true"
+                aria-controls="pd-stock-meds-panel"
+              >
+                Masquer la liste
+              </button>
+            </div>
+            <div id="pd-stock-meds-panel">
+            <div id="stock-search-wrap" class="pd-stock-search hidden">
+              <label class="pd-stock-search__label" for="stock-search-q">Rechercher un médicament</label>
+              <div class="pd-stock-search__row">
+                <span class="pd-stock-search__icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M20 20l-3.5-3.5" />
+                  </svg>
+                </span>
+                <input
+                  type="search"
+                  id="stock-search-q"
+                  class="pd-stock-search__input"
+                  placeholder="Ex. Doliprane, Amoxicilline…"
+                  autocomplete="off"
+                />
+                <button type="button" id="stock-search-clear" class="btn btn-outline btn-small hidden">Effacer</button>
+              </div>
+            </div>
+            <p id="stock-count" class="pharma-list-count muted"></p>
+            <div id="stock-list"></div>
+            </div>
+          </div>
         </div>
-        <p id="stock-count" class="pharma-list-count muted"></p>
-        <div id="stock-list"></div>
+      </section>
+
+      <section class="pd-avis hidden" id="pd-avis-section" aria-labelledby="pd-avis-title">
+        <div class="pd-avis__card">
+          <header class="pd-avis__header">
+            <div>
+              <h2 id="pd-avis-title">Avis clients</h2>
+              <p id="pd-avis-summary" class="muted pd-avis-summary">Chargement…</p>
+            </div>
+            <div class="pd-avis__score" id="pd-avis-score" hidden aria-hidden="true">
+              <span class="pd-avis__score-value" id="pd-avis-score-value">—</span>
+              <span class="pd-avis__score-label">/ 5</span>
+            </div>
+          </header>
+          <div id="pd-avis-list" class="pd-avis-list">
+            <p class="muted">Chargement des avis…</p>
+          </div>
+        </div>
       </section>
     </main>
 
@@ -84,21 +162,59 @@
     </div>
 
     <div id="modal-add-stock" class="pharma-modal hidden">
-      <div class="pharma-modal-panel wide">
+      <div class="pharma-modal-panel">
         <header>
           <h2>Ajouter un médicament</h2>
           <button type="button" class="btn btn-small btn-outline" data-close-modal="modal-add-stock">✕</button>
         </header>
         <form id="form-add-stock">
-          <label>Nom du médicament <input type="text" name="nom" required /></label>
-          <label>Description <textarea name="description" rows="2"></textarea></label>
-          <label>Prix (DH) <input type="number" step="0.01" name="prix" /></label>
-          <p class="muted">Le médicament sera affiché comme <strong>Disponible</strong> pour les utilisateurs.</p>
+          <label>Nom du médicament
+            <input type="text" name="nom" required minlength="2" placeholder="Ex. Doliprane 1000mg" autocomplete="off" />
+          </label>
+          <label>Prix (DH)
+            <input type="number" name="prix" step="0.01" min="0" placeholder="Optionnel" />
+          </label>
+          <p class="muted">Ajouté comme <strong>Disponible</strong> pour les clients.</p>
           <div class="pharma-modal-footer">
             <button type="button" class="btn btn-outline" data-close-modal="modal-add-stock">Annuler</button>
             <button type="submit" class="btn btn-teal">Ajouter</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <div id="modal-import-stock" class="pharma-modal hidden">
+      <div class="pharma-modal-panel wide">
+        <header>
+          <h2 id="modal-import-stock-title">Importer une nouvelle liste</h2>
+          <button type="button" class="btn btn-small btn-outline" data-close-modal="modal-import-stock">✕</button>
+        </header>
+        <p class="muted">
+          Fichier <strong>Excel</strong> (.xlsx), CSV ou TXT — colonnes <code>nom</code> et <code>prix</code> (1ʳᵉ feuille).
+        </p>
+        <p class="muted" id="modal-import-stock-hint"></p>
+        <p class="pd-import-template-btns">
+          <button type="button" id="btn-download-stock-template" class="btn btn-outline btn-small">Modèle CSV</button>
+          <button type="button" id="btn-download-stock-template-xlsx" class="btn btn-outline btn-small">Modèle Excel</button>
+        </p>
+        <label class="pd-import-file-label">
+          Choisir un fichier
+          <input
+            type="file"
+            id="import-stock-file"
+            accept=".csv,.txt,.xlsx,.xls,.xlsm,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+          />
+        </label>
+        <label>ou collez votre liste
+          <textarea id="import-stock-paste" rows="6" placeholder="Doliprane 1000mg;25&#10;Amoxicilline 500mg;45&#10;Efferalgan"></textarea>
+        </label>
+        <p id="import-stock-status" class="muted pd-import-status hidden" aria-live="polite"></p>
+        <div id="import-stock-preview" class="pd-import-preview hidden" aria-live="polite"></div>
+        <p id="import-stock-error" class="error hidden"></p>
+        <div class="pharma-modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="modal-import-stock">Annuler</button>
+          <button type="button" id="btn-confirm-import-stock" class="btn btn-teal" disabled>Importer</button>
+        </div>
       </div>
     </div>
 
@@ -112,24 +228,12 @@
       </div>
     </div>
 
-    <div id="modal-delete-stock" class="pharma-modal hidden">
-      <div class="pharma-modal-panel">
-        <header>
-          <h2>Retirer du stock</h2>
-          <button type="button" class="btn btn-small btn-outline" data-close-modal="modal-delete-stock">✕</button>
-        </header>
-        <p id="delete-stock-text"></p>
-        <div class="pharma-modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal="modal-delete-stock">Annuler</button>
-          <button type="button" id="confirm-delete-stock" class="btn btn-primary" style="background: #dc2626">Supprimer</button>
-        </div>
-      </div>
-    </div>
-<script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/api.js?v=25"></script>
     <script src="../../shared/js/common.js"></script>
     <script src="../../shared/js/pharmaAuth.js"></script>
     <script src="../../shared/js/notifications.js"></script>
     <script src="../../shared/js/gardePharma.js"></script>
-    <script src="../js/pharmacieDetail.js"></script>
+    <script src="../../shared/vendor/xlsx.full.min.js"></script>
+    <script src="../js/pharmacieDetail.js?v=26"></script>
   </body>
 </html>

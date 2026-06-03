@@ -3,18 +3,19 @@ const pool = require("../config/db");
 const { getPublicPharmacySql } = require("../utils/publicPharmacy");
 const { incrementStat } = require("../utils/trackStat");
 const { fuzzyPrefix, rankMedicamentRows } = require("../utils/medSearchFuzzy");
+const { stockDisponibleSql } = require("../utils/ensureStockPharmacieSchema");
 
 const router = express.Router();
 
-const SELECT_STOCK = `SELECT m.id, m.nom, m.description, m.prix,
-             p.id AS id_pharmacie, p.nom AS nom_pharmacie, p.adresse,
-             s.quantite`;
+const SELECT_STOCK = `SELECT m.id, m.nom, m.description,
+             COALESCE(s.prix, m.prix) AS prix,
+             p.id AS id_pharmacie, p.nom AS nom_pharmacie, p.adresse`;
 
 /** Appelé uniquement pendant une requête HTTP (schéma déjà chargé par server.js). */
 function fromStockSql() {
   return `
       FROM medicaments m
-      INNER JOIN stock_pharmacie s ON s.id_medicament = m.id AND s.quantite > 0
+      INNER JOIN stock_pharmacie s ON s.id_medicament = m.id AND ${stockDisponibleSql("s")}
       INNER JOIN pharmacies p ON p.id = s.id_pharmacie
       WHERE ${getPublicPharmacySql()}`;
 }

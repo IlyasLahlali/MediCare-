@@ -150,7 +150,7 @@ router.get("/pharmacies/:id", async (req, res) => {
     let stock = [];
     try {
       const [stockRows] = await pool.query(
-        `SELECT s.id, s.quantite, m.nom, m.description, m.prix
+        `SELECT s.id, s.prix, s.disponible, m.nom, m.description
          FROM stock_pharmacie s
          INNER JOIN medicaments m ON m.id = s.id_medicament
          WHERE s.id_pharmacie = ?

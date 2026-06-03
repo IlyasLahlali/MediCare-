@@ -43,7 +43,8 @@ async function apiFetch(path, options = {}) {
           "Base de données indisponible — vérifiez MySQL et backend/.env"
       );
     }
-    throw new Error(data.error || `Erreur ${res.status}`);
+    const errMsg = data.error || `Erreur ${res.status}`;
+    throw new Error(data.detail ? `${errMsg} — ${data.detail}` : errMsg);
   }
   return data;
 }
@@ -153,6 +154,13 @@ window.MediCareAPI = {
       method: "POST",
       body: JSON.stringify({ note, commentaire }),
     }),
+  updateAvis: (pharmacyId, note, commentaire) =>
+    apiFetch(`/avis/pharmacie/${pharmacyId}/mine`, {
+      method: "PUT",
+      body: JSON.stringify({ note, commentaire }),
+    }),
+  deleteAvis: (pharmacyId) =>
+    apiFetch(`/avis/pharmacie/${pharmacyId}/mine`, { method: "DELETE" }),
 
   trackStat: (pharmacyId, type) =>
     apiFetch("/stats/track", {
@@ -180,10 +188,16 @@ window.MediCareAPI = {
     apiFetch(`/pharmacien/pharmacies/${id}`, { method: "DELETE" }),
 
   getPharmaStock: (pharmacyId) => apiFetch(`/pharmacien/pharmacies/${pharmacyId}/stock`),
+  getPharmaAvis: (pharmacyId) => apiFetch(`/avis/pharmacie/${pharmacyId}`),
   addPharmaStock: (pharmacyId, body) =>
     apiFetch(`/pharmacien/pharmacies/${pharmacyId}/stock`, {
       method: "POST",
       body: JSON.stringify(body),
+    }),
+  importPharmaStock: (pharmacyId, items) =>
+    apiFetch(`/pharmacien/pharmacies/${pharmacyId}/stock/import`, {
+      method: "POST",
+      body: JSON.stringify({ items }),
     }),
   updatePharmaStock: (stockId, body) =>
     apiFetch(`/pharmacien/stock/${stockId}`, { method: "PUT", body: JSON.stringify(body) }),

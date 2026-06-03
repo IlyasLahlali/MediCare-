@@ -16,6 +16,10 @@ const {
   syncGardeFlagsFromPlanning,
 } = require("../utils/gardeService");
 const { gardeEffectiveSelectSql } = require("../utils/gardePublicSql");
+const {
+  ensureStockPharmacieSchemaOnce,
+  queryPharmacienStockList,
+} = require("../utils/ensureStockPharmacieSchema");
 
 const router = express.Router();
 
@@ -378,21 +382,58 @@ router.get("/pharmacies/:id/stock", async (req, res) => {
   }
 
   try {
-    const [rows] = await pool.query(
-      `SELECT s.id, s.quantite, s.date_mise_a_jour,
-              m.id AS id_medicament, m.nom, m.description, m.prix
-       FROM stock_pharmacie s
-       INNER JOIN medicaments m ON m.id = s.id_medicament
-       WHERE s.id_pharmacie = ?
-       ORDER BY m.nom`,
-      [id]
-    );
+    const rows = await queryPharmacienStockList(id);
     res.json(rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
+    console.error("GET stock pharmacien:", err);
+    res.status(500).json({
+      error: "Erreur serveur",
+      detail: err.message,
+    });
   }
 });
+
+const STOCK_IMPORT_MAX = 500;
+
+function parseStockPrix(prix) {
+  if (prix === undefined || prix === null || String(prix).trim() === "") return null;
+  const n = Number(String(prix).trim().replace(",", "."));
+  if (!Number.isFinite(n) || n < 0) return null;
+  return Math.round(n * 100) / 100;
+}
+
+async function resolveMedicamentId(nom, { description } = {}) {
+  const name = String(nom || "").trim();
+  if (!name) return null;
+  const [existing] = await pool.query(`SELECT id FROM medicaments WHERE nom = ? LIMIT 1`, [name]);
+  if (existing.length) return existing[0].id;
+  const [ins] = await pool.query(
+    `INSERT INTO medicaments (nom, description, prix) VALUES (?, ?, NULL)`,
+    [name, description || null]
+  );
+  return ins.insertId;
+}
+
+async function upsertPharmacyStock(pharmacyId, { id_medicament, nom, description, prix, disponible }) {
+  let medId = id_medicament;
+  if (!medId && nom) {
+    medId = await resolveMedicamentId(nom, { description });
+  }
+  if (!medId) return { ok: false, error: "nom_invalide" };
+
+  const dispo = disponible === false ? 0 : 1;
+  const price = parseStockPrix(prix);
+  const [result] = await pool.query(
+    `INSERT INTO stock_pharmacie (id_pharmacie, id_medicament, prix, disponible)
+     VALUES (?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+       disponible = VALUES(disponible),
+       prix = IF(VALUES(prix) IS NOT NULL, VALUES(prix), prix)`,
+    [pharmacyId, medId, price, dispo]
+  );
+  const created = result.affectedRows === 1;
+  return { ok: true, created, disponible: dispo === 1 };
+}
 
 router.post("/pharmacies/:id/stock", async (req, res) => {
   const id = parseId(req.params.id);
@@ -401,38 +442,72 @@ router.post("/pharmacies/:id/stock", async (req, res) => {
     return res.status(404).json({ error: "Pharmacie introuvable" });
   }
 
-  const { id_medicament, nom, description, prix, quantite } = req.body;
-  let qty = parseInt(quantite, 10);
-  if (Number.isNaN(qty) || qty < 0) qty = 1;
-  if (qty === 0) qty = 1;
+  const { id_medicament, nom, description, prix, disponible } = req.body;
 
   try {
-    let medId = id_medicament;
-    if (!medId && nom) {
-      const [existing] = await pool.query(`SELECT id FROM medicaments WHERE nom = ? LIMIT 1`, [
-        nom.trim(),
-      ]);
-      if (existing.length) {
-        medId = existing[0].id;
-      } else {
-        const [ins] = await pool.query(
-          `INSERT INTO medicaments (nom, description, prix) VALUES (?, ?, ?)`,
-          [nom.trim(), description || null, prix ?? null]
-        );
-        medId = ins.insertId;
+    await ensureStockPharmacieSchemaOnce();
+    const row = await upsertPharmacyStock(id, {
+      id_medicament,
+      nom,
+      description,
+      prix,
+      disponible: disponible !== false,
+    });
+    if (!row.ok) return res.status(400).json({ error: "id_medicament ou nom requis" });
+    res.status(201).json({ success: true });
+  } catch (err) {
+    console.error("POST stock pharmacien:", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+router.post("/pharmacies/:id/stock/import", async (req, res) => {
+  const id = parseId(req.params.id);
+  if (!id) return res.status(400).json({ error: "Identifiant invalide" });
+  if (!(await getOwnedPharmacy(id, req.user.id))) {
+    return res.status(404).json({ error: "Pharmacie introuvable" });
+  }
+
+  const items = Array.isArray(req.body.items) ? req.body.items : [];
+  if (!items.length) {
+    return res.status(400).json({ error: "Liste vide — ajoutez au moins un nom de médicament" });
+  }
+  if (items.length > STOCK_IMPORT_MAX) {
+    return res.status(400).json({
+      error: `Maximum ${STOCK_IMPORT_MAX} médicaments par import`,
+    });
+  }
+
+  let imported = 0;
+  let skipped = 0;
+  const errors = [];
+
+  try {
+    await ensureStockPharmacieSchemaOnce();
+    for (let i = 0; i < items.length; i++) {
+      const raw = items[i];
+      const nom = String(raw?.nom ?? raw ?? "").trim();
+      if (nom.length < 2) {
+        skipped++;
+        continue;
+      }
+      const prix =
+        raw && typeof raw === "object" && raw.prix !== undefined ? raw.prix : undefined;
+
+      const row = await upsertPharmacyStock(id, { nom, disponible: true, prix });
+      if (row.ok) imported++;
+      else {
+        skipped++;
+        if (errors.length < 8) errors.push({ line: i + 1, nom, message: "Nom invalide" });
       }
     }
 
-    if (!medId) return res.status(400).json({ error: "id_medicament ou nom requis" });
-
-    await pool.query(
-      `INSERT INTO stock_pharmacie (id_pharmacie, id_medicament, quantite)
-       VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE quantite = VALUES(quantite)`,
-      [id, medId, qty]
-    );
-
-    res.status(201).json({ success: true });
+    res.status(201).json({
+      success: true,
+      imported,
+      skipped,
+      errors,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });
@@ -452,18 +527,29 @@ router.put("/stock/:stockId", async (req, res) => {
   );
   if (!rows.length) return res.status(404).json({ error: "Ligne stock introuvable" });
 
-  const { quantite, prix, nom, description } = req.body;
+  const { disponible, prix, nom, description } = req.body;
 
   try {
-    if (quantite !== undefined) {
-      const qty = parseInt(quantite, 10);
-      if (Number.isNaN(qty) || qty < 0) {
-        return res.status(400).json({ error: "quantite invalide" });
-      }
-      await pool.query(`UPDATE stock_pharmacie SET quantite = ? WHERE id = ?`, [qty, stockId]);
+    await ensureStockPharmacieSchemaOnce();
+    const stockUpdates = [];
+    const stockVals = [];
+
+    if (disponible !== undefined) {
+      stockUpdates.push("disponible = ?");
+      stockVals.push(disponible === false || disponible === 0 ? 0 : 1);
+    }
+    if (prix !== undefined) {
+      stockUpdates.push("prix = ?");
+      stockVals.push(parseStockPrix(prix));
+    }
+    if (stockUpdates.length) {
+      await pool.query(
+        `UPDATE stock_pharmacie SET ${stockUpdates.join(", ")} WHERE id = ?`,
+        [...stockVals, stockId]
+      );
     }
 
-    if (nom !== undefined || prix !== undefined || description !== undefined) {
+    if (nom !== undefined || description !== undefined) {
       const [stock] = await pool.query(
         `SELECT id_medicament FROM stock_pharmacie WHERE id = ?`,
         [stockId]
@@ -472,15 +558,11 @@ router.put("/stock/:stockId", async (req, res) => {
       const medVals = [];
       if (nom !== undefined) {
         medUpdates.push("nom = ?");
-        medVals.push(nom);
+        medVals.push(String(nom).trim());
       }
       if (description !== undefined) {
         medUpdates.push("description = ?");
         medVals.push(description);
-      }
-      if (prix !== undefined) {
-        medUpdates.push("prix = ?");
-        medVals.push(prix);
       }
       if (medUpdates.length) {
         await pool.query(

@@ -68,10 +68,12 @@ app.use(
 
 const { ensureNotificationsSchema } = require("./utils/ensureNotificationsSchema");
 const { ensureGoogleAuthSchema } = require("./utils/ensureGoogleAuthSchema");
+const { ensureStockPharmacieSchema } = require("./utils/ensureStockPharmacieSchema");
 
 loadPharmacySchema()
   .then(() => ensureNotificationsSchema())
   .then(() => ensureGoogleAuthSchema())
+  .then(() => ensureStockPharmacieSchema())
   .then(() =>
     syncGardeFlagsFromPlanning().catch((err) =>
       console.warn("Sync garde au démarrage:", err.message)

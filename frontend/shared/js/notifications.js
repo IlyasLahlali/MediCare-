@@ -7,14 +7,19 @@ const NotificationCenter = (() => {
     <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
   </svg>`;
 
+  const NOTIF_ICON_SVG = {
+    FAVORI: `<svg class="notif-item-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+    AVIS: `<svg class="notif-item-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h8M8 14h5"/></svg>`,
+  };
+
   const TYPE_META = {
     SYSTEM: { icon: "⚙️", label: "Système", class: "type-system" },
     GARDE: { icon: "🌙", label: "Garde", class: "type-garde" },
     STOCK: { icon: "💊", label: "Stock", class: "type-stock" },
-    FAVORI: { icon: "❤️", label: "Favoris", class: "type-favori" },
+    FAVORI: { iconHtml: NOTIF_ICON_SVG.FAVORI, label: "Favoris", class: "type-favori" },
     ALERT: { icon: "⚠️", label: "Alerte", class: "type-alert" },
     INFO: { icon: "ℹ️", label: "Info", class: "type-info" },
-    AVIS: { icon: "⭐", label: "Avis", class: "type-avis" },
+    AVIS: { iconHtml: NOTIF_ICON_SVG.AVIS, label: "Avis", class: "type-avis" },
     STATS: { icon: "📊", label: "Stats", class: "type-stats" },
   };
 
@@ -71,8 +76,8 @@ const NotificationCenter = (() => {
   function resolveLink(lien) {
     if (!lien) return null;
     if (lien.startsWith("http")) return lien;
-    const path = lien.startsWith("/") ? lien : `/${lien}`;
-    return pageUrl(path.replace(/^\//, ""));
+    const path = lien.startsWith("/") ? lien.slice(1) : String(lien).replace(/^\//, "");
+    return pageUrl(path);
   }
 
   function updateBadge(unread) {
@@ -203,9 +208,10 @@ const NotificationCenter = (() => {
   function renderItem(n) {
     const meta = TYPE_META[n.type] || TYPE_META.INFO;
     const unread = !Number(n.est_lu);
+    const hasLink = !!resolveLink(n.lien);
     return `
-      <article class="notif-item ${unread ? "is-unread" : ""}" data-id="${n.id}" role="button" tabindex="0">
-        <div class="notif-item-icon ${meta.class}" title="${meta.label}">${meta.icon}</div>
+      <article class="notif-item ${unread ? "is-unread" : ""}${hasLink ? " notif-item--has-link" : ""}" data-id="${n.id}" role="button" tabindex="0"${hasLink ? ' title="Ouvrir"' : ""}>
+        <div class="notif-item-icon ${meta.class}" title="${meta.label}">${meta.iconHtml || meta.icon || "ℹ️"}</div>
         <div class="notif-item-body">
           <p class="notif-item-title">${escapeHtml(n.titre)}</p>
           <p class="notif-item-msg">${escapeHtml(formatNotificationMessage(n.message))}</p>
@@ -394,7 +400,16 @@ const NotificationCenter = (() => {
     mount(selector);
   }
 
-  return { init, mount, open, close, refreshSummary, showToast, stopPolling };
+  /** Recharge le badge et la liste (après ajout d’avis, favori, etc.). */
+  async function refresh() {
+    if (state.mounted && els.list) {
+      await loadList();
+      return;
+    }
+    await refreshSummary();
+  }
+
+  return { init, mount, open, close, refreshSummary, refresh, showToast, stopPolling };
 })();
 
 window.NotificationCenter = NotificationCenter;

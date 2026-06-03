@@ -20,5 +20,5 @@ INSERT IGNORE INTO medicaments (nom, description, prix) VALUES
 ('Paracétamol 500mg', 'Antalgique', 25.00),
 ('Ibuprofène 400mg', 'Anti-inflammatoire', 35.00);
 
-INSERT IGNORE INTO stock_pharmacie (id_pharmacie, id_medicament, quantite)
-SELECT p.id, m.id, 50 FROM pharmacies p CROSS JOIN medicaments m WHERE p.nom = 'Pharmacie Al Amal';
+INSERT IGNORE INTO stock_pharmacie (id_pharmacie, id_medicament, prix, disponible)
+SELECT p.id, m.id, m.prix, 1 FROM pharmacies p CROSS JOIN medicaments m WHERE p.nom = 'Pharmacie Al Amal';

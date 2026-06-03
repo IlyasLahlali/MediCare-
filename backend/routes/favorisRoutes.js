@@ -5,7 +5,7 @@ const { getPublicPharmacySql } = require("../utils/publicPharmacy");
 const { gardePlanningSelectSql, gardeEffectiveSelectSql } = require("../utils/gardePublicSql");
 const { pharmacyEffectiveOpenSelectSql } = require("../utils/pharmacyHours");
 const { getPharmacySchema } = require("../utils/pharmacySchema");
-const { createNotification } = require("../utils/notificationHelper");
+const { createNotification, hasRecentNotification } = require("../utils/notificationHelper");
 
 const router = express.Router();
 
@@ -81,13 +81,17 @@ router.post("/:pharmacyId", async (req, res) => {
     const [info] = await pool.query(`SELECT nom FROM pharmacies WHERE id = ?`, [
       req.params.pharmacyId,
     ]);
-    await createNotification({
-      userId: req.user.id,
-      type: "FAVORI",
-      titre: "Ajouté aux favoris",
-      message: `${info[0]?.nom || "Pharmacie"} est dans vos favoris.`,
-      lien: `/Utilisateur/html/pharmacieDetail.html?id=${req.params.pharmacyId}`,
-    });
+    const favTitre = "Ajouté aux favoris";
+    const already = await hasRecentNotification(req.user.id, favTitre, 2);
+    if (!already) {
+      await createNotification({
+        userId: req.user.id,
+        type: "FAVORI",
+        titre: favTitre,
+        message: `${info[0]?.nom || "Pharmacie"} est dans vos favoris.`,
+        lien: `/Utilisateur/html/pharmacieDetail.html?id=${req.params.pharmacyId}`,
+      });
+    }
 
     res.json({ est_favori: true });
   } catch (err) {

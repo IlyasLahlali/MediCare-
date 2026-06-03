@@ -30,7 +30,7 @@ function adminRenderStock(stock, container) {
         (s) => `
       <div class="admin-chambre-card">
         <strong>${escapeHtml(s.nom)}</strong>
-        <span>Qté : ${s.quantite}</span>
+        <span>${s.disponible ? "Disponible" : "Rupture"}</span>
         <span>${s.prix != null ? `${s.prix} DH` : "—"}</span>
       </div>`
       )

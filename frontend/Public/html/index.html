@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MediCare+ — Pharmacies ouvertes près de vous</title>
-    <link rel="stylesheet" href="../../shared/css/base.css" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="/shared/css/base.css" />
+    <link rel="stylesheet" href="/shared/css/scrollHint.css?v=3" />
+    <link rel="stylesheet" href="/Public/css/style.css?v=15" />
   </head>
   <body class="public-home">
     <header class="site-header">
@@ -210,7 +211,70 @@
           <p class="muted public-stats__loading">Chargement des statistiques…</p>
         </div>
       </section>
+    </main>
 
+    <div class="public-pharma-invite-wrap">
+      <section class="public-pharma-invite" aria-labelledby="pharma-invite-title">
+        <div class="public-pharma-invite__card">
+          <div class="public-pharma-invite__glow" aria-hidden="true"></div>
+          <div class="public-pharma-invite__intro">
+            <p class="public-pharma-invite__badge">Espace pharmacien</p>
+            <h2 id="pharma-invite-title" class="public-pharma-invite__title">
+              Vous êtes pharmacien ?
+              <span class="public-pharma-invite__title-accent">Rejoignez MediCare+</span>
+            </h2>
+            <hr class="public-pharma-invite__divider" aria-hidden="true" />
+            <p class="public-pharma-invite__lead">
+              Inscrivez votre officine, mettez vos stocks et horaires à jour, et aidez les patients à vous
+              trouver — ouverture, garde et disponibilité des médicaments en temps réel.
+            </p>
+            <div class="public-pharma-invite__actions">
+              <a href="../../Pharmacien/html/register.html" class="public-pharma-invite__btn public-pharma-invite__btn--primary">
+                Créer un compte pharmacien
+              </a>
+              <a href="../../Pharmacien/html/login.html" class="public-pharma-invite__btn public-pharma-invite__btn--secondary">
+                J'ai déjà un compte
+              </a>
+            </div>
+            <p class="public-pharma-invite__note">
+              Inscription gratuite · validation de votre établissement par MediCare+
+            </p>
+          </div>
+          <ul class="public-pharma-invite__features" aria-label="Avantages pour les pharmaciens">
+            <li class="public-pharma-invite__feature">
+              <span class="public-pharma-invite__feature-icon" aria-hidden="true">🏥</span>
+              <div class="public-pharma-invite__feature-text">
+                <strong>Fiche pharmacie</strong>
+                <p>Adresse, contacts, horaires et position sur la carte.</p>
+              </div>
+            </li>
+            <li class="public-pharma-invite__feature">
+              <span class="public-pharma-invite__feature-icon" aria-hidden="true">💊</span>
+              <div class="public-pharma-invite__feature-text">
+                <strong>Gestion du stock</strong>
+                <p>Médicaments visibles dans la recherche publique des patients.</p>
+              </div>
+            </li>
+            <li class="public-pharma-invite__feature">
+              <span class="public-pharma-invite__feature-icon" aria-hidden="true">🌙</span>
+              <div class="public-pharma-invite__feature-text">
+                <strong>Pharmacie de garde</strong>
+                <p>Planning de garde et rappels pour votre officine.</p>
+              </div>
+            </li>
+            <li class="public-pharma-invite__feature">
+              <span class="public-pharma-invite__feature-icon" aria-hidden="true">📊</span>
+              <div class="public-pharma-invite__feature-text">
+                <strong>Tableau de bord</strong>
+                <p>Statistiques, notifications et suivi de l'activité.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <main class="container public-main">
       <section class="public-cta" aria-labelledby="cta-title">
         <h2 id="cta-title" class="public-cta__title">Besoin d'aide pour trouver une pharmacie ?</h2>
         <p class="public-cta__lead">

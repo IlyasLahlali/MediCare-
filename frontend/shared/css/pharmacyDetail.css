@@ -7,7 +7,12 @@
   overflow: hidden;
 }
 
-.pharmacy-card--enhanced.pharmacy-card-clickable:hover {
+.pharmacy-card--enhanced.pharmacy-card-clickable {
+  cursor: pointer;
+}
+
+.pharmacy-card--enhanced.pharmacy-card-clickable:hover,
+.pharmacy-card--enhanced.pharmacy-card-clickable:focus-within {
   transform: translateY(-6px);
   box-shadow: 0 18px 40px rgba(15, 118, 110, 0.2);
   border-color: #99f6e4;
@@ -20,7 +25,11 @@
 
 .pharmacy-card--enhanced .pharmacy-thumb,
 .pharmacy-card--enhanced .pharmacy-thumb-empty {
-  height: 180px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  min-height: 172px;
+  max-height: 228px;
 }
 
 .pharmacy-card--enhanced .pharmacy-card-media-overlay {
@@ -67,8 +76,11 @@
 }
 
 .pharmacy-card--enhanced .pharmacy-card-body {
-  padding: 1.1rem 1.2rem 1.2rem;
-  gap: 0.45rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0.95rem 1.3rem 1.1rem;
+  gap: 0.38rem;
 }
 
 .pharmacy-card--enhanced .pharmacy-card-head h3 {
@@ -83,16 +95,41 @@
   align-items: flex-start;
   gap: 0.45rem;
   margin: 0;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   color: #64748b;
-  line-height: 1.45;
+  line-height: 1.38;
 }
 
 .pharmacy-card--enhanced .pharmacy-card-meta-icon {
   flex-shrink: 0;
-  width: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  font-size: 0.8rem;
+  line-height: 1;
   text-align: center;
-  opacity: 0.9;
+  background: #f0fdfa;
+  border-radius: 8px;
+  filter: grayscale(0.15) saturate(0.85);
+}
+
+.pharmacy-card--enhanced .pharmacy-hours-label {
+  font-weight: 600;
+  color: #334155;
+  margin-right: 0.15rem;
+}
+
+.pharmacy-card--enhanced .pharmacy-card-tel {
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.pharmacy-card--enhanced .pharmacy-card-tel:hover {
+  color: #0f766e;
+  text-decoration: underline;
 }
 
 .pharmacy-card--enhanced .pharmacy-card-meta--garde {
@@ -101,28 +138,87 @@
 }
 
 .pharmacy-card--enhanced .pharmacy-card-actions {
-  padding-top: 0.75rem;
-  margin-top: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.55rem;
+  padding-top: 0.65rem;
+  margin-top: auto;
   border-top: 1px solid #f1f5f9;
 }
 
-.pharmacy-card--enhanced .pharmacy-card-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.92rem;
+.pharmacy-card--enhanced .pharmacy-card-detail-btn {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
   font-weight: 700;
-  color: #0f766e;
   text-decoration: none;
 }
 
-.pharmacy-card--enhanced .pharmacy-card-link:hover {
-  color: #0d9488;
+.pharmacy-card--enhanced .pharmacy-card-detail-btn:hover {
   text-decoration: none;
 }
 
+.pharmacy-card--enhanced .pharmacy-card-actions__btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.pharmacy-card--enhanced .pharmacy-card-btn {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.pharmacy-card--enhanced.pharmacy-card-with-img {
+  height: 100%;
+}
+
+/* Grille : largeur et hauteur homogènes selon l’écran */
 .pharmacy-list {
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .pharmacy-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1040px) {
+  .pharmacy-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Accueil / dashboard : 2 colonnes plus larges jusqu’à très grand écran */
+.pharmacy-nearby .pharmacy-list {
+  gap: 1.5rem;
+}
+
+@media (min-width: 600px) and (max-width: 1279px) {
+  .pharmacy-nearby .pharmacy-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .pharmacy-nearby .pharmacy-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 400px) {
+  .pharmacy-card--enhanced .pharmacy-card-actions__btns {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Page détail */

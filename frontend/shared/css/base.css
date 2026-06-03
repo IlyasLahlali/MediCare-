@@ -460,8 +460,15 @@ a:hover {
 
 .pharmacy-list {
   display: grid;
-  gap: 1.25rem;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 560px) {
+  .pharmacy-list {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
 }
 
 .pharmacy-card.pharmacy-card-with-img {
@@ -575,10 +582,6 @@ a:hover {
 }
 
 @media (max-width: 520px) {
-  .pharmacy-list {
-    grid-template-columns: 1fr;
-  }
-
   .pharmacy-thumb,
   .pharmacy-thumb-empty {
     height: 180px;

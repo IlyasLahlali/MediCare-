@@ -1,3 +1,6 @@
+@import url("../../shared/css/pharmacyDetail.css");
+@import url("../../shared/css/scrollHint.css");
+
 /* ——— Accueil public (hero + recherche unifiée) ——— */
 
 .public-home .site-header,
@@ -459,6 +462,235 @@
   }
 }
 
+/* ——— Invitation espace pharmacien (intro + CTA | liste verticale) ——— */
+
+.public-home .public-pharma-invite-wrap {
+  width: min(1180px, 92vw);
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  box-sizing: border-box;
+}
+
+.public-home .public-pharma-invite {
+  padding: 0.5rem 0 2.75rem;
+  width: 100%;
+}
+
+.public-home .public-pharma-invite__card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  gap: 1.75rem 2.25rem;
+  align-items: center;
+  padding: 2.25rem 2.5rem;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #0c4a6e 0%, #0f766e 38%, #14b8a6 72%, #2dd4bf 100%);
+  color: #fff;
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.06),
+    0 20px 48px rgba(13, 148, 136, 0.32);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.public-home .public-pharma-invite__glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 0% 0%, rgba(253, 224, 71, 0.14), transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.1), transparent 45%);
+  pointer-events: none;
+}
+
+.public-home .public-pharma-invite__intro,
+.public-home .public-pharma-invite__features {
+  position: relative;
+  z-index: 1;
+}
+
+.public-home .public-pharma-invite__intro {
+  min-width: 0;
+}
+
+.public-home .public-pharma-invite__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(253, 224, 71, 0.35);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fde047;
+}
+
+.public-home .public-pharma-invite__badge::before {
+  content: "💼";
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.public-home .public-pharma-invite__title {
+  margin: 0;
+  font-size: clamp(1.55rem, 3.2vw, 2.1rem);
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.public-home .public-pharma-invite__title-accent {
+  display: block;
+  margin-top: 0.25rem;
+  color: #fde047;
+}
+
+.public-home .public-pharma-invite__divider {
+  width: 3.5rem;
+  height: 3px;
+  margin: 1rem 0 1.1rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #fde047, rgba(253, 224, 71, 0.2));
+}
+
+.public-home .public-pharma-invite__lead {
+  margin: 0 0 1.5rem;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.92);
+  max-width: none;
+}
+
+.public-home .public-pharma-invite__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  max-width: 100%;
+}
+
+.public-home .public-pharma-invite__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  text-align: center;
+  min-width: 0;
+}
+
+.public-home .public-pharma-invite__btn--primary {
+  background: #fde047;
+  color: #0f172a !important;
+  box-shadow: 0 6px 22px rgba(253, 224, 71, 0.35);
+  border: none;
+}
+
+.public-home .public-pharma-invite__btn--primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(253, 224, 71, 0.45);
+}
+
+.public-home .public-pharma-invite__btn--secondary {
+  background: transparent;
+  color: #fff !important;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+}
+
+.public-home .public-pharma-invite__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.public-home .public-pharma-invite__note {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: rgba(236, 253, 245, 0.75);
+}
+
+.public-home .public-pharma-invite__features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.public-home .public-pharma-invite__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+}
+
+.public-home .public-pharma-invite__feature-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  font-size: 1.2rem;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+}
+
+.public-home .public-pharma-invite__feature-text {
+  min-width: 0;
+}
+
+.public-home .public-pharma-invite__feature-text strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.public-home .public-pharma-invite__feature-text p {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: rgba(236, 253, 245, 0.88);
+}
+
+@media (max-width: 900px) {
+  .public-home .public-pharma-invite__card {
+    grid-template-columns: 1fr;
+    padding: 1.75rem 1.35rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .public-home .public-pharma-invite__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .public-home .public-pharma-invite__card {
+    padding: 1.5rem 1.15rem;
+  }
+}
+
 /* ——— Appel à l'action (bas de page) ——— */
 
 .public-home {
@@ -549,6 +781,14 @@
   margin-top: 0;
 }
 
+@media (min-width: 1024px) {
+  .public-main.container {
+    max-width: 1140px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
 @media (max-width: 900px) {
   .public-hero__inner {
     grid-template-columns: 1fr;
@@ -569,5 +809,3 @@
     grid-template-columns: 1fr;
   }
 }
-
-@import url("../../shared/css/pharmacyDetail.css");

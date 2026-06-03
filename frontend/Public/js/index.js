@@ -151,6 +151,7 @@ async function loadNearbyList(nearbyList, geo, ville) {
     mountPharmacyList(nearbyList, list, {
       geoQuery,
       zone: "public",
+      relativeUrl: true,
       previewLimit: 6,
       offlineNotice: list._offlineCache,
       emptyHtml: '<p class="muted">Aucune pharmacie ouverte à proximité pour le moment.</p>',

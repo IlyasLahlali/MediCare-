@@ -1,0 +1,229 @@
+/* Bouton « Descendez » — premier accès (accueil public & dashboard client) */
+
+html.mc-scroll-hint-active,
+html.mc-scroll-hint-active body {
+  overflow: hidden;
+  height: 100%;
+}
+
+html.mc-scroll-hint-active.public-home,
+html.mc-scroll-hint-active body.public-home {
+  overflow: hidden;
+}
+
+html.mc-scroll-hint-active .public-hero {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: 6rem;
+  box-sizing: border-box;
+}
+
+html.mc-scroll-hint-active .public-main {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+}
+
+html.mc-scroll-hint-active .public-hero {
+  position: relative;
+}
+
+html.mc-scroll-hint-active .public-hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48%;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(15, 118, 110, 0.2) 40%,
+    rgba(15, 23, 42, 0.28) 100%
+  );
+}
+
+/* ——— Bouton flottant ——— */
+.scroll-down-hint {
+  position: fixed;
+  left: 50%;
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 0px) + 1rem);
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.15rem 0.5rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.97) 0%,
+    rgba(240, 253, 250, 0.98) 100%
+  );
+  color: #0f766e;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 4px 6px rgba(15, 118, 110, 0.08),
+    0 14px 36px rgba(15, 23, 42, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translate(-50%, 18px);
+  opacity: 0;
+  transition:
+    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.scroll-down-hint--visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.scroll-down-hint--hide {
+  opacity: 0;
+  transform: translate(-50%, 20px) scale(0.96);
+  pointer-events: none;
+}
+
+.scroll-down-hint:hover {
+  border-color: rgba(153, 246, 228, 0.9);
+  box-shadow:
+    0 6px 10px rgba(15, 118, 110, 0.12),
+    0 20px 44px rgba(15, 118, 110, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.scroll-down-hint:active {
+  transform: translate(-50%, 2px);
+}
+
+.scroll-down-hint--visible:active {
+  transform: translate(-50%, 2px);
+}
+
+.scroll-down-hint:focus {
+  outline: none;
+}
+
+.scroll-down-hint:focus-visible {
+  outline: 3px solid rgba(45, 212, 191, 0.65);
+  outline-offset: 3px;
+}
+
+.scroll-down-hint__ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid rgba(20, 184, 166, 0.35);
+  animation: scroll-hint-pulse 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
+.scroll-down-hint__icon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #0f766e, #14b8a6);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.35);
+}
+
+.scroll-down-hint__icon svg {
+  display: block;
+  animation: scroll-hint-arrow 1.8s ease-in-out infinite;
+}
+
+.scroll-down-hint__copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding-right: 0.15rem;
+  text-align: left;
+}
+
+.scroll-down-hint__label {
+  font-size: 0.94rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.scroll-down-hint__sub {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.01em;
+}
+
+@keyframes scroll-hint-arrow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+@keyframes scroll-hint-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(1.08);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.08);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .scroll-down-hint__sub {
+    display: none;
+  }
+
+  .scroll-down-hint {
+    padding-right: 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-down-hint__icon svg,
+  .scroll-down-hint__ring {
+    animation: none;
+  }
+
+  .scroll-down-hint,
+  .scroll-down-hint--visible,
+  .scroll-down-hint--hide {
+    transition: opacity 0.15s ease;
+  }
+
+  .scroll-down-hint:active,
+  .scroll-down-hint--visible:active {
+    transform: translate(-50%, 0);
+  }
+}

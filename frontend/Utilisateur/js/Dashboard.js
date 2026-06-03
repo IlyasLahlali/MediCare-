@@ -89,6 +89,7 @@ async function loadNearbyList(nearbyList, geo, ville) {
     mountPharmacyList(nearbyList, list, {
       geoQuery,
       zone: "utilisateur",
+      relativeUrl: true,
       previewLimit: 6,
       offlineNotice: list._offlineCache,
       emptyHtml: '<p class="muted">Aucune pharmacie ouverte à proximité pour le moment.</p>',
@@ -101,6 +102,8 @@ async function loadNearbyList(nearbyList, geo, ville) {
 document.addEventListener("DOMContentLoaded", async () => {
   const user = initUtilisateurPage();
   if (!user) return;
+
+  initScrollDownHint({ storageKey: "medicare_scroll_hint_user_home" });
 
   initHeroSearchTabs();
   bindMedicamentSearchForm("search-medicament-form", "utilisateur");

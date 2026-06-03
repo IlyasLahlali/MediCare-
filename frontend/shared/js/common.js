@@ -428,6 +428,19 @@ function renderPharmacyThumb(imagePath, altName) {
   return '<div class="pharmacy-thumb pharmacy-thumb-empty" aria-hidden="true">🏥</div>';
 }
 
+function normalizePharmacyCardOptions(options = {}) {
+  const opts = { ...options };
+  if (opts.relativeUrl) return opts;
+  const zone = opts.zone;
+  if (
+    (zone === "public" || zone === "utilisateur") &&
+    /\/(Public|Utilisateur)\/html\//i.test(location.pathname)
+  ) {
+    opts.relativeUrl = true;
+  }
+  return opts;
+}
+
 function pharmacyDetailUrl(p, options = {}) {
   const geo = options.geoQuery || "";
   if (options.relativeUrl) {
@@ -501,20 +514,42 @@ function pharmacyDirectionsUrl(p, options = {}) {
   return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
-function pharmacyDirectionsButtonHtml(p, options = {}) {
-  const url = pharmacyDirectionsUrl(p, options);
-  if (!url) return "";
-  return ` <a href="${escapeHtml(url)}" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer" title="Ouvrir le trajet dans Google Maps">Itinéraire</a>`;
-}
-
 function pharmacyLocateButtonHtml(p, options = {}) {
   const url = pharmacyMapUrl(p, options);
   if (!url) return "";
-  return ` <a href="${escapeHtml(url)}" class="btn btn-outline btn-small" title="Voir sur la carte MediCare+">Localiser</a>`;
+  const btnClass = options.enhancedCard
+    ? "btn btn-outline btn-small pharmacy-card-btn"
+    : "btn btn-outline btn-small";
+  return `<a href="${escapeHtml(url)}" class="${btnClass}" title="Voir sur la carte MediCare+">Localiser</a>`;
+}
+
+function pharmacyDirectionsButtonHtml(p, options = {}) {
+  const url = pharmacyDirectionsUrl(p, options);
+  if (!url) return "";
+  const btnClass = options.enhancedCard
+    ? "btn btn-outline btn-small pharmacy-card-btn"
+    : "btn btn-outline btn-small";
+  return `<a href="${escapeHtml(url)}" class="${btnClass}" target="_blank" rel="noopener noreferrer" title="Ouvrir le trajet dans Google Maps">Itinéraire</a>`;
 }
 
 function pharmacyLocateAndDirectionsHtml(p, options = {}) {
-  return `${pharmacyLocateButtonHtml(p, options)}${pharmacyDirectionsButtonHtml(p, options)}`;
+  const locate = pharmacyLocateButtonHtml(p, options);
+  const directions = pharmacyDirectionsButtonHtml(p, options);
+  if (!locate && !directions) return "";
+  if (options.enhancedCard) {
+    return `${locate}${directions}`;
+  }
+  return `${locate ? ` ${locate}` : ""}${directions ? ` ${directions}` : ""}`;
+}
+
+function pharmacyEnhancedActionsHtml(p, options, detailUrl) {
+  const btnOpts = { ...options, enhancedCard: true };
+  const locate = pharmacyLocateButtonHtml(p, btnOpts);
+  const directions = pharmacyDirectionsButtonHtml(p, btnOpts);
+  const btns = [locate, directions].filter(Boolean).join("");
+  const link = `<a href="${detailUrl}" class="btn btn-teal btn-small pharmacy-card-detail-btn">Voir détails</a>`;
+  if (!btns) return link;
+  return `${link}<div class="pharmacy-card-actions__btns">${btns}</div>`;
 }
 
 function renderPharmacyDetailHero(p, options = {}) {
@@ -617,13 +652,18 @@ function renderPharmacyStockGrid(stock) {
 }
 
 function renderPharmacyCard(p, options = {}) {
+  options = normalizePharmacyCardOptions(options);
   const isEnhanced = options.zone === "public" || options.zone === "utilisateur";
-  const dist =
+  const distKm =
     p.distance_km != null
-      ? `<span class="distance">${formatDistance(Number(p.distance_km))}</span>`
+      ? Number(p.distance_km)
       : options.distanceKm != null
-        ? `<span class="distance">${formatDistance(options.distanceKm)}</span>`
-        : "";
+        ? Number(options.distanceKm)
+        : null;
+  const distLabel = distKm != null && !Number.isNaN(distKm) ? formatDistance(distKm) : "";
+  const dist = distLabel
+    ? `<span class="distance" title="Distance à vol d'oiseau">À ${escapeHtml(distLabel)}</span>`
+    : "";
   const detailUrl = pharmacyDetailUrl(p, options);
   const loc =
     formatQuartierVille(p) !== "—" ? formatQuartierVille(p) : p.adresse || "—";
@@ -634,7 +674,7 @@ function renderPharmacyCard(p, options = {}) {
   const actionsHtml =
     options.actionsHtml ||
     (isEnhanced
-      ? `<a href="${detailUrl}" class="pharmacy-card-link">Voir la fiche <span aria-hidden="true">→</span></a>${pharmacyLocateAndDirectionsHtml(p, options)}`
+      ? pharmacyEnhancedActionsHtml(p, options, detailUrl)
       : `<a href="${detailUrl}" class="btn btn-teal btn-small">Voir détails</a>${pharmacyLocateAndDirectionsHtml(p, options)}`);
   const cardClasses = [
     "card",
@@ -646,7 +686,7 @@ function renderPharmacyCard(p, options = {}) {
     .filter(Boolean)
     .join(" ");
   const clickAttrs = clickable
-    ? ` class="${cardClasses}" data-href="${escapeHtml(detailUrl)}" tabindex="0" role="link" aria-label="Voir ${escapeHtml(p.nom)}"`
+    ? ` class="${cardClasses}" data-href="${escapeHtml(detailUrl)}" tabindex="0" role="link" aria-label="Ouvrir la fiche de ${escapeHtml(p.nom)}"`
     : ` class="${cardClasses}"`;
 
   const hours = formatPharmacyHours(p.heure_ouverture, p.heure_fermeture);
@@ -675,7 +715,14 @@ function renderPharmacyCard(p, options = {}) {
         <span class="pharmacy-card-meta-icon" aria-hidden="true">🕐</span>
         <span class="pharmacy-hours-label">Horaires</span> ${escapeHtml(hours)}
       </p>
-      ${p.telephone ? `<p class="pharmacy-card-meta"><span class="pharmacy-card-meta-icon" aria-hidden="true">📞</span>${escapeHtml(p.telephone)}</p>` : ""}
+      ${
+        p.telephone
+          ? `<p class="pharmacy-card-meta pharmacy-card-meta--tel">
+              <span class="pharmacy-card-meta-icon" aria-hidden="true">📞</span>
+              <a href="tel:${escapeHtml(String(p.telephone).replace(/\s/g, ""))}" class="pharmacy-card-tel">${escapeHtml(p.telephone)}</a>
+            </p>`
+          : ""
+      }
       ${gardeLine || ""}`
     : `<p class="muted pharmacy-card-meta">${escapeHtml(loc)}</p>
         ${pharmacyHoursMetaHtml(p)}`;
@@ -697,6 +744,126 @@ function renderPharmacyCard(p, options = {}) {
         <div class="pharmacy-card-actions">${actionsHtml}</div>
       </div>
     </article>`;
+}
+
+/**
+ * Bouton « Descendez » au premier accès : hero plein écran, contenu masqué jusqu’à interaction.
+ * options.storageKey — clé localStorage ; targetId — section cible.
+ * Forcer l’affichage : ajouter ?scrollhint=1 à l’URL.
+ */
+function initScrollDownHint(options = {}) {
+  const storageKey = options.storageKey || "medicare_scroll_hint";
+  const targetId = options.targetId || "pharmacies-proches";
+  const forceShow =
+    options.force === true || new URLSearchParams(location.search).has("scrollhint");
+
+  if (forceShow) {
+    try {
+      localStorage.removeItem(storageKey);
+    } catch {
+      /* ignore */
+    }
+  } else {
+    try {
+      if (localStorage.getItem(storageKey)) return;
+    } catch {
+      /* mode privé : on affiche quand même */
+    }
+  }
+
+  function mountHint() {
+    const target = document.getElementById(targetId);
+    const hero = document.querySelector(".public-hero");
+    if (!target || !hero) return false;
+
+    if (document.getElementById("scroll-down-hint")) return true;
+
+    let dismissed = false;
+    let guardsReady = false;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "scroll-down-hint";
+    btn.className = "scroll-down-hint scroll-down-hint--visible";
+    btn.setAttribute("aria-label", "Descendre vers les pharmacies à proximité");
+    btn.innerHTML =
+      '<span class="scroll-down-hint__ring" aria-hidden="true"></span>' +
+      '<span class="scroll-down-hint__icon" aria-hidden="true">' +
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+      '<path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg></span>" +
+      '<span class="scroll-down-hint__copy">' +
+      '<span class="scroll-down-hint__label">Descendez</span>' +
+      '<span class="scroll-down-hint__sub">Pharmacies à proximité</span>' +
+      "</span>";
+    document.body.appendChild(btn);
+
+    const root = document.documentElement;
+    root.classList.add("mc-scroll-hint-active");
+    document.body.classList.add("mc-scroll-hint-active");
+    window.scrollTo(0, 0);
+
+    const cleanups = [];
+
+    function dismiss() {
+      if (dismissed) return;
+      dismissed = true;
+      try {
+        localStorage.setItem(storageKey, "1");
+      } catch {
+        /* ignore */
+      }
+      root.classList.remove("mc-scroll-hint-active");
+      document.body.classList.remove("mc-scroll-hint-active");
+      btn.classList.remove("scroll-down-hint--visible");
+      btn.classList.add("scroll-down-hint--hide");
+      cleanups.forEach((fn) => fn());
+      setTimeout(() => btn.remove(), 380);
+    }
+
+    function onScroll() {
+      if (!guardsReady) return;
+      if (window.scrollY > 48) dismiss();
+    }
+
+    function onInteract(e) {
+      if (!guardsReady) return;
+      if (e.target.closest(".scroll-down-hint")) return;
+      dismiss();
+    }
+
+    function onKeydown(e) {
+      if (!guardsReady) return;
+      if (e.key === "Escape") dismiss();
+    }
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dismiss();
+      setTimeout(() => {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    });
+
+    document.addEventListener("scroll", onScroll, { passive: true });
+    cleanups.push(() => document.removeEventListener("scroll", onScroll));
+
+    document.addEventListener("click", onInteract, true);
+    cleanups.push(() => document.removeEventListener("click", onInteract, true));
+
+    document.addEventListener("keydown", onKeydown);
+    cleanups.push(() => document.removeEventListener("keydown", onKeydown));
+
+    setTimeout(() => {
+      guardsReady = true;
+    }, 800);
+
+    return true;
+  }
+
+  if (mountHint()) return;
+
+  document.addEventListener("DOMContentLoaded", () => mountHint(), { once: true });
 }
 
 function bindPharmacyCardClicks(root = document) {
@@ -721,7 +888,7 @@ function bindPharmacyCardClicks(root = document) {
 function mountPharmacyList(container, list, options = {}) {
   if (!container) return;
   const limit = options.previewLimit > 0 ? options.previewLimit : 0;
-  const opts = { ...options };
+  const opts = normalizePharmacyCardOptions(options);
   const offlineNotice = opts.offlineNotice;
   delete opts.previewLimit;
   delete opts.offlineNotice;

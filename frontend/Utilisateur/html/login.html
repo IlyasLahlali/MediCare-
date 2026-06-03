@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connexion — MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="../../shared/css/layout.css" />
+    <link rel="stylesheet" href="../../shared/css/auth.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="auth-page auth-page--user">
+    <div id="app-header"></div>
+
+    <main class="auth-shell">
+      <aside class="auth-brand" id="auth-brand-mount"></aside>
+
+      <div class="auth-panel-wrap">
+        <section class="auth-panel">
+          <div class="auth-panel-head">
+            <h1>Connexion</h1>
+            <p class="muted">Accédez à votre espace utilisateur.</p>
+          </div>
+
+          <form id="login-form" class="auth-form">
+            <label>
+              Adresse email
+              <input type="email" id="email" required autocomplete="email" placeholder="vous@exemple.ma" />
+            </label>
+            <label>
+              Mot de passe
+              <input
+                type="password"
+                id="password"
+                required
+                autocomplete="current-password"
+                placeholder="••••••••"
+              />
+            </label>
+            <p class="auth-forgot">
+              <a href="mot-de-passe-oublie.html">Mot de passe oublié ?</a>
+            </p>
+            <p id="login-error" class="error" hidden></p>
+            <button type="submit" class="auth-submit">Se connecter</button>
+          </form>
+
+          <p class="auth-demo">
+            Compte démo : <code>user@medicare.ma</code> / <code>admin123</code>
+          </p>
+
+          <div class="auth-panel-foot">
+            <p class="muted">Pas encore de compte ?</p>
+            <a href="register.html" class="auth-link-btn">Créer un compte</a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/userAuth.js"></script>
+    <script src="../js/login.js"></script>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "name": "MediCare+",
+  "short_name": "MediCare+",
+  "description": "Trouvez les pharmacies ouvertes et de garde près de vous au Maroc.",
+  "start_url": "/Public/html/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f0fdfa",
+  "theme_color": "#0f766e",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/shared/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/shared/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/shared/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

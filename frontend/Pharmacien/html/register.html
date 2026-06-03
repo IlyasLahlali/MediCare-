@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inscription pharmacien — MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="../../shared/css/layout.css" />
+    <link rel="stylesheet" href="../../shared/css/auth.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="auth-page auth-page--pharma">
+    <div id="app-header"></div>
+
+    <main class="auth-shell">
+      <aside class="auth-brand" id="auth-brand-mount"></aside>
+
+      <div class="auth-panel-wrap">
+        <section class="auth-panel">
+          <div class="auth-panel-head">
+            <h1>Créer un compte pro</h1>
+            <p class="muted">Réservé aux pharmaciens et propriétaires d'officine.</p>
+          </div>
+
+          <form id="register-form" class="auth-form">
+            <label>
+              Nom complet
+              <input type="text" id="nom" required minlength="2" autocomplete="name" placeholder="Dr. Nom Prénom" />
+            </label>
+            <label>
+              Adresse email
+              <input type="email" id="email" required autocomplete="email" placeholder="contact@pharmacie.ma" />
+            </label>
+            <label>
+              Mot de passe
+              <input
+                type="password"
+                id="password"
+                required
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="6 caractères minimum"
+              />
+            </label>
+            <label>
+              Confirmer le mot de passe
+              <input
+                type="password"
+                id="password-confirm"
+                required
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="Retapez le mot de passe"
+              />
+            </label>
+            <p id="register-error" class="error" hidden></p>
+            <button type="submit" class="auth-submit">S'inscrire</button>
+          </form>
+
+          <div class="auth-panel-foot">
+            <p class="muted">Déjà inscrit ?</p>
+            <a href="login.html" class="auth-link-btn">J'ai un compte</a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/userAuth.js"></script>
+    <script src="../../shared/js/pharmaAuth.js"></script>
+    <script src="../js/register.js"></script>
+  </body>
+</html>

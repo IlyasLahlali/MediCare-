@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mot de passe oublié — MediCare+ Pro</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="../../shared/css/layout.css" />
+    <link rel="stylesheet" href="../../shared/css/auth.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="auth-page auth-page--pharma">
+    <div id="app-header"></div>
+
+    <main class="auth-shell">
+      <aside class="auth-brand" id="auth-brand-mount"></aside>
+
+      <div class="auth-panel-wrap">
+        <section class="auth-panel">
+          <div class="auth-panel-head">
+            <h1>Mot de passe oublié</h1>
+            <p class="muted">
+              Saisissez l'adresse email de votre compte Pharmacien. Nous préparerons un lien de
+              réinitialisation (affiché en mode développement si l'envoi d'email n'est pas configuré).
+            </p>
+          </div>
+
+          <form id="forgot-form" class="auth-form">
+            <label>
+              Adresse email
+              <input type="email" id="email" required autocomplete="email" placeholder="pharma@exemple.ma" />
+            </label>
+            <p id="forgot-msg" class="error" hidden></p>
+            <div id="forgot-dev-link" class="auth-dev-box" hidden></div>
+            <button type="submit" class="auth-submit">Envoyer le lien</button>
+          </form>
+
+          <div class="auth-panel-foot">
+            <a href="login.html" class="auth-link-btn">← Retour à la connexion</a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../js/motDePasseOublie.js"></script>
+  </body>
+</html>
+

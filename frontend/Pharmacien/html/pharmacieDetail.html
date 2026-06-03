@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Détail pharmacie — Pharmacien</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+<link rel="stylesheet" href="../../shared/css/notifications.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="inner">
+        <a href="Dashboard.html" class="logo">MediCare+ Pro</a>
+        <div class="header-actions pharma-header-actions">
+          <span id="pharma-name"></span>
+          <div id="notif-center-mount" class="notif-center-mount"></div>
+          <a href="pharmacie.html" class="btn btn-outline">Pharmacies</a>
+          <a href="ajouterPharmacie.html" class="btn btn-outline">+ Pharmacie</a>
+          <button type="button" id="btn-logout" class="btn btn-primary">Déconnexion</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div id="pharmacy-detail"><p class="muted">Chargement…</p></div>
+
+      <section class="card stock-section" style="margin-top: 1rem">
+        <div class="section-header">
+          <h2>Stock médicaments</h2>
+          <button type="button" id="btn-add-stock" class="btn btn-teal btn-small">Ajouter un médicament</button>
+        </div>
+        <p class="muted stock-section-hint">
+          Ajouter = visible pour les clients (<strong>Disponible</strong>). Utilisez
+          <strong>Rupture</strong> si le produit n’est plus en vente — pas besoin de changer la quantité à chaque vente.
+        </p>
+
+        <div id="stock-filters" class="pharma-filters hidden" role="tablist" aria-label="Filtrer le stock">
+          <button type="button" class="pharma-filter-btn active" data-stock-statut="">Tous</button>
+          <button type="button" class="pharma-filter-btn" data-stock-statut="disponible">Disponibles</button>
+          <button type="button" class="pharma-filter-btn" data-stock-statut="rupture">Rupturés</button>
+        </div>
+        <p id="stock-count" class="pharma-list-count muted"></p>
+        <div id="stock-list"></div>
+      </section>
+    </main>
+
+    <div id="modal-edit-pharmacy" class="pharma-modal hidden">
+      <div class="pharma-modal-panel wide">
+        <header>
+          <h2>Modifier la pharmacie</h2>
+          <button type="button" class="btn btn-small btn-outline" data-close-modal="modal-edit-pharmacy">✕</button>
+        </header>
+        <form id="form-edit-pharmacy"></form>
+      </div>
+    </div>
+
+    <div id="modal-delete-pharmacy" class="pharma-modal hidden">
+      <div class="pharma-modal-panel">
+        <header>
+          <h2>Supprimer</h2>
+          <button type="button" class="btn btn-small btn-outline" data-close-modal="modal-delete-pharmacy">✕</button>
+        </header>
+        <p>Supprimer définitivement cette pharmacie et tout son stock ?</p>
+        <div class="pharma-modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="modal-delete-pharmacy">Annuler</button>
+          <button type="button" id="confirm-delete-pharmacy" class="btn btn-primary" style="background: #dc2626">Supprimer</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-toggle" class="pharma-modal hidden">
+      <div class="pharma-modal-panel">
+        <header>
+          <h2 id="modal-toggle-title">Statut</h2>
+          <button type="button" class="btn btn-small btn-outline" data-close-modal="modal-toggle">✕</button>
+        </header>
+        <p id="modal-toggle-text"></p>
+        <div class="pharma-modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="modal-toggle">Annuler</button>
+          <button type="button" id="confirm-toggle" class="btn btn-teal">Confirmer</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-add-stock" class="pharma-modal hidden">
+      <div class="pharma-modal-panel wide">
+        <header>
+          <h2>Ajouter un médicament</h2>
+          <button type="button" class="btn btn-small btn-outline" data-close-modal="modal-add-stock">✕</button>
+        </header>
+        <form id="form-add-stock">
+          <label>Nom du médicament <input type="text" name="nom" required /></label>
+          <label>Description <textarea name="description" rows="2"></textarea></label>
+          <label>Prix (DH) <input type="number" step="0.01" name="prix" /></label>
+          <p class="muted">Le médicament sera affiché comme <strong>Disponible</strong> pour les utilisateurs.</p>
+          <div class="pharma-modal-footer">
+            <button type="button" class="btn btn-outline" data-close-modal="modal-add-stock">Annuler</button>
+            <button type="submit" class="btn btn-teal">Ajouter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="modal-edit-stock" class="pharma-modal hidden">
+      <div class="pharma-modal-panel">
+        <header>
+          <h2 id="modal-edit-stock-title">Modifier le médicament</h2>
+          <button type="button" class="btn btn-small btn-outline" data-close-modal="modal-edit-stock">✕</button>
+        </header>
+        <form id="form-edit-stock"></form>
+      </div>
+    </div>
+
+    <div id="modal-delete-stock" class="pharma-modal hidden">
+      <div class="pharma-modal-panel">
+        <header>
+          <h2>Retirer du stock</h2>
+          <button type="button" class="btn btn-small btn-outline" data-close-modal="modal-delete-stock">✕</button>
+        </header>
+        <p id="delete-stock-text"></p>
+        <div class="pharma-modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="modal-delete-stock">Annuler</button>
+          <button type="button" id="confirm-delete-stock" class="btn btn-primary" style="background: #dc2626">Supprimer</button>
+        </div>
+      </div>
+    </div>
+<script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/pharmaAuth.js"></script>
+    <script src="../../shared/js/notifications.js"></script>
+    <script src="../../shared/js/gardePharma.js"></script>
+    <script src="../js/pharmacieDetail.js"></script>
+  </body>
+</html>

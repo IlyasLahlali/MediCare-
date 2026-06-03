@@ -1,0 +1,33 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "migrate:stats": "node scripts/runMigrationStats.js",
+    "migrate:favoris-avis": "node scripts/runMigrationFavorisAvis.js",
+    "migrate:garde": "node scripts/runMigrationGarde.js",
+    "migrate:admin-statut": "node scripts/runMigrationAdminStatut.js",
+    "migrate:notifications": "node scripts/runMigrationNotifications.js",
+    "migrate:quartier-ville": "node scripts/runMigrationQuartierVille.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.14.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
+

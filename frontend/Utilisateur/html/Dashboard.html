@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mon espace — MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="../../shared/css/notifications.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="public-home">
+    <header class="site-header"></header>
+
+    <section class="public-hero" id="hero-search">
+      <div class="public-hero__inner">
+        <div class="public-hero__copy">
+          <span class="public-hero__badge">👋 Mon espace</span>
+          <h1 class="public-hero__title">
+            Bonjour, <span class="public-hero__accent" id="user-greeting"></span>
+          </h1>
+          <p class="public-hero__lead">
+            Trouvez une pharmacie ouverte, de garde ou un médicament en stock — favoris et alertes
+            inclus dans votre compte.
+          </p>
+          <ul class="public-hero__features" aria-label="Avantages">
+            <li><span aria-hidden="true">⭐</span> Pharmacies favorites</li>
+            <li><span aria-hidden="true">📍</span> Géolocalisation précise</li>
+            <li><span aria-hidden="true">🔔</span> Alertes personnalisées</li>
+            <li><span aria-hidden="true">💊</span> Stock médicaments</li>
+          </ul>
+          <p class="public-hero__geo muted" id="geo-status">Localisation en cours…</p>
+        </div>
+
+        <div class="hero-search-card" role="search">
+          <div class="hero-search-card__tabs" role="tablist" aria-label="Type de recherche">
+            <button
+              type="button"
+              class="hero-search-tab is-active"
+              role="tab"
+              aria-selected="true"
+              aria-controls="hero-panel-pharmacy"
+              id="hero-tab-pharmacy"
+              data-hero-tab="pharmacy"
+            >
+              <span class="hero-search-tab__icon" aria-hidden="true">🔍</span>
+              Pharmacie
+            </button>
+            <button
+              type="button"
+              class="hero-search-tab"
+              role="tab"
+              aria-selected="false"
+              aria-controls="hero-panel-medicament"
+              id="hero-tab-medicament"
+              data-hero-tab="medicament"
+            >
+              <span class="hero-search-tab__icon" aria-hidden="true">💊</span>
+              Médicament
+            </button>
+          </div>
+
+          <div
+            id="hero-panel-pharmacy"
+            class="hero-search-panel"
+            role="tabpanel"
+            aria-labelledby="hero-tab-pharmacy"
+          >
+            <form id="search-pharmacy-form" class="hero-search-form">
+              <div class="hero-search-grid">
+                <label class="hero-field">
+                  <span class="hero-field__label">Ville</span>
+                  <select id="search-ville" name="ville" aria-label="Ville">
+                    <option value="">Chargement…</option>
+                  </select>
+                </label>
+                <label class="hero-field">
+                  <span class="hero-field__label">Quartier</span>
+                  <select id="search-quartier" name="quartier" aria-label="Quartier">
+                    <option value="">Tous les quartiers</option>
+                  </select>
+                </label>
+              </div>
+              <label class="hero-field hero-field--full">
+                <span class="hero-field__label">Nom de la pharmacie <span class="hero-optional">(optionnel)</span></span>
+                <input
+                  type="search"
+                  id="search-nom"
+                  name="nom"
+                  placeholder="Ex. Pharmacie Centrale"
+                  autocomplete="off"
+                />
+              </label>
+              <p id="ville-auto-label" class="hero-hint muted">Détection de votre ville…</p>
+              <p class="hero-hint muted hero-hint--small">
+                Villes et quartiers proposés : pharmacies enregistrées avec une ville et un quartier officiels.
+              </p>
+              <div class="hero-filters" role="group" aria-label="Filtres">
+                <label class="hero-check">
+                  <input type="checkbox" id="filter-ouvertes" name="ouvertes" checked />
+                  Ouvertes maintenant
+                </label>
+                <label class="hero-check">
+                  <input type="checkbox" id="filter-garde" name="garde" />
+                  De garde
+                </label>
+              </div>
+              <div class="hero-search-actions">
+                <button type="submit" class="btn btn-hero-primary">
+                  <span aria-hidden="true">🔍</span> Chercher
+                </button>
+                <button type="button" class="btn btn-hero-outline" id="btn-use-position">
+                  <span aria-hidden="true">➤</span> Utiliser ma position
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div
+            id="hero-panel-medicament"
+            class="hero-search-panel is-hidden"
+            role="tabpanel"
+            aria-labelledby="hero-tab-medicament"
+            hidden
+          >
+            <form id="search-medicament-form" class="hero-search-form">
+              <label class="hero-field hero-field--full">
+                <span class="hero-field__label">Nom du médicament</span>
+                <input
+                  type="search"
+                  name="med-q"
+                  id="search-med-q"
+                  placeholder="Ex. Doliprane, Amoxicilline, Paracétamol…"
+                  minlength="2"
+                  autocomplete="off"
+                />
+              </label>
+              <p class="hero-hint muted" data-med-hint>
+                Pharmacies qui ont ce médicament <strong>disponible</strong> (sans afficher la quantité).
+              </p>
+              <div class="hero-search-actions">
+                <button type="submit" class="btn btn-hero-primary">
+                  <span aria-hidden="true">💊</span> Chercher le médicament
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="hero-search-card__footer">
+            <a href="carte.html" class="hero-footer-link">Voir la carte des pharmacies</a>
+            <a href="#pharmacies-proches" class="hero-footer-link">Pharmacies à proximité ↓</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="container public-main">
+      <section class="pharmacy-nearby pharmacy-nearby--first" id="pharmacies-proches">
+        <div class="section-head">
+          <h2>Pharmacies ouvertes à proximité</h2>
+          <a href="carte.html" class="btn btn-outline btn-small">Carte interactive</a>
+        </div>
+        <div id="nearby-list" class="pharmacy-list">
+          <p class="muted">Chargement…</p>
+        </div>
+      </section>
+
+      <section class="public-steps" aria-labelledby="steps-title">
+        <p class="public-section-badge">❓ Comment ça marche</p>
+        <h2 id="steps-title" class="public-section-title">Trouver une pharmacie en 3 étapes</h2>
+        <div class="public-steps__grid">
+          <article class="public-step-card">
+            <span class="public-step-card__num" aria-hidden="true">1</span>
+            <h3>Choisissez votre ville</h3>
+            <p>
+              Sélectionnez votre ville dans la liste des établissements validés, ou utilisez
+              <strong>ma position</strong> pour une recherche à proximité.
+            </p>
+          </article>
+          <article class="public-step-card">
+            <span class="public-step-card__num" aria-hidden="true">2</span>
+            <h3>Affinez votre recherche</h3>
+            <p>
+              Filtrez par quartier, pharmacies <strong>ouvertes</strong> ou <strong>de garde</strong>,
+              ou cherchez un <strong>médicament</strong> disponible en stock.
+            </p>
+          </article>
+          <article class="public-step-card">
+            <span class="public-step-card__num" aria-hidden="true">3</span>
+            <h3>Consultez les détails</h3>
+            <p>
+              Horaires, téléphone, favoris, avis et itinéraire sur la carte — le tout depuis votre espace.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="public-stats" aria-labelledby="stats-title">
+        <p class="public-section-badge public-section-badge--stats">📊 MediCare+ en chiffres</p>
+        <h2 id="stats-title" class="public-section-title">Une plateforme active au service des patients</h2>
+        <div id="public-stats-grid" class="public-stats__grid">
+          <p class="muted public-stats__loading">Chargement des statistiques…</p>
+        </div>
+      </section>
+
+      <section class="public-cta" aria-labelledby="cta-title">
+        <h2 id="cta-title" class="public-cta__title">Besoin d'aide pour trouver une pharmacie ?</h2>
+        <p class="public-cta__lead">
+          Utilisez la recherche par ville, quartier ou médicament — disponible à tout moment dans votre espace.
+        </p>
+        <a href="#hero-search" class="btn btn-cta-search">
+          <span aria-hidden="true">🔍</span> Rechercher maintenant
+        </a>
+      </section>
+    </main>
+
+    <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/notifications.js"></script>
+    <script src="../../shared/js/userAuth.js"></script>
+    <script src="../js/searchPharmacyForm.js"></script>
+    <script src="../js/Dashboard.js"></script>
+  </body>
+</html>

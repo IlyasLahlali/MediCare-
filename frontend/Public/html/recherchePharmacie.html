@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Résultats — Pharmacies</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+<link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="inner">
+        <a href="index.html" class="logo">MediCare+</a>
+        <div class="header-actions">
+          <a href="index.html" class="btn btn-outline">Accueil</a>
+          <a href="carte.html" class="btn btn-outline">Carte</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <h1>Résultats de recherche</h1>
+      <p class="muted" id="search-summary"></p>
+
+      <form id="search-pharmacy-form" class="search-box" style="flex-direction: column; align-items: stretch">
+        <div class="search-grid">
+          <label>
+            Nom de la pharmacie
+            <input type="search" id="search-nom" placeholder="Ex. Pharmacie Centrale" />
+          </label>
+          <label>
+            Quartier
+            <select id="search-quartier">
+              <option value="">Chargement…</option>
+            </select>
+          </label>
+        </div>
+        <p id="ville-auto-label" class="ville-auto muted">Détection de votre ville…</p>
+        <div class="search-actions">
+          <button type="submit" class="btn btn-teal">Rechercher</button>
+        </div>
+      </form>
+
+      <div id="results" class="pharmacy-list">
+        <p class="muted">Chargement…</p>
+      </div>
+    </main>
+<script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../js/searchPharmacyForm.js"></script>
+    <script src="../js/recherchePharmacie.js"></script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+.mc-offline-banner {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  padding: 0.55rem 1rem;
+  background: #fff7ed;
+  border-bottom: 1px solid #fdba74;
+  color: #9a3412;
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+body.is-offline .mc-offline-banner {
+  display: block;
+}
+
+.mc-offline-notice {
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  color: #9a3412;
+  font-size: 0.85rem;
+}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toutes les pharmacies — Admin MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+<link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="admin-page">
+    <header class="dashboard-header admin-header">
+      <div class="logo">💊 Toutes les pharmacies</div>
+      <nav class="header-actions">
+        <a href="Dashboard.html" class="header-btn header-btn-outline">← Tableau de bord</a>
+        <a href="pharmacie.html" class="header-btn header-btn-primary">Pharmacies</a>
+        <a href="pharmacie.html#adminSearchSection" class="header-btn header-btn-outline">Recherche</a>
+        <button type="button" class="header-btn header-btn-logout" id="btn-logout">
+          <span aria-hidden="true">⎋</span> Déconnexion
+        </button>
+      </nav>
+    </header>
+
+    <main class="admin-main">
+      <section id="adminSearchSection" class="card admin-panel admin-search-section">
+        <h2 class="admin-panel-title">🔍 Recherche</h2>
+        <form id="adminSearchForm" class="admin-search-form">
+          <label>
+            Nom du pharmacien
+            <input type="text" name="pharmacien" id="searchPharmacien" placeholder="Ex. Ahmed" autocomplete="off" />
+          </label>
+          <label>
+            Nom de la pharmacie
+            <input type="text" name="pharmacie" id="searchPharmacie" placeholder="Ex. Pharmacie Centrale" autocomplete="off" />
+          </label>
+          <label>
+            Ville
+            <input type="text" name="ville" id="searchVille" placeholder="Ex. Casablanca" autocomplete="off" />
+          </label>
+          <button type="submit" class="btn-primary admin-search-submit">Rechercher</button>
+        </form>
+        <p class="admin-search-hint muted">Au moins un champ requis. Les filtres peuvent être combinés.</p>
+        <p id="searchFormMessage" class="admin-feedback"></p>
+      </section>
+
+      <section class="card admin-section admin-panel">
+        <div class="admin-list-header">
+          <h2 class="admin-panel-title">Liste des pharmacies</h2>
+          <div class="admin-filters">
+            <button type="button" class="admin-filter-btn active" data-statut="" onclick="setFilter(this, '')">Toutes</button>
+            <button type="button" class="admin-filter-btn" data-statut="en_attente" onclick="setFilter(this, 'en_attente')">En attente</button>
+            <button type="button" class="admin-filter-btn" data-statut="valide" onclick="setFilter(this, 'valide')">Validées</button>
+            <button type="button" class="admin-filter-btn" data-statut="refuse" onclick="setFilter(this, 'refuse')">Refusées</button>
+          </div>
+        </div>
+        <p id="pharmaciesCount" class="admin-count"></p>
+        <div id="pharmaciesList" class="admin-list">
+          <p class="admin-loading">Chargement…</p>
+        </div>
+        <p id="adminMessage" class="admin-feedback"></p>
+      </section>
+    </main>
+<script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/userAuth.js"></script>
+    <script src="../js/adminListShared.js"></script>
+    <script src="../js/pharmacie.js"></script>
+  </body>
+</html>

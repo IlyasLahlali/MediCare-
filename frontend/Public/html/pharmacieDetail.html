@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Détail pharmacie — MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="pharmacy-detail-page">
+    <header class="site-header">
+      <div class="inner">
+        <a href="index.html" class="logo">MediCare+</a>
+        <div class="header-actions">
+          <a href="index.html" class="btn btn-outline">Accueil</a>
+          <a href="carte.html" class="btn btn-outline">Carte</a>
+          <a href="../../Utilisateur/html/login.html" class="btn btn-outline">Connexion</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="pharmacy-detail-main">
+      <div id="pharmacy-detail" class="pharmacy-detail-wrap">
+        <p class="muted pharmacy-detail-loading">Chargement…</p>
+      </div>
+
+      <section class="pharmacy-detail-panel pharmacy-detail-med-search">
+        <header class="pharmacy-detail-panel__head">
+          <h2>Rechercher un médicament</h2>
+          <p class="muted">Trouvez un médicament dans cette pharmacie ou partout sur MediCare+.</p>
+        </header>
+        <form id="search-med-form" class="pharmacy-detail-med-search-form">
+          <div class="pharmacy-detail-med-search-row">
+            <input
+              type="search"
+              id="med-q"
+              placeholder="Ex. Paracétamol, Doliprane…"
+              required
+              minlength="2"
+              autocomplete="off"
+            />
+            <button type="submit" class="btn btn-teal">Rechercher</button>
+          </div>
+          <label class="pharmacy-detail-med-search-check">
+            <input type="checkbox" id="med-this-pharmacy" />
+            Uniquement cette pharmacie
+          </label>
+        </form>
+      </section>
+
+      <section class="pharmacy-detail-panel pharmacy-detail-stock-section">
+        <header class="pharmacy-detail-panel__head pharmacy-detail-stock-head">
+          <div>
+            <h2>Médicaments en stock</h2>
+            <p class="muted" id="stock-summary">Liste des médicaments disponibles dans cette officine.</p>
+          </div>
+          <span class="pharmacy-detail-stock-count" id="stock-count" hidden></span>
+        </header>
+        <div id="stock-list" class="pharmacy-detail-stock-grid"></div>
+      </section>
+    </main>
+
+    <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../js/pharmacieDetail.js"></script>
+  </body>
+</html>

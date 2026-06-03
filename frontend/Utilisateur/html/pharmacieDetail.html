@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Détail pharmacie — MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="../../shared/css/notifications.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="pharmacy-detail-page">
+    <header class="site-header"></header>
+
+    <main class="pharmacy-detail-main">
+      <div id="pharmacy-detail" class="pharmacy-detail-wrap">
+        <p class="muted pharmacy-detail-loading">Chargement…</p>
+      </div>
+
+      <section class="pharmacy-detail-panel pharmacy-detail-avis-panel">
+        <header class="pharmacy-detail-panel__head">
+          <h2>Votre avis</h2>
+          <p class="muted">Partagez votre expérience avec cette pharmacie.</p>
+        </header>
+        <p id="rating-summary" class="rating-summary"></p>
+        <form id="avis-form" class="pharmacy-detail-avis-form">
+          <label>Note (1 à 5)</label>
+          <div class="star-rating" id="star-rating" aria-label="Note"></div>
+          <input type="hidden" id="avis-note" value="0" />
+          <label>
+            Commentaire (optionnel)
+            <textarea id="avis-commentaire" rows="3" placeholder="Décrivez votre expérience…"></textarea>
+          </label>
+          <button type="submit" class="btn btn-teal">Enregistrer mon avis</button>
+          <p id="avis-msg" class="muted"></p>
+        </form>
+        <div id="avis-list" class="pharmacy-detail-avis-list"></div>
+      </section>
+
+      <section class="pharmacy-detail-panel pharmacy-detail-med-search">
+        <header class="pharmacy-detail-panel__head">
+          <h2>Rechercher un médicament</h2>
+          <p class="muted">Trouvez un médicament dans cette pharmacie ou partout sur MediCare+.</p>
+        </header>
+        <form id="search-med-form" class="pharmacy-detail-med-search-form">
+          <div class="pharmacy-detail-med-search-row">
+            <input
+              type="search"
+              id="med-q"
+              placeholder="Ex. Paracétamol, Doliprane…"
+              required
+              minlength="2"
+              autocomplete="off"
+            />
+            <button type="submit" class="btn btn-teal">Rechercher</button>
+          </div>
+          <label class="pharmacy-detail-med-search-check">
+            <input type="checkbox" id="med-this-pharmacy" />
+            Uniquement cette pharmacie
+          </label>
+        </form>
+      </section>
+
+      <section class="pharmacy-detail-panel pharmacy-detail-stock-section">
+        <header class="pharmacy-detail-panel__head pharmacy-detail-stock-head">
+          <div>
+            <h2>Médicaments en stock</h2>
+            <p class="muted" id="stock-summary">Liste des médicaments disponibles dans cette officine.</p>
+          </div>
+          <span class="pharmacy-detail-stock-count" id="stock-count" hidden></span>
+        </header>
+        <div id="stock-list" class="pharmacy-detail-stock-grid"></div>
+      </section>
+    </main>
+
+    <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/notifications.js"></script>
+    <script src="../../shared/js/userAuth.js"></script>
+    <script src="../js/pharmacieDetail.js"></script>
+  </body>
+</html>

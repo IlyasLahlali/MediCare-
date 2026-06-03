@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Médicaments — MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+<link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <header class="site-header"></header>
+
+    <main class="container med-search-page">
+      <header class="med-search-page__head">
+        <h1>Trouver un médicament</h1>
+        <p class="muted" id="med-summary"></p>
+      </header>
+
+      <form id="search-med-form" class="med-search-bar">
+        <input
+          type="search"
+          name="med-q"
+          id="med-q"
+          placeholder="Ex. Doliprane, Paracétamol…"
+          minlength="2"
+          autocomplete="off"
+        />
+        <button type="submit" class="btn btn-teal">Rechercher</button>
+      </form>
+
+      <div id="med-results" class="med-results-wrap"></div>
+    </main>
+<script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/userAuth.js"></script>
+    <script src="../js/rechercheMedicament.js"></script>
+  </body>
+</html>

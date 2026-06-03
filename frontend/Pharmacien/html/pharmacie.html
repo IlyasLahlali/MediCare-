@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mes pharmacies — MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="../../shared/css/notifications.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="inner">
+        <a href="Dashboard.html" class="logo">MediCare+ Pro</a>
+        <div class="header-actions pharma-header-actions">
+          <span id="pharma-name"></span>
+          <div id="notif-center-mount" class="notif-center-mount"></div>
+          <a href="pharmacie.html" class="btn btn-outline">Pharmacies</a>
+          <a href="ajouterPharmacie.html" class="btn btn-outline">+ Pharmacie</a>
+          <button type="button" id="btn-logout" class="btn btn-primary">Déconnexion</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="pharma-list-header">
+        <h1>Mes pharmacies</h1>
+        <a href="ajouterPharmacie.html" class="btn btn-teal">+ Ajouter une pharmacie</a>
+      </div>
+
+      <section class="card pharma-search-card">
+        <header class="pharma-section-head">
+          <div>
+            <h2>Rechercher une pharmacie</h2>
+            <p class="muted">Retrouvez rapidement un établissement parmi les vôtres.</p>
+          </div>
+        </header>
+        <form id="pharmacy-search-form" class="dashboard-search">
+          <input
+            type="search"
+            id="pharmacy-search-q"
+            placeholder="Nom, quartier, ville…"
+            autocomplete="off"
+          />
+          <button type="submit" class="btn btn-teal">Rechercher</button>
+        </form>
+      </section>
+
+      <div class="pharma-filters" role="tablist" aria-label="Filtrer par statut de validation">
+        <button type="button" class="pharma-filter-btn active" data-statut="">Toutes</button>
+        <button type="button" class="pharma-filter-btn" data-statut="valide">Validées</button>
+        <button type="button" class="pharma-filter-btn" data-statut="en_attente">En attente</button>
+        <button type="button" class="pharma-filter-btn" data-statut="refuse">Refusées</button>
+      </div>
+
+      <p id="pharmacy-count" class="pharma-list-count muted"></p>
+      <div id="pharmacy-list" class="pharmacy-list">
+        <p class="muted">Chargement…</p>
+      </div>
+    </main>
+    <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/pharmaAuth.js"></script>
+    <script src="../../shared/js/notifications.js"></script>
+    <script src="../../shared/js/gardePharma.js"></script>
+    <script src="../js/pharmacie.js"></script>
+  </body>
+</html>

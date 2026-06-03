@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tableau de bord — Pharmacien</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="../../shared/css/notifications.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="pharma-dashboard-page">
+    <header class="site-header pharma-dashboard-header">
+      <div class="inner">
+        <a href="Dashboard.html" class="logo">MediCare+ Pro</a>
+        <div class="header-actions pharma-header-actions">
+          <span id="pharma-name" class="pharma-header-name"></span>
+          <div id="notif-center-mount" class="notif-center-mount"></div>
+          <a href="#mc-zone-footer" class="btn btn-outline" id="btn-contact-header">Contact</a>
+          <a href="pharmacie.html" class="btn btn-outline">Pharmacies</a>
+          <a href="ajouterPharmacie.html" class="btn btn-outline">+ Pharmacie</a>
+          <button type="button" id="btn-logout" class="btn btn-primary">Déconnexion</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="pharma-welcome" aria-labelledby="pharma-welcome-title">
+      <div class="pharma-welcome__card">
+        <div class="pharma-welcome__bg" aria-hidden="true"></div>
+        <div class="pharma-welcome__inner">
+          <div class="pharma-welcome__copy">
+            <p class="pharma-welcome__eyebrow">MediCare+ Pro</p>
+            <h1 class="pharma-welcome__title" id="pharma-welcome-title">
+              <span class="pharma-welcome__name" id="pharma-greeting-name">Tableau de bord</span>
+            </h1>
+            <p class="pharma-welcome__lead" id="pharma-welcome-lead">
+              Gérez vos pharmacies, stocks et gardes depuis votre espace professionnel.
+            </p>
+            <div class="pharma-welcome__chips" id="pharma-welcome-chips" hidden></div>
+            <p class="pharma-welcome__meta" id="pharma-welcome-meta"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="container pharma-dashboard-main">
+      <section class="card garde-dashboard-card">
+        <header class="pharma-section-head">
+          <div>
+            <h2>Pharmacies en garde</h2>
+            <p class="muted">
+              Établissements signalés « de garde » sur MediCare+. Activez ou modifiez une garde depuis
+              chaque fiche.
+            </p>
+          </div>
+        </header>
+        <div id="garde-summary-list" class="pharmacy-list">
+          <p class="muted">Chargement…</p>
+        </div>
+      </section>
+
+      <header class="pharma-stats-head">
+        <h2>Statistiques</h2>
+        <p class="muted">Activité sur les <span id="stat-period">7</span> derniers jours</p>
+      </header>
+
+      <div class="stats-grid" id="stats-cards">
+        <p class="muted">Chargement…</p>
+      </div>
+
+      <section class="card">
+        <h2>Trafic quotidien</h2>
+        <div id="traffic-chart" class="traffic-chart"></div>
+      </section>
+
+      <section class="card">
+        <h2>Performance par pharmacie</h2>
+        <div id="pharma-stats-table" class="pharma-table-wrap">
+          <p class="muted">Chargement…</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/userAuth.js"></script>
+    <script src="../../shared/js/pharmaAuth.js"></script>
+    <script src="../../shared/js/notifications.js"></script>
+    <script src="../../shared/js/gardePharma.js"></script>
+    <script src="../js/Dashboard.js"></script>
+  </body>
+</html>

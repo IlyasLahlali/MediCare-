@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f766e" />
+    <title>Hors ligne — MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+    <style>
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        background: linear-gradient(160deg, #f0fdfa 0%, #e0f2fe 100%);
+      }
+      .offline-card {
+        text-align: left;
+        max-width: 26rem;
+        padding: 2rem 1.5rem;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(15, 118, 110, 0.12);
+      }
+      .offline-card img {
+        display: block;
+        width: 88px;
+        height: 88px;
+        margin: 0 auto 1rem;
+      }
+      .offline-card h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.35rem;
+        color: #0f766e;
+        text-align: center;
+      }
+      .offline-card ul {
+        margin: 0.75rem 0;
+        padding-left: 1.2rem;
+        font-size: 0.92rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="offline-card">
+      <img src="../../shared/icons/icon-192.png" alt="" width="88" height="88" />
+      <h1>Vous êtes hors ligne</h1>
+      <p class="muted" style="text-align: center">
+        Cette page n’a pas encore été enregistrée sur l’appareil.
+      </p>
+      <p><strong>Déjà disponible hors ligne</strong> (si vous les avez ouvertes en ligne) :</p>
+      <ul>
+        <li>Accueil, recherche pharmacie et fiches détail</li>
+        <li>Listes de pharmacies et stocks déjà consultés</li>
+        <li>Favoris (compte connecté)</li>
+      </ul>
+      <p class="muted" style="font-size: 0.88rem">
+        La carte interactive et les nouvelles recherches nécessitent internet.
+      </p>
+      <p style="margin-top: 1.25rem; text-align: center">
+        <button type="button" class="btn btn-teal" onclick="location.reload()">Réessayer</button>
+      </p>
+      <p style="margin-top: 0.75rem; text-align: center">
+        <a href="index.html" class="btn btn-outline">Accueil</a>
+      </p>
+    </div>
+  </body>
+</html>

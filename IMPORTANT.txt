@@ -1,0 +1,42 @@
+MediCare+ — Connexion base de données (à ne pas oublier)
+============================================================
+
+Le logiciel se connecte à MySQL via backend/config/db.js (pool mysql2).
+Sans fichier .env (local) ou variables Railway (en ligne), l'app utilise
+localhost → erreur en production.
+
+--- SUR VOTRE PC (développement) ---
+
+1. MySQL démarré (Workbench / XAMPP / WAMP)
+2. Exécuter : BaseDonnee.sql puis DonneesTest.sql
+3. Créer le fichier : backend\.env  (copier depuis backend\.env.example)
+
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASSWORD=votre_mot_de_passe_mysql
+   DB_NAME=Pharmacie_Garde
+   PORT=3000
+   JWT_SECRET=une_cle_secrete_longue
+
+4. Lancer :
+   cd backend
+   npm install
+   npm start
+
+5. Tester : http://localhost:3000/api/health
+   → doit afficher ok:true et database:connected
+
+--- SUR RAILWAY (démo en ligne) ---
+
+1. Projet avec 2 services : MediCare- (app) + MySQL
+2. Workbench → MySQL Railway → BaseDonnee_railway.sql + DonneesTest_railway.sql
+   (base nommée : railway)
+3. Service MediCare- → Variables :
+   - DATABASE_URL = référence vers MYSQL_URL du service MySQL
+     OU DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME=railway, DB_SSL=true
+   - JWT_SECRET = clé secrète
+4. Deploy → logs : "Connecté à MySQL" (pas localhost)
+5. Tester : https://VOTRE-DOMAINE/api/health
+
+Guide détaillé : docs\CONNEXION_BDD.md et docs\DEPLOIEMENT.md

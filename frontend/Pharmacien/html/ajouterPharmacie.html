@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ajouter une pharmacie — MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+<link rel="stylesheet" href="../../shared/css/notifications.css" />
+    <link rel="stylesheet" href="../../shared/css/map.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/ajouterPharmacie.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="inner">
+        <a href="Dashboard.html" class="logo">MediCare+ Pro</a>
+        <div class="header-actions pharma-header-actions">
+          <span id="pharma-name"></span>
+          <div id="notif-center-mount" class="notif-center-mount"></div>
+          <a href="pharmacie.html" class="btn btn-outline">Pharmacies</a>
+          <a href="ajouterPharmacie.html" class="btn btn-outline">+ Pharmacie</a>
+          <button type="button" id="btn-logout" class="btn btn-primary">Déconnexion</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container add-pharmacy-page">
+      <h1>Ajouter une pharmacie</h1>
+      <p class="muted">
+        Placez le repère à l’emplacement exact, ajoutez une photo et complétez les informations.
+      </p>
+
+      <form id="form-add-pharmacy" class="add-pharmacy-form">
+        <section class="card">
+          <h2>Photo de la pharmacie</h2>
+          <div class="image-upload-zone">
+            <img id="image-preview" class="image-preview hidden" alt="Aperçu" />
+            <p id="image-placeholder" class="muted">Aucune image sélectionnée</p>
+            <label class="btn btn-outline btn-small">
+              Choisir une photo
+              <input type="file" id="image-input" accept="image/jpeg,image/png,image/webp" hidden />
+            </label>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Localisation de la pharmacie</h2>
+          <p class="muted">
+            Indiquez l’emplacement sur la carte : l’adresse exacte sera calculée automatiquement pour la
+            carte publique et l’itinéraire.
+          </p>
+          <div class="map-actions-row">
+            <button type="button" id="btn-locate" class="btn btn-teal">
+              <span aria-hidden="true">📍</span> Localiser ma pharmacie (ma position)
+            </button>
+          </div>
+          <p class="muted location-map-hint">Ou cliquez sur la carte / déplacez le repère.</p>
+          <div id="location-map" class="location-map"></div>
+          <p id="coords-display" class="coords-display muted">Repère non placé</p>
+          <p id="location-address-display" class="location-address-display muted" hidden>
+            Adresse enregistrée : <span id="location-address-text"></span>
+          </p>
+          <input type="hidden" id="latitude" name="latitude" required />
+          <input type="hidden" id="longitude" name="longitude" required />
+          <input type="hidden" id="adresse" name="adresse" />
+        </section>
+
+        <section class="card">
+          <h2>Informations</h2>
+          <label>Nom de la pharmacie <input type="text" id="nom" name="nom" required /></label>
+          <p class="field-hint muted">
+            Ville et quartier servent à la recherche des patients (listes proposées depuis les pharmacies
+            déjà enregistrées).
+          </p>
+          <div class="form-grid-2">
+            <label>
+              Ville <span class="required-mark">*</span>
+              <input
+                type="text"
+                id="ville"
+                name="ville"
+                list="ville-suggestions"
+                required
+                autocomplete="address-level2"
+                placeholder="Ex. Marrakech"
+              />
+            </label>
+            <label>
+              Quartier <span class="required-mark">*</span>
+              <input
+                type="text"
+                id="quartier"
+                name="quartier"
+                list="quartier-suggestions"
+                required
+                autocomplete="address-level3"
+                placeholder="Ex. Guéliz, Médina"
+              />
+            </label>
+          </div>
+          <datalist id="ville-suggestions"></datalist>
+          <datalist id="quartier-suggestions"></datalist>
+          <label>Téléphone <input type="tel" id="telephone" name="telephone" /></label>
+          <div class="form-grid-2">
+            <label>Ouverture <input type="time" id="heure_ouverture" name="heure_ouverture" /></label>
+            <label>Fermeture <input type="time" id="heure_fermeture" name="heure_fermeture" /></label>
+          </div>
+          <label><input type="checkbox" id="est_ouverte" name="est_ouverte" /> Pharmacie ouverte</label>
+          <label><input type="checkbox" id="est_de_garde" name="est_de_garde" /> De garde</label>
+        </section>
+
+        <p id="form-msg" class="muted"></p>
+        <div class="form-submit-row">
+          <a href="pharmacie.html" class="btn btn-outline">Annuler</a>
+          <button type="submit" class="btn btn-teal" id="btn-submit">Enregistrer la pharmacie</button>
+        </div>
+      </form>
+    </main>
+<script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/pharmaAuth.js"></script>
+    <script src="../../shared/js/notifications.js"></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="../js/ajouterPharmacie.js"></script>
+  </body>
+</html>

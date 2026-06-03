@@ -1,0 +1,182 @@
+.map-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 4.5rem);
+  margin: -1rem -1.25rem 0;
+}
+
+.map-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  z-index: 10;
+}
+
+.map-toolbar h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  flex: 1;
+  min-width: 8rem;
+}
+
+.map-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.map-filter-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.map-filter-btn.is-active {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #fff;
+}
+
+.map-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.map-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 420px;
+}
+
+#pharmacy-map {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  z-index: 1;
+}
+
+.map-legend {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 500;
+  background: #fff;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.map-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.map-status {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 500;
+  max-width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.1);
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.map-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.map-marker-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50% 50% 50% 0;
+}
+
+.map-marker.marker-garde .map-marker-inner {
+  background: #f59e0b;
+}
+.map-marker.marker-open .map-marker-inner {
+  background: #14b8a6;
+}
+.map-marker.marker-closed .map-marker-inner {
+  background: #64748b;
+}
+.map-marker.marker-favori .map-marker-inner {
+  background: #e11d48;
+  box-shadow: 0 0 0 2px #fda4af;
+}
+
+.map-marker.marker-user {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transform: none;
+  background: #3b82f6;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.leaflet-popup-content {
+  margin: 0.65rem 0.85rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  min-width: 200px;
+}
+
+.leaflet-popup-content h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+}
+
+.popup-badges {
+  margin: 0.25rem 0 0.5rem;
+}
+
+.popup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.popup-actions .btn {
+  font-size: 0.78rem;
+  padding: 0.35rem 0.65rem;
+}
+
+@media (min-width: 768px) {
+  .map-page {
+    min-height: calc(100vh - 5rem);
+  }
+
+  #pharmacy-map {
+    min-height: calc(100vh - 9rem);
+  }
+}

@@ -1,0 +1,44 @@
+<header class="site-header app-header" data-zone="utilisateur">
+  <div class="inner">
+    <a href="Dashboard.html" class="logo" aria-label="Mon espace MediCare+">
+      <span class="logo-icon" aria-hidden="true">✚</span>
+      <span class="logo-text">MediCare<span class="logo-accent">+</span></span>
+    </a>
+
+    <button
+      type="button"
+      class="header-menu-toggle"
+      id="header-menu-toggle"
+      aria-expanded="false"
+      aria-controls="header-main-nav"
+    >
+      <span class="sr-only">Ouvrir le menu</span>
+      <span class="menu-bar" aria-hidden="true"></span>
+    </button>
+
+    <nav class="header-nav" id="header-main-nav" aria-label="Navigation utilisateur">
+      <a href="Dashboard.html" class="header-nav-link" data-nav-page="Dashboard">Accueil</a>
+      <a href="Dashboard.html#hero-search" class="header-nav-link" data-nav-page="hero-search">Rechercher</a>
+      <a href="Dashboard.html#pharmacies-proches" class="header-nav-link" data-nav-page="pharmacies-proches">Pharmacies à proximité</a>
+      <a href="carte.html" class="header-nav-link" data-nav-page="carte">Carte</a>
+      <a href="rechercheMedicament.html" class="header-nav-link" data-nav-page="rechercheMedicament">Médicaments</a>
+      <a href="#mc-zone-footer" class="header-nav-link" data-nav-page="a-propos">À propos</a>
+    </nav>
+
+    <div class="header-toolbar header-toolbar--user">
+      <div id="notif-center-mount" class="notif-center-mount"></div>
+      <a
+        href="pharmacieFavories.html"
+        class="header-favoris-btn"
+        data-nav-page="pharmacieFavories"
+        aria-label="Mes pharmacies favorites"
+        title="Mes favoris"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+      </a>
+      <div id="user-account-menu-mount"></div>
+    </div>
+  </div>
+</header>

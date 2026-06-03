@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Détail pharmacie — Admin MediCare+</title>
+    <link rel="stylesheet" href="../../shared/css/base.css" />
+<link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="admin-page admin-detail-page">
+    <header class="dashboard-header admin-header">
+      <div class="logo">👑 Détail pharmacie</div>
+      <div class="header-actions">
+        <button type="button" class="header-btn header-btn-outline" id="btn-back">
+          <span aria-hidden="true">←</span> Retour
+        </button>
+        <a href="pharmacie.html" class="header-btn header-btn-outline">Pharmacies</a>
+        <a href="Dashboard.html" class="header-btn header-btn-outline">Tableau de bord</a>
+        <button type="button" class="header-btn header-btn-logout" id="btn-logout">
+          <span aria-hidden="true">⎋</span> Déconnexion
+        </button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <section class="card admin-section admin-panel admin-detail-panel">
+        <div id="pharmacyDetail" class="admin-detail-content">
+          <p class="admin-loading">Chargement…</p>
+        </div>
+        <div id="pharmacienSection"></div>
+        <div id="stockSection"></div>
+        <div id="actionsSection"></div>
+        <p id="detailMessage" class="admin-feedback"></p>
+      </section>
+    </main>
+
+    <div id="modalValider" class="modal-overlay hidden">
+      <div class="modal-box admin-modal">
+        <h3>Confirmer la validation</h3>
+        <p>Cette pharmacie sera visible pour le public et les utilisateurs.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-primary" onclick="confirmValider()">Oui, valider</button>
+          <button type="button" class="btn-secondary" onclick="closeModal('modalValider')">Annuler</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalRefuser" class="modal-overlay hidden">
+      <div class="modal-box admin-modal">
+        <h3>Confirmer le refus</h3>
+        <p>Le pharmacien sera notifié. Cette action est définitive.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-danger" onclick="confirmRefuser()">Oui, refuser</button>
+          <button type="button" class="btn-secondary" onclick="closeModal('modalRefuser')">Annuler</button>
+        </div>
+      </div>
+    </div>
+<script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/common.js"></script>
+    <script src="../../shared/js/userAuth.js"></script>
+    <script src="../../shared/js/pharmaAuth.js"></script>
+    <script src="../js/adminDetailShared.js"></script>
+    <script src="../js/pharmacieDetail.js"></script>
+  </body>
+</html>

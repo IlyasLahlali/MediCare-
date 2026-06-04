@@ -81,8 +81,9 @@ function formatPharmacyCardHours(p) {
   return formatPharmacyHours(p);
 }
 
-/** Bloc horaires intégré à la grille « faits » (fiche public / utilisateur). */
-function pharmacyDetailHoursFactsHtml(p) {
+/** Bloc horaires intégré à la grille « faits » (fiche détail). options.highlightToday : surligner le jour courant (défaut true). */
+function pharmacyDetailHoursFactsHtml(p, options = {}) {
+  const highlightToday = options.highlightToday !== false;
   if (typeof WeeklyPharmacyHours !== "undefined") {
     const week = WeeklyPharmacyHours.weekFromPharmacy(p);
     if (!week) {
@@ -97,20 +98,13 @@ function pharmacyDetailHoursFactsHtml(p) {
           </div>
         </li>`;
     }
-    const today = WeeklyPharmacyHours.todayDisplay(p) || "—";
-    const weekList = WeeklyPharmacyHours.listDisplayHtml(p, { highlightToday: true });
+    const weekList = WeeklyPharmacyHours.listDisplayHtml(p, { highlightToday });
     return `
       <li class="pharmacy-detail-sheet__facts-item--wide pharmacy-detail-sheet__facts-item--hours">
         <span class="pharmacy-detail-sheet__fact-icon" aria-hidden="true">🕐</span>
         <div class="pharmacy-detail-sheet__hours-wrap">
-          <div class="pharmacy-detail-sheet__hours-head">
-            <span class="pharmacy-detail-sheet__fact-label">Horaires</span>
-            <button type="button" class="pharmacy-detail-hours-toggle" data-pharmacy-hours-toggle aria-expanded="false">
-              Voir tous
-            </button>
-          </div>
-          <p class="pharmacy-detail-sheet__hours-today">${escapeHtml(today)}</p>
-          <ul class="pharmacy-detail-hours-week pd-info-hours-list" data-pharmacy-hours-week hidden aria-label="Horaires par jour">${weekList}</ul>
+          <span class="pharmacy-detail-sheet__fact-label">Horaires</span>
+          <ul class="pharmacy-detail-hours-week pd-info-hours-list" aria-label="Horaires par jour">${weekList}</ul>
         </div>
       </li>`;
   }
@@ -596,6 +590,44 @@ function parsePharmacyCoord(value) {
 
 function pharmacyHasCoordinates(p) {
   return parsePharmacyCoord(p?.latitude) != null && parsePharmacyCoord(p?.longitude) != null;
+}
+
+let _pharmacyLocationMiniMap = null;
+
+/** Carte Leaflet en lecture seule (fiche détail, admin, etc.). */
+function mountPharmacyLocationMap(hostEl, p, options = {}) {
+  if (!hostEl) return;
+  const lat = parsePharmacyCoord(p?.latitude);
+  const lon = parsePharmacyCoord(p?.longitude);
+  if (lat == null || lon == null) {
+    hostEl.innerHTML =
+      '<p class="muted admin-pharmacy-location__empty">Position non renseignée.</p>';
+    return;
+  }
+  if (typeof L === "undefined") {
+    hostEl.innerHTML = '<p class="muted">Carte indisponible.</p>';
+    return;
+  }
+  const mapId = options.mapId || "pharmacy-location-map-inner";
+  const mapClass = options.mapClass || "pharmacy-location-map";
+  hostEl.innerHTML = `<div id="${mapId}" class="${mapClass}" role="img" aria-label="Carte de localisation"></div>`;
+  if (_pharmacyLocationMiniMap) {
+    _pharmacyLocationMiniMap.remove();
+    _pharmacyLocationMiniMap = null;
+  }
+  const zoom = options.zoom ?? 16;
+  _pharmacyLocationMiniMap = L.map(mapId, { scrollWheelZoom: false }).setView([lat, lon], zoom);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(_pharmacyLocationMiniMap);
+  L.marker([lat, lon])
+    .addTo(_pharmacyLocationMiniMap)
+    .bindPopup(escapeHtml(p.nom || "Pharmacie"));
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => _pharmacyLocationMiniMap?.invalidateSize());
+  });
 }
 
 function pharmacyMapUrl(p, options = {}) {

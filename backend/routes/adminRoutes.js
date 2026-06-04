@@ -5,7 +5,7 @@ const { getPharmacySchema } = require("../utils/pharmacySchema");
 const { createNotification } = require("../utils/notificationHelper");
 const { attachPharmacyHoraires } = require("../utils/pharmacyHorairesDb");
 const { applyEffectiveOpenToRow } = require("../utils/pharmacyHours");
-const { gardeEffectiveSelectSql } = require("../utils/gardePublicSql");
+const { gardeEffectiveSelectSql, gardePlanningSelectSql } = require("../utils/gardePublicSql");
 
 const router = express.Router();
 router.use(authRequired, requireRole("ADMIN"));
@@ -139,6 +139,7 @@ router.get("/pharmacies/:id", async (req, res) => {
       `SELECT p.*, ${s.quartierSql} AS quartier, ${s.villeSql} AS ville,
               ${st} AS statut,
               ${gardeEffectiveSelectSql()},
+              ${gardePlanningSelectSql()},
               u.id AS pharmacien_id, u.nom AS pharmacien_nom, u.email AS pharmacien_email,
               u.statut AS pharmacien_statut, u.date_creation AS pharmacien_date_creation
        FROM pharmacies p
@@ -149,6 +150,7 @@ router.get("/pharmacies/:id", async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: "Pharmacie introuvable" });
 
     const pharmacy = rows[0];
+    pharmacy.est_de_garde = !!(pharmacy.garde_date_debut && pharmacy.garde_date_fin);
     await attachPharmacyHoraires(pharmacy);
     applyEffectiveOpenToRow(pharmacy);
     let stock = [];

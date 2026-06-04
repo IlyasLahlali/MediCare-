@@ -39,25 +39,6 @@ const WeeklyPharmacyHours = (function () {
     return Object.fromEntries(DAY_KEYS.map((k) => [k, { ...d, open: d.open, close: d.close }]));
   }
 
-  function weekUsesSameOpenHours(week) {
-    if (!week) return true;
-    let refOpen = null;
-    let refClose = null;
-    let hasOpen = false;
-    for (const key of DAY_KEYS) {
-      const d = week[key];
-      if (!d || d.closed) continue;
-      if (!hasOpen) {
-        refOpen = d.open;
-        refClose = d.close;
-        hasOpen = true;
-      } else if (d.open !== refOpen || d.close !== refClose) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   function firstOpenDayHours(week) {
     for (const key of DAY_KEYS) {
       const d = week[key];
@@ -181,9 +162,7 @@ const WeeklyPharmacyHours = (function () {
     if (isDayClosed(day)) {
       return `Aujourd'hui (${dayName}) : fermé`;
     }
-    const todayPart = `Aujourd'hui : ${formatTimeShort(day.open)} – ${formatTimeShort(day.close)}`;
-    if (weekUsesSameOpenHours(week)) return todayPart;
-    return `${todayPart} · horaires variables`;
+    return `Aujourd'hui : ${formatTimeShort(day.open)} – ${formatTimeShort(day.close)}`;
   }
 
   function todayDisplay(p, date = new Date()) {

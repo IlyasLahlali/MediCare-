@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Détail pharmacie — Admin MediCare+</title>
     <link rel="stylesheet" href="../../shared/css/base.css" />
-<link rel="stylesheet" href="../css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="../css/style.css?v=6" />
   </head>
   <body class="admin-page admin-detail-page">
     <header class="dashboard-header admin-header">
@@ -23,15 +29,15 @@
     </header>
 
     <main class="admin-main">
-      <section class="card admin-section admin-panel admin-detail-panel">
-        <div id="pharmacyDetail" class="admin-detail-content">
+      <article class="card admin-section admin-panel admin-detail-panel admin-pharmacy-sheet">
+        <div id="pharmacyDetail" class="admin-pharmacy-detail">
           <p class="admin-loading">Chargement…</p>
         </div>
-        <div id="pharmacienSection"></div>
-        <div id="stockSection"></div>
-        <div id="actionsSection"></div>
-        <p id="detailMessage" class="admin-feedback"></p>
-      </section>
+        <div id="pharmacienSection" class="admin-pharmacy-section"></div>
+        <div id="stockSection" class="admin-pharmacy-section"></div>
+        <div id="actionsSection" class="admin-pharmacy-section"></div>
+        <p id="detailMessage" class="admin-feedback" role="status"></p>
+      </article>
     </main>
 
     <div id="modalValider" class="modal-overlay hidden">
@@ -55,11 +61,18 @@
         </div>
       </div>
     </div>
-<script src="../../shared/js/api.js"></script>
+
+    <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/weeklyPharmacyHours.js?v=3"></script>
     <script src="../../shared/js/common.js"></script>
     <script src="../../shared/js/userAuth.js"></script>
     <script src="../../shared/js/pharmaAuth.js"></script>
-    <script src="../js/adminDetailShared.js"></script>
-    <script src="../js/pharmacieDetail.js"></script>
+    <script src="../js/adminDetailShared.js?v=3"></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="../js/pharmacieDetail.js?v=10"></script>
   </body>
 </html>

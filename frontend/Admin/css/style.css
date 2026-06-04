@@ -1,5 +1,7 @@
 /* Admin MediCare+ — même structure que gestion-hotel, couleurs teal MediCare+ */
 
+@import url("../../shared/css/pharmacyDetail.css");
+
 body.admin-page {
   background: linear-gradient(180deg, #ecfdf5 0%, #f0f4f8 180px, #f0f4f8 100%);
   margin: 0;
@@ -516,26 +518,154 @@ body.admin-page {
   margin-top: 24px;
 }
 
-.admin-detail-header {
+.admin-pharmacy-sheet {
+  padding: 1.25rem 1.35rem 1.5rem;
+}
+
+.admin-pharmacy-detail__identity {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.admin-pharmacy-detail__thumb {
+  flex-shrink: 0;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(145deg, #f0fdfa, #ecfdf5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  overflow: hidden;
+  padding: 0;
+}
+
+.admin-pharmacy-detail__thumb--photo {
+  cursor: zoom-in;
+  border: none;
+}
+
+.admin-pharmacy-detail__thumb--photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-pharmacy-detail__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-pharmacy-detail__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.admin-pharmacy-detail__loc {
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #0d9488;
+}
+
+.admin-pharmacy-detail__chips {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 0.35rem;
 }
 
-.admin-detail-header h2 {
-  color: #0f766e;
-  margin: 0;
+.admin-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid transparent;
 }
 
-.admin-detail-img {
+.admin-detail-chip--attente {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.admin-detail-chip--valide {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.admin-detail-chip--refuse {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.admin-pharmacy-detail__facts {
+  margin-bottom: 0.5rem;
+}
+
+.admin-pharmacy-location {
+  margin-top: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+#pharmacyDetail + .admin-pharmacy-section {
+  margin-top: 1.5rem;
+}
+
+.admin-pharmacy-map-host {
+  margin-top: 0.65rem;
+}
+
+.admin-pharmacy-location-map,
+.admin-pharmacy-map-host .pharmacy-location-map {
   width: 100%;
-  max-height: 220px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 1rem;
+  height: min(280px, 42vh);
+  min-height: 200px;
+  border-radius: 14px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  z-index: 0;
+}
+
+.admin-pharmacy-location__empty {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+
+.admin-pharmacy-section + .admin-pharmacy-section {
+  margin-top: 0;
+}
+
+.admin-info-hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 560px) {
+  .admin-pharmacy-detail__identity {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-pharmacy-detail__thumb {
+    width: 100%;
+    height: 10rem;
+  }
 }
 
 .admin-info-grid {
@@ -600,6 +730,132 @@ body.admin-page {
 .admin-chambre-card span {
   font-size: 0.88rem;
   color: #64748b;
+}
+
+.admin-stock-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin-top: 1.75rem;
+}
+
+.admin-stock-head__title.admin-subtitle {
+  margin: 0;
+  padding: 0;
+  border: none;
+  flex: 1 1 auto;
+  min-width: 10rem;
+}
+
+.admin-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f766e;
+  background: #ecfdf5;
+  border: 1px solid #99f6e4;
+  border-radius: 999px;
+}
+
+.admin-stock-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  min-height: 2.65rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid #0f766e;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #14b8a6 0%, #0d9488 100%);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    0 2px 4px rgba(15, 118, 110, 0.2),
+    0 6px 14px rgba(13, 148, 136, 0.28);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.admin-stock-toggle-btn:hover {
+  background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%);
+  transform: translateY(-1px);
+  box-shadow:
+    0 3px 6px rgba(15, 118, 110, 0.25),
+    0 8px 18px rgba(13, 148, 136, 0.35);
+}
+
+.admin-stock-toggle-btn__icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.admin-stock-toggle-btn__chevron {
+  font-size: 0.65rem;
+  opacity: 0.9;
+  transition: transform 0.2s ease;
+}
+
+.admin-stock-toggle-btn.is-open .admin-stock-toggle-btn__chevron {
+  transform: rotate(180deg);
+}
+
+.admin-stock-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.admin-stock-panel__grid {
+  margin: 0;
+}
+
+.admin-stock-empty {
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
+}
+
+.admin-stock-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.admin-stock-status--ok {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.admin-stock-status--out {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.admin-stock-price {
+  font-weight: 600;
+  color: #334155;
+}
+
+@media (max-width: 560px) {
+  .admin-stock-toggle-btn {
+    margin-left: 0;
+    flex: 1 1 100%;
+  }
 }
 
 .admin-detail-actions {

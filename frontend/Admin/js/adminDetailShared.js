@@ -15,26 +15,70 @@ function adminPharmacienStatutLabel(statut) {
   return "";
 }
 
+function adminStockItemHtml(s) {
+  const disponible = !!s.disponible;
+  const statusCls = disponible ? "admin-stock-status--ok" : "admin-stock-status--out";
+  return `
+    <div class="admin-chambre-card admin-stock-item">
+      <strong>${escapeHtml(s.nom || "—")}</strong>
+      <span class="admin-stock-status ${statusCls}">${disponible ? "Disponible" : "Rupture"}</span>
+      <span class="admin-stock-price">${s.prix != null ? `${escapeHtml(String(s.prix))} DH` : "—"}</span>
+    </div>`;
+}
+
 function adminRenderStock(stock, container) {
   if (!container) return;
-  if (!stock?.length) {
-    container.innerHTML =
-      '<h3 class="admin-subtitle">Stock médicaments</h3><p class="muted">Aucun médicament en stock.</p>';
+  const items = Array.isArray(stock) ? stock : [];
+  const count = items.length;
+  const countLabel = `${count} médicament${count > 1 ? "s" : ""}`;
+
+  if (!count) {
+    container.innerHTML = `
+      <div class="admin-stock-head">
+        <h3 class="admin-subtitle admin-stock-head__title">Stock médicaments</h3>
+      </div>
+      <p class="muted admin-stock-empty">Aucun médicament en stock.</p>`;
     return;
   }
-  container.innerHTML =
-    '<h3 class="admin-subtitle">Stock médicaments</h3><div class="admin-chambres-grid">' +
-    stock
-      .map(
-        (s) => `
-      <div class="admin-chambre-card">
-        <strong>${escapeHtml(s.nom)}</strong>
-        <span>${s.disponible ? "Disponible" : "Rupture"}</span>
-        <span>${s.prix != null ? `${s.prix} DH` : "—"}</span>
-      </div>`
-      )
-      .join("") +
-    "</div>";
+
+  const gridHtml = items.map(adminStockItemHtml).join("");
+
+  container.innerHTML = `
+    <div class="admin-stock-head">
+      <h3 class="admin-subtitle admin-stock-head__title">Stock médicaments</h3>
+      <span class="admin-stock-badge" aria-label="${escapeHtml(countLabel)}">${escapeHtml(countLabel)}</span>
+      <button
+        type="button"
+        class="admin-stock-toggle-btn"
+        data-admin-stock-toggle
+        aria-expanded="false"
+        aria-controls="adminStockPanel"
+      >
+        <span class="admin-stock-toggle-btn__icon" aria-hidden="true">📦</span>
+        <span class="admin-stock-toggle-btn__label">Voir tout le stock</span>
+        <span class="admin-stock-toggle-btn__chevron" aria-hidden="true">▼</span>
+      </button>
+    </div>
+    <div id="adminStockPanel" class="admin-stock-panel" data-admin-stock-panel hidden>
+      <div class="admin-chambres-grid admin-stock-panel__grid">${gridHtml}</div>
+    </div>`;
+}
+
+function initAdminStockPanel() {
+  if (window._adminStockPanelBound) return;
+  window._adminStockPanelBound = true;
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-admin-stock-toggle]");
+    if (!btn) return;
+    const panel = btn.closest("#stockSection")?.querySelector("[data-admin-stock-panel]");
+    if (!panel) return;
+    const open = panel.hidden;
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    btn.classList.toggle("is-open", open);
+    const label = btn.querySelector(".admin-stock-toggle-btn__label");
+    if (label) label.textContent = open ? "Masquer le stock" : "Voir tout le stock";
+  });
 }
 
 function adminRenderActions(statut, container) {
@@ -42,7 +86,6 @@ function adminRenderActions(statut, container) {
 
   if (statut === "en_attente") {
     container.innerHTML = `
-      <h3 class="admin-subtitle">Actions</h3>
       <div class="admin-detail-actions">
         <button type="button" class="btn-primary" onclick="openModal('modalValider')">Valider la pharmacie</button>
         <button type="button" class="btn-danger" onclick="openModal('modalRefuser')">Refuser la pharmacie</button>
@@ -52,7 +95,6 @@ function adminRenderActions(statut, container) {
 
   if (statut === "valide") {
     container.innerHTML = `
-      <h3 class="admin-subtitle">Actions</h3>
       <div class="admin-status-banner banner-valide">
         Cette pharmacie est validée et visible sur MediCare+.
       </div>`;
@@ -60,7 +102,6 @@ function adminRenderActions(statut, container) {
   }
 
   container.innerHTML = `
-    <h3 class="admin-subtitle">Actions</h3>
     <div class="admin-status-banner banner-refuse">
       Cette pharmacie a été refusée. Aucune action possible.
     </div>`;
@@ -77,5 +118,6 @@ window.adminStatutLabel = adminStatutLabel;
 window.adminStatutClass = adminStatutClass;
 window.adminPharmacienStatutLabel = adminPharmacienStatutLabel;
 window.adminRenderStock = adminRenderStock;
+window.initAdminStockPanel = initAdminStockPanel;
 window.adminRenderActions = adminRenderActions;
 window.adminFormatDate = adminFormatDate;

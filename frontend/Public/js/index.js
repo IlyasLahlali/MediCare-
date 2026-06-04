@@ -143,14 +143,25 @@ async function loadNearbyList(nearbyList, geo, ville) {
   if (!nearbyList) return;
   nearbyList.innerHTML = '<p class="muted">Chargement…</p>';
   try {
-    const list = await MediCareAPI.getPharmacies(apiParamsFromSearch({ ville }, geo, true));
     const geoQuery = geo ? `&lat=${geo.lat}&lon=${geo.lon}` : "";
+    const searchForm = geo ? {} : { ville };
+    let list = await MediCareAPI.getPharmacies(apiParamsFromSearch(searchForm, geo, true));
+    let introHtml = "";
+    if (!list.length && geo) {
+      const fallback = await MediCareAPI.getPharmacies(apiParamsFromSearch({}, geo, false));
+      if (fallback.length) {
+        list = fallback;
+        introHtml =
+          '<p class="muted pharmacy-nearby-fallback">Aucune pharmacie ouverte pour le moment — les plus proches :</p>';
+      }
+    }
     mountPharmacyList(nearbyList, list, {
       geoQuery,
       zone: "public",
       relativeUrl: true,
       previewLimit: 6,
       offlineNotice: list._offlineCache,
+      introHtml,
       emptyHtml: '<p class="muted">Aucune pharmacie ouverte à proximité pour le moment.</p>',
     });
   } catch (err) {

@@ -186,14 +186,27 @@ const WeeklyPharmacyHours = (function () {
     return `${todayPart} · horaires variables`;
   }
 
-  function listDisplayHtml(p) {
+  function todayDisplay(p, date = new Date()) {
+    const week = weekFromPharmacy(p);
+    if (!week) return "";
+    const key = dayKeyForDate(date);
+    const day = week[key];
+    const dayName = DAY_LABELS[key];
+    if (isDayClosed(day)) return `Aujourd'hui (${dayName}) : fermé`;
+    return `Aujourd'hui (${dayName}) : ${formatTimeShort(day.open)} – ${formatTimeShort(day.close)}`;
+  }
+
+  function listDisplayHtml(p, options = {}) {
+    const highlightToday = options.highlightToday !== false;
+    const todayKey = dayKeyForDate(options.date || new Date());
     const week = weekFromPharmacy(p) || defaultWeek();
     return DAY_KEYS.map((key) => {
       const d = week[key] || defaultDay("", "", true);
       const line = isDayClosed(d)
         ? "Fermé"
         : `${formatTimeShort(d.open)} – ${formatTimeShort(d.close)}`;
-      return `<li><span class="pd-hours-day">${DAY_LABELS[key]}</span><span class="pd-hours-time">${line}</span></li>`;
+      const todayClass = highlightToday && key === todayKey ? "is-today" : "";
+      return `<li${todayClass ? ` class="${todayClass}"` : ""}><span class="pd-hours-day">${DAY_LABELS[key]}</span><span class="pd-hours-time">${line}</span></li>`;
     }).join("");
   }
 
@@ -368,6 +381,7 @@ const WeeklyPharmacyHours = (function () {
     defaultWeek,
     compactDisplay,
     cardDisplay,
+    todayDisplay,
     listDisplayHtml,
     editFormHtml,
     readFromForm,

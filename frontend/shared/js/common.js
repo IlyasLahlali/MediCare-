@@ -56,8 +56,11 @@ function formatPharmacyTime(value) {
 }
 
 function formatPharmacyHours(open, close) {
-  if (open && typeof open === "object" && typeof WeeklyPharmacyHours !== "undefined") {
-    return WeeklyPharmacyHours.compactDisplay(open) || "—";
+  if (open && typeof open === "object") {
+    if (typeof WeeklyPharmacyHours !== "undefined") {
+      return WeeklyPharmacyHours.compactDisplay(open) || "—";
+    }
+    return formatPharmacyHours(open.heure_ouverture, open.heure_fermeture);
   }
   const start = formatPharmacyTime(open);
   const end = formatPharmacyTime(close);
@@ -72,7 +75,55 @@ function formatPharmacyCardHours(p) {
   if (p && typeof p === "object" && typeof WeeklyPharmacyHours !== "undefined") {
     return WeeklyPharmacyHours.cardDisplay(p) || "—";
   }
+  if (p && typeof p === "object") {
+    return formatPharmacyHours(p.heure_ouverture, p.heure_fermeture);
+  }
   return formatPharmacyHours(p);
+}
+
+/** Bloc horaires intégré à la grille « faits » (fiche public / utilisateur). */
+function pharmacyDetailHoursFactsHtml(p) {
+  if (typeof WeeklyPharmacyHours !== "undefined") {
+    const week = WeeklyPharmacyHours.weekFromPharmacy(p);
+    if (!week) {
+      const fallback = formatPharmacyHours(p?.heure_ouverture, p?.heure_fermeture);
+      if (!fallback || fallback === "—") return "";
+      return `
+        <li class="pharmacy-detail-sheet__facts-item--wide pharmacy-detail-sheet__facts-item--hours">
+          <span class="pharmacy-detail-sheet__fact-icon" aria-hidden="true">🕐</span>
+          <div class="pharmacy-detail-sheet__hours-wrap">
+            <span class="pharmacy-detail-sheet__fact-label">Horaires</span>
+            <p class="pharmacy-detail-sheet__hours-today">${escapeHtml(fallback)}</p>
+          </div>
+        </li>`;
+    }
+    const today = WeeklyPharmacyHours.todayDisplay(p) || "—";
+    const weekList = WeeklyPharmacyHours.listDisplayHtml(p, { highlightToday: true });
+    return `
+      <li class="pharmacy-detail-sheet__facts-item--wide pharmacy-detail-sheet__facts-item--hours">
+        <span class="pharmacy-detail-sheet__fact-icon" aria-hidden="true">🕐</span>
+        <div class="pharmacy-detail-sheet__hours-wrap">
+          <div class="pharmacy-detail-sheet__hours-head">
+            <span class="pharmacy-detail-sheet__fact-label">Horaires</span>
+            <button type="button" class="pharmacy-detail-hours-toggle" data-pharmacy-hours-toggle aria-expanded="false">
+              Voir tous
+            </button>
+          </div>
+          <p class="pharmacy-detail-sheet__hours-today">${escapeHtml(today)}</p>
+          <ul class="pharmacy-detail-hours-week pd-info-hours-list" data-pharmacy-hours-week hidden aria-label="Horaires par jour">${weekList}</ul>
+        </div>
+      </li>`;
+  }
+  const line = formatPharmacyHours(p?.heure_ouverture, p?.heure_fermeture);
+  if (!line || line === "—") return "";
+  return `
+    <li class="pharmacy-detail-sheet__facts-item--wide pharmacy-detail-sheet__facts-item--hours">
+      <span class="pharmacy-detail-sheet__fact-icon" aria-hidden="true">🕐</span>
+      <div class="pharmacy-detail-sheet__hours-wrap">
+        <span class="pharmacy-detail-sheet__fact-label">Horaires</span>
+        <p class="pharmacy-detail-sheet__hours-today">${escapeHtml(line)}</p>
+      </div>
+    </li>`;
 }
 
 function formatPharmacyDateTimeLabel(value) {
@@ -478,6 +529,19 @@ function pharmacyBadges(p) {
   return html;
 }
 
+/** Pastilles statut (fiche détail + cartes public / utilisateur / pharmacien). */
+function pharmacyChipBadges(p) {
+  const garde = !!p.est_de_garde;
+  const ouverte = !garde && pharmacyIsEffectivelyOpen(p);
+  if (garde) {
+    return '<span class="pharmacy-detail-sheet__chip pharmacy-detail-sheet__chip--garde">🌙 De garde</span>';
+  }
+  if (ouverte) {
+    return '<span class="pharmacy-detail-sheet__chip pharmacy-detail-sheet__chip--open">Ouverte</span>';
+  }
+  return '<span class="pharmacy-detail-sheet__chip pharmacy-detail-sheet__chip--closed">Fermée</span>';
+}
+
 function pharmacyImageUrl(path) {
   if (!path) return null;
   if (path.startsWith("http")) return path;
@@ -714,7 +778,7 @@ function renderPharmacyDetailHero(p, options = {}) {
       ? `<span class="pharmacy-detail-sheet__chip pharmacy-detail-sheet__chip--dist">À ${formatDistance(Number(p.distance_km))}</span>`
       : "";
   const loc = formatQuartierVille(p);
-  const hours = formatPharmacyHours(p);
+  const hoursFactsHtml = pharmacyDetailHoursFactsHtml(p);
   const gardeRange = formatGardePlanningRange(p.garde_date_debut, p.garde_date_fin);
 
   const thumbLabel = `Agrandir la photo de ${p.nom || "la pharmacie"}`;
@@ -732,10 +796,6 @@ function renderPharmacyDetailHero(p, options = {}) {
     : `<div class="pharmacy-detail-sheet__thumb" aria-hidden="true">
         <span class="pharmacy-detail-sheet__thumb-fallback">🏥</span>
       </div>`;
-
-  const gardeChip = p.est_de_garde
-    ? `<span class="pharmacy-detail-sheet__chip pharmacy-detail-sheet__chip--garde">🌙 De garde</span>`
-    : "";
 
   const favoriBtn = showFavori
     ? `<button
@@ -784,9 +844,8 @@ function renderPharmacyDetailHero(p, options = {}) {
           </div>
           ${loc !== "—" ? `<p class="pharmacy-detail-sheet__loc">${escapeHtml(loc)}</p>` : ""}
           <div class="pharmacy-detail-sheet__chips">
-            ${pharmacyBadges(p)}
+            ${pharmacyChipBadges(p)}
             ${distChip}
-            ${gardeChip}
           </div>
         </div>
       </div>
@@ -797,16 +856,12 @@ function renderPharmacyDetailHero(p, options = {}) {
           <span class="pharmacy-detail-sheet__fact-label">Téléphone</span>
           <strong>${escapeHtml(p.telephone || "—")}</strong>
         </li>
-        <li>
-          <span class="pharmacy-detail-sheet__fact-icon" aria-hidden="true">🕐</span>
-          <span class="pharmacy-detail-sheet__fact-label">Horaires</span>
-          <strong>${escapeHtml(hours)}</strong>
-        </li>
         <li class="pharmacy-detail-sheet__facts-item--wide">
           <span class="pharmacy-detail-sheet__fact-icon" aria-hidden="true">📍</span>
           <span class="pharmacy-detail-sheet__fact-label">Adresse</span>
           <strong>${escapeHtml(p.adresse || "—")}</strong>
         </li>
+        ${hoursFactsHtml}
         ${
           p.est_de_garde
             ? `<li>
@@ -920,7 +975,25 @@ function tryOpenPharmacyPhotoFromTarget(target) {
   return true;
 }
 
+function initPharmacyDetailHoursToggle() {
+  if (window._pharmacyHoursToggleBound) return;
+  window._pharmacyHoursToggleBound = true;
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-pharmacy-hours-toggle]");
+    if (!btn) return;
+    const panel = btn.closest(".pharmacy-detail-sheet__hours-wrap")?.querySelector(
+      "[data-pharmacy-hours-week]"
+    );
+    if (!panel) return;
+    const open = panel.hidden;
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    btn.textContent = open ? "Réduire" : "Voir tous";
+  });
+}
+
 function initPharmacyDetailPhotoZoom() {
+  initPharmacyDetailHoursToggle();
   ensurePharmacyPhotoLightbox();
 
   if (!pharmacyPhotoLightboxBound) {
@@ -1313,7 +1386,7 @@ function renderPharmacyCard(p, options = {}) {
     ? `<div class="pharmacy-card-media">
         ${renderPharmacyThumb(p.image, p.nom)}
         <div class="pharmacy-card-media-overlay">
-          <div class="pharmacy-card-status">${badgesExtra}${pharmacyBadges(p)}</div>
+          <div class="pharmacy-card-status">${badgesExtra}${pharmacyChipBadges(p)}</div>
           ${dist ? `<div class="pharmacy-card-distance">${dist}</div>` : ""}
         </div>
       </div>`
@@ -1564,19 +1637,23 @@ function mountPharmacyList(container, list, options = {}) {
   const limit = options.previewLimit > 0 ? options.previewLimit : 0;
   const opts = normalizePharmacyCardOptions(options);
   const offlineNotice = opts.offlineNotice;
+  const introHtml = opts.introHtml || "";
   delete opts.previewLimit;
   delete opts.offlineNotice;
+  delete opts.introHtml;
 
   if (!list.length) {
     container.innerHTML =
-      options.emptyHtml || '<p class="muted">Aucune pharmacie trouvée.</p>';
+      (introHtml || "") +
+      (options.emptyHtml || '<p class="muted">Aucune pharmacie trouvée.</p>');
     return;
   }
 
   const noticeHtml =
-    offlineNotice && typeof medicareOfflineNoticeHtml === "function"
+    introHtml +
+    (offlineNotice && typeof medicareOfflineNoticeHtml === "function"
       ? medicareOfflineNoticeHtml()
-      : "";
+      : "");
 
   if (limit > 0 && list.length > limit) {
     container.innerHTML =

@@ -55,7 +55,8 @@
   gap: 0.35rem;
 }
 
-.pharmacy-card--enhanced .pharmacy-card-status .badge {
+.pharmacy-card--enhanced .pharmacy-card-status .badge,
+.pharmacy-card--enhanced .pharmacy-card-status .pharmacy-detail-sheet__chip {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -568,6 +569,18 @@ body.pharmacy-photo-lightbox-open {
   border-color: #fde68a;
 }
 
+.pharmacy-detail-sheet__chip--open {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.pharmacy-detail-sheet__chip--closed {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
 .pharmacy-detail-sheet__facts {
   list-style: none;
   margin: 0 0 1rem;
@@ -614,6 +627,106 @@ body.pharmacy-photo-lightbox-open {
   color: #1e293b;
   line-height: 1.35;
   word-break: break-word;
+}
+
+.pharmacy-detail-sheet__facts-item--hours {
+  align-items: start;
+}
+
+.pharmacy-detail-sheet__facts-item--hours .pharmacy-detail-sheet__fact-icon {
+  margin-top: 0.15rem;
+}
+
+.pharmacy-detail-sheet__hours-wrap {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.pharmacy-detail-sheet__hours-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.pharmacy-detail-sheet__hours-head .pharmacy-detail-sheet__fact-label {
+  margin: 0;
+}
+
+.pharmacy-detail-hours-toggle {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0.15rem 0;
+  border: none;
+  background: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f766e;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pharmacy-detail-hours-toggle:hover {
+  color: #0d9488;
+}
+
+.pharmacy-detail-sheet__hours-today {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #0f766e;
+  line-height: 1.35;
+}
+
+.pharmacy-detail-hours-week.pd-info-hours-list {
+  margin: 0.15rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pharmacy-detail-hours-week.pd-info-hours-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.86rem;
+}
+
+.pharmacy-detail-hours-week.pd-info-hours-list li:last-child {
+  border-bottom: none;
+}
+
+.pharmacy-detail-hours-week.pd-info-hours-list li.is-today {
+  margin: 0 -0.4rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: 8px;
+  background: #ecfdf5;
+  border-bottom-color: transparent;
+}
+
+.pharmacy-detail-hours-week.pd-info-hours-list li.is-today + li {
+  border-top: none;
+}
+
+.pharmacy-detail-hours-week .pd-hours-day {
+  font-weight: 600;
+  color: #475569;
+}
+
+.pharmacy-detail-hours-week li.is-today .pd-hours-day {
+  color: #0f766e;
+}
+
+.pharmacy-detail-hours-week .pd-hours-time {
+  color: #0f172a;
+  text-align: right;
+  font-weight: 500;
 }
 
 .pharmacy-detail-sheet__actions {

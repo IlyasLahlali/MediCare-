@@ -11,7 +11,7 @@ const {
   pharmacyCountsAsOpenSql,
   applyEffectiveOpenToRow,
 } = require("../utils/pharmacyHours");
-const { attachPharmacyHoraires } = require("../utils/pharmacyHorairesDb");
+const { attachPharmacyHoraires, attachPharmacyHorairesList } = require("../utils/pharmacyHorairesDb");
 const { gardeInProgressExistsSql } = require("../utils/gardePublicSql");
 
 const router = express.Router();
@@ -259,10 +259,12 @@ router.get("/", async (req, res) => {
     if (hasGeo) {
       sql += ` ORDER BY (p.latitude IS NULL OR p.longitude IS NULL), distance_km ASC, p.nom`;
     } else {
-      sql += ` ORDER BY est_de_garde DESC, est_ouverte DESC, p.nom`;
+      sql += ` ORDER BY est_de_garde DESC, (${pharmacyCountsAsOpenSql()}) DESC, p.nom`;
     }
 
     const [rows] = await pool.query(sql, params);
+    await attachPharmacyHorairesList(rows);
+    for (const row of rows) applyEffectiveOpenToRow(row);
     res.json(rows);
   } catch (err) {
     console.error(err);

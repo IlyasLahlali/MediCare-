@@ -1,4 +1,9 @@
 @import url("../../shared/css/pharmacyDetail.css");
+
+.pharmacy-nearby-fallback {
+  margin: 0 0 0.75rem;
+  font-size: 0.92rem;
+}
 @import url("../../shared/css/scrollHint.css");
 
 /* ——— Accueil public (hero + recherche unifiée) ——— */

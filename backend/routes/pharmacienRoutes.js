@@ -35,6 +35,11 @@ const {
   queryPharmacienStockList,
 } = require("../utils/ensureStockPharmacieSchema");
 const { queryAvisPharmacieList } = require("../utils/avisPharmacie");
+const {
+  notifyPharmacienPharmacyCreated,
+  notifyPharmacienPharmacyUpdated,
+  notifyPharmacienPharmacyDeleted,
+} = require("../utils/pharmaNotificationService");
 
 const { ensurePharmacyHorairesTablesSchemaOnce } = require("../utils/pharmacyHorairesDb");
 
@@ -364,6 +369,12 @@ router.post("/pharmacies", async (req, res) => {
     const saved = await saveNormalHours(result.insertId, weekToSave);
     if (!saved.ok) return res.status(400).json({ error: saved.error });
 
+    try {
+      await notifyPharmacienPharmacyCreated(req.user.id, result.insertId, data.nom);
+    } catch (notifErr) {
+      console.warn("Notification création pharmacie:", notifErr.message);
+    }
+
     res.status(201).json({
       id: result.insertId,
       image: imagePath,
@@ -475,6 +486,14 @@ router.put("/pharmacies/:id", async (req, res) => {
 
     const updated = await getOwnedPharmacy(id, req.user.id);
     await attachPharmacyHoraires(updated);
+
+    try {
+      const nom = updated?.nom || pharmacy.nom;
+      await notifyPharmacienPharmacyUpdated(req.user.id, id, nom);
+    } catch (notifErr) {
+      console.warn("Notification modification pharmacie:", notifErr.message);
+    }
+
     res.json({ success: true, pharmacy: updated });
   } catch (err) {
     console.error("PUT pharmacie:", err);
@@ -495,7 +514,15 @@ router.delete("/pharmacies/:id", async (req, res) => {
   if (!pharmacy) return res.status(404).json({ error: "Pharmacie introuvable" });
 
   try {
+    const pharmacyName = pharmacy.nom;
     await pool.query(`DELETE FROM pharmacies WHERE id = ?`, [id]);
+
+    try {
+      await notifyPharmacienPharmacyDeleted(req.user.id, pharmacyName);
+    } catch (notifErr) {
+      console.warn("Notification suppression pharmacie:", notifErr.message);
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error(err);

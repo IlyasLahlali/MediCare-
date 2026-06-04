@@ -25,6 +25,43 @@ function detailLink(pharmacyId) {
   return `/Pharmacien/html/pharmacieDetail.html?id=${pharmacyId}`;
 }
 
+function pharmacieListLink() {
+  return "/Pharmacien/html/pharmacie.html";
+}
+
+async function notifyPharmacienPharmacyCreated(ownerId, pharmacyId, pharmacyName) {
+  if (!ownerId) return;
+  await createNotification({
+    userId: ownerId,
+    type: "SYSTEM",
+    titre: "Pharmacie en attente",
+    message: `« ${pharmacyName} » a été ajoutée. Validation MediCare+ en cours — vous serez notifié dès qu’elle sera publiée.`,
+    lien: detailLink(pharmacyId),
+  });
+}
+
+async function notifyPharmacienPharmacyUpdated(ownerId, pharmacyId, pharmacyName) {
+  if (!ownerId) return;
+  await createNotification({
+    userId: ownerId,
+    type: "SYSTEM",
+    titre: "Pharmacie modifiée",
+    message: `Les informations de « ${pharmacyName} » ont été enregistrées.`,
+    lien: detailLink(pharmacyId),
+  });
+}
+
+async function notifyPharmacienPharmacyDeleted(ownerId, pharmacyName) {
+  if (!ownerId) return;
+  await createNotification({
+    userId: ownerId,
+    type: "SYSTEM",
+    titre: "Pharmacie supprimée",
+    message: `« ${pharmacyName} » a été retirée de votre espace.`,
+    lien: pharmacieListLink(),
+  });
+}
+
 async function notifyPharmacienNewAvis(pharmacyId, { note, commentaire, isUpdate = false }) {
   const pharmacy = await getPharmacyOwner(pharmacyId);
   if (!pharmacy?.owner_id) return;
@@ -227,6 +264,9 @@ async function runGardeReminders() {
 
 module.exports = {
   notifyPharmacienNewAvis,
+  notifyPharmacienPharmacyCreated,
+  notifyPharmacienPharmacyUpdated,
+  notifyPharmacienPharmacyDeleted,
   notifyGardeActivated,
   notifyEndedGardePlannings,
   notifyGardeCancelled,

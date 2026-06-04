@@ -594,6 +594,7 @@
           longitude: lon,
           imageDataUrl: imageDataUrl || null,
         });
+        if (window.NotificationCenter) await NotificationCenter.refresh();
         setFormMsg(result.message || "Pharmacie enregistrée — redirection…", "success");
         setTimeout(() => {
           window.location.href = `pharmacieDetail.html?id=${result.id}`;

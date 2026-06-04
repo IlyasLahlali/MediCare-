@@ -701,6 +701,7 @@ async function showEditModal() {
     else if (editImageRemove) payload.removeImage = true;
     try {
       const saved = await MediCareAPI.updatePharmaPharmacy(pharmacyId, payload);
+      if (window.NotificationCenter) await NotificationCenter.refresh();
       closePharmaModal("modal-edit-pharmacy");
       pharmacy = saved.pharmacy || (await MediCareAPI.getPharmaPharmacy(pharmacyId));
       renderPharmacy();
@@ -1683,6 +1684,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     try {
       await MediCareAPI.deletePharmaPharmacy(pharmacyId);
+      if (window.NotificationCenter) await NotificationCenter.refresh();
       window.location.href = "pharmacie.html";
     } catch (err) {
       alert(err.message || "Suppression impossible.");

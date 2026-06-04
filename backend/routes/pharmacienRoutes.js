@@ -40,6 +40,7 @@ const {
   notifyPharmacienPharmacyUpdated,
   notifyPharmacienPharmacyDeleted,
 } = require("../utils/pharmaNotificationService");
+const { notifyAdminsPharmacyPending } = require("../utils/adminNotificationService");
 
 const { ensurePharmacyHorairesTablesSchemaOnce } = require("../utils/pharmacyHorairesDb");
 
@@ -371,6 +372,8 @@ router.post("/pharmacies", async (req, res) => {
 
     try {
       await notifyPharmacienPharmacyCreated(req.user.id, result.insertId, data.nom);
+      const pharmacienNom = req.user.nom || null;
+      await notifyAdminsPharmacyPending(result.insertId, data.nom, pharmacienNom);
     } catch (notifErr) {
       console.warn("Notification création pharmacie:", notifErr.message);
     }

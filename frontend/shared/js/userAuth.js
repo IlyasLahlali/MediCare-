@@ -51,6 +51,7 @@ function initAdminPage() {
   const user = requireAdmin();
   if (!user) return null;
   if (window.UserAccountMenu) UserAccountMenu.init();
+  if (window.NotificationCenter) NotificationCenter.init("#notif-center-mount");
   document.getElementById("btn-logout")?.addEventListener("click", logoutAdmin);
   return user;
 }

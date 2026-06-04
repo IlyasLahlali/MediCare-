@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Détail pharmacie — Admin MediCare+</title>
     <link rel="stylesheet" href="../../shared/css/base.css" />
+    <link rel="stylesheet" href="../../shared/css/notifications.css" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -14,21 +15,10 @@
     <link rel="stylesheet" href="../css/style.css?v=6" />
   </head>
   <body class="admin-page admin-detail-page">
-    <header class="dashboard-header admin-header">
-      <div class="logo">👑 Détail pharmacie</div>
-      <div class="header-actions">
-        <button type="button" class="header-btn header-btn-outline" id="btn-back">
-          <span aria-hidden="true">←</span> Retour
-        </button>
-        <a href="pharmacie.html" class="header-btn header-btn-outline">Pharmacies</a>
-        <a href="Dashboard.html" class="header-btn header-btn-outline">Tableau de bord</a>
-        <button type="button" class="header-btn header-btn-logout" id="btn-logout">
-          <span aria-hidden="true">⎋</span> Déconnexion
-        </button>
-      </div>
-    </header>
-
     <main class="admin-main">
+      <p class="admin-detail-back">
+        <a href="pharmacie.html" id="admin-detail-back-link" class="admin-detail-back-link">← Retour</a>
+      </p>
       <article class="card admin-section admin-panel admin-detail-panel admin-pharmacy-sheet">
         <div id="pharmacyDetail" class="admin-pharmacy-detail">
           <p class="admin-loading">Chargement…</p>
@@ -66,7 +56,7 @@
     <script src="../../shared/js/weeklyPharmacyHours.js?v=3"></script>
     <script src="../../shared/js/common.js"></script>
     <script src="../../shared/js/userAuth.js"></script>
-    <script src="../../shared/js/pharmaAuth.js"></script>
+    <script src="../../shared/js/notifications.js"></script>
     <script src="../js/adminDetailShared.js?v=3"></script>
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

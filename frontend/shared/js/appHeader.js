@@ -11,10 +11,14 @@ function initAppHeader() {
   if (page === "pharmacieDetail") {
     if (zone === "pharmacien") activePage = "pharmacie";
     else if (zone === "utilisateur") activePage = "Dashboard";
+    else if (zone === "admin") activePage = "pharmacie";
     else activePage = "pharmacies-proches";
   }
   if (hash === "pharmacies-proches") activePage = "pharmacies-proches";
   if (hash === "hero-search") activePage = "hero-search";
+  if (hash === "adminStats") activePage = "adminStats";
+  if (hash === "adminSearchSection") activePage = "adminSearchSection";
+  if (hash === "welcomeSection") activePage = "Dashboard";
   if (hash === "mc-zone-footer") activePage = "contact";
 
   header.querySelectorAll("[data-nav-page]").forEach((link) => {

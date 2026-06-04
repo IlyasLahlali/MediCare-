@@ -164,6 +164,7 @@ async function confirmValider() {
   try {
     const data = await MediCareAPI.validateAdminPharmacy(pharmacyId);
     showMessage(data.message || "Pharmacie validée");
+    window.NotificationCenter?.refresh?.();
     setTimeout(() => {
       window.location.href = backUrl;
     }, 800);
@@ -177,6 +178,7 @@ async function confirmRefuser() {
   try {
     const data = await MediCareAPI.refuseAdminPharmacy(pharmacyId);
     showMessage(data.message || "Pharmacie refusée");
+    window.NotificationCenter?.refresh?.();
     setTimeout(() => {
       window.location.href = backUrl;
     }, 800);
@@ -192,8 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!initAdminPage()) return;
   initAdminStockPanel();
   initPharmacyDetailHoursToggle();
-  document.getElementById("btn-back")?.addEventListener("click", () => {
-    window.location.href = backUrl;
-  });
+  const backLink = document.getElementById("admin-detail-back-link");
+  if (backLink) backLink.href = backUrl;
   loadPharmacyDetail();
 });

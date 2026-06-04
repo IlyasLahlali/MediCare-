@@ -1,0 +1,10 @@
+/* Hero tableau de bord admin (aligné sur l’espace pharmacien) */
+
+.admin-dashboard-page {
+  background: #f0f4f8 !important;
+  scroll-behavior: smooth;
+}
+
+.admin-dashboard-page .admin-main {
+  padding-top: 1.25rem;
+}

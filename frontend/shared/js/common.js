@@ -1717,7 +1717,12 @@ function mountPharmacyList(container, list, options = {}) {
 (function mediCareZoneLayout() {
   const zoneMatch = location.pathname.match(/\/(Public|Utilisateur|Pharmacien|Admin)\/html\//i);
   if (!zoneMatch) return;
-  if (document.body.classList.contains("admin-auth-page")) return;
+  if (
+    document.body.classList.contains("admin-auth-page") ||
+    document.body.classList.contains("admin-login-page")
+  ) {
+    return;
+  }
 
   const htmlBase = location.pathname.replace(/\/[^/]*$/, "/");
 
@@ -1764,7 +1769,7 @@ function mountPharmacyList(container, list, options = {}) {
     if (!el) return;
 
     const existing = document.querySelector(
-      "header.site-header, header.dashboard-header.admin-header"
+      "header.site-header, header.app-header, header.dashboard-header.admin-header"
     );
     const appHeaderMount = document.getElementById("app-header");
     if (existing) {
@@ -1872,21 +1877,30 @@ function mountPharmacyList(container, list, options = {}) {
     }
 
     if (user.role === "ADMIN") {
+      const initAdminAccount = () => {
+        if (window.UserAccountMenu) UserAccountMenu.init();
+        if (window.NotificationCenter) NotificationCenter.init("#notif-center-mount");
+      };
       if (document.getElementById("user-account-menu-mount")) {
-        if (window.UserAccountMenu) {
-          UserAccountMenu.init();
+        if (window.UserAccountMenu && window.NotificationCenter) {
+          initAdminAccount();
         } else {
           const accountScript = document.createElement("script");
           accountScript.src = new URL("../../shared/js/userAccountMenu.js", location.href).href;
-          accountScript.onload = () => UserAccountMenu?.init();
+          accountScript.onload = () => {
+            if (!window.NotificationCenter) {
+              const notifScript = document.createElement("script");
+              notifScript.src = new URL("../../shared/js/notifications.js", location.href).href;
+              notifScript.onload = initAdminAccount;
+              document.body.appendChild(notifScript);
+            } else {
+              initAdminAccount();
+            }
+          };
           document.body.appendChild(accountScript);
         }
-      } else {
-        const btn = document.getElementById("btn-logout");
-        if (btn && !btn.dataset.mcBound && typeof logoutAdmin === "function") {
-          btn.dataset.mcBound = "1";
-          btn.addEventListener("click", logoutAdmin);
-        }
+      } else if (window.NotificationCenter) {
+        NotificationCenter.init("#notif-center-mount");
       }
     }
   }
@@ -1899,16 +1913,13 @@ function mountPharmacyList(container, list, options = {}) {
     await injectAuthBrand();
     await injectFooter();
 
-    if (/pharmacieDetail\.html/i.test(location.pathname)) {
-      document.getElementById("btn-back")?.removeAttribute("hidden");
-    }
-
     rebindLayoutActions();
 
     if (
       zoneMatch[1] === "Public" ||
       zoneMatch[1] === "Utilisateur" ||
-      zoneMatch[1] === "Pharmacien"
+      zoneMatch[1] === "Pharmacien" ||
+      zoneMatch[1] === "Admin"
     ) {
       await new Promise((resolve) => {
         if (typeof initAppHeader === "function") {

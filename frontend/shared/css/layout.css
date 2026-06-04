@@ -102,8 +102,23 @@
   }
 }
 
-.admin-footer { background: #1e293b; }
-.admin-footer a { color: #5eead4; }
+.admin-site-footer,
+.admin-footer {
+  background: #134e4a;
+}
+
+.app-header[data-zone="admin"] .logo-zone-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ccfbf1;
+  margin-left: 0.2rem;
+}
+
+.app-header .header-toolbar--admin {
+  gap: 0.5rem;
+}
 
 /* ——— Header type application ——— */
 .sr-only {

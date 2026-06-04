@@ -5,30 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Administration — MediCare+</title>
     <link rel="stylesheet" href="../../shared/css/base.css" />
-<link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../../shared/css/notifications.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../../Pharmacien/css/dashboard.css?v=7" />
+    <link rel="stylesheet" href="../css/dashboard.css?v=1" />
   </head>
-  <body class="admin-page">
-    <header class="dashboard-header admin-header">
-      <div class="logo">👑 Administration MediCare+</div>
-      <nav class="header-actions">
-        <button type="button" class="header-btn header-btn-outline" onclick="scrollToSection('welcomeSection')">Accueil</button>
-        <button type="button" class="header-btn header-btn-outline" onclick="scrollToSection('adminStats')">Statistiques</button>
-        <a href="pharmacie.html" class="header-btn header-btn-outline">Pharmacies</a>
-        <button type="button" class="header-btn header-btn-primary" onclick="refreshAdmin()">
-          <span aria-hidden="true">🔄</span> Actualiser
-        </button>
-        <button type="button" class="header-btn header-btn-logout" id="btn-logout">
-          <span aria-hidden="true">⎋</span> Déconnexion
-        </button>
-      </nav>
-    </header>
+  <body class="admin-page admin-dashboard-page">
+    <section id="welcomeSection" class="pd-hero" aria-labelledby="admin-hero-title">
+      <div class="pd-hero__card">
+        <div class="pd-hero__bg" aria-hidden="true"></div>
+        <div class="pd-hero__container">
+          <div class="pd-hero__inner">
+            <div class="pd-hero__main">
+              <p class="pd-hero__eyebrow">Administration</p>
+              <div class="pd-hero__greeting" id="admin-hero-title">
+                <p class="pd-hero__salute" id="admin-greeting-salute" aria-hidden="true">Bonjour</p>
+                <h1 class="pd-hero__name" id="admin-greeting-name">—</h1>
+              </div>
+              <p class="pd-hero__lead" id="admin-welcome-lead">
+                Supervisez et validez les pharmacies de la plateforme MediCare+.
+              </p>
+            </div>
+            <aside class="pd-hero__aside">
+              <p class="pd-hero__date" id="admin-welcome-meta"></p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <main class="admin-main">
-      <section id="welcomeSection" class="card welcome-section admin-hero">
-        <h2 id="welcomeText">Espace administrateur</h2>
-        <p>Gérez et validez les pharmacies de la plateforme.</p>
-      </section>
-
       <div id="adminStats" class="admin-stats-zones">
         <section class="card admin-panel admin-stats-zone">
           <h2 class="admin-panel-title">📊 Statistiques globales</h2>
@@ -89,7 +95,8 @@
 <script src="../../shared/js/api.js"></script>
     <script src="../../shared/js/common.js"></script>
     <script src="../../shared/js/userAuth.js"></script>
+    <script src="../../shared/js/notifications.js"></script>
     <script src="../js/adminListShared.js"></script>
-    <script src="../js/Dashboard.js"></script>
+    <script src="../js/Dashboard.js?v=3"></script>
   </body>
 </html>

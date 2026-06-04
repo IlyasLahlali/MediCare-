@@ -1,13 +1,31 @@
-<header class="dashboard-header admin-header">
-  <div class="logo">👑 Administration MediCare+</div>
-  <nav class="header-actions">
-    <button type="button" class="header-btn header-btn-outline" id="btn-back" hidden>
-      <span aria-hidden="true">←</span> Retour
+<header class="site-header app-header" data-zone="admin">
+  <div class="inner">
+    <a href="Dashboard.html" class="logo" aria-label="Administration MediCare+">
+      <span class="logo-icon" aria-hidden="true">✚</span>
+      <span class="logo-text">MediCare<span class="logo-accent">+</span> <span class="logo-zone-tag">Admin</span></span>
+    </a>
+
+    <button
+      type="button"
+      class="header-menu-toggle"
+      id="header-menu-toggle"
+      aria-expanded="false"
+      aria-controls="header-main-nav"
+    >
+      <span class="sr-only">Ouvrir le menu</span>
+      <span class="menu-bar" aria-hidden="true"></span>
     </button>
-    <a href="Dashboard.html#welcomeSection" class="header-btn header-btn-outline">Accueil</a>
-    <a href="Dashboard.html#adminStats" class="header-btn header-btn-outline">Statistiques</a>
-    <a href="pharmacie.html" class="header-btn header-btn-outline">Pharmacies</a>
-    <a href="pharmacie.html#adminSearchSection" class="header-btn header-btn-outline">Recherche</a>
-    <div id="user-account-menu-mount"></div>
-  </nav>
+
+    <nav class="header-nav" id="header-main-nav" aria-label="Navigation administration">
+      <a href="Dashboard.html" class="header-nav-link" data-nav-page="Dashboard">Accueil</a>
+      <a href="Dashboard.html#adminStats" class="header-nav-link" data-nav-page="adminStats">Statistiques</a>
+      <a href="pharmacie.html" class="header-nav-link" data-nav-page="pharmacie">Pharmacies</a>
+      <a href="#mc-zone-footer" class="header-nav-link" data-nav-page="contact" title="Contact et mentions légales">Contact</a>
+    </nav>
+
+    <div class="header-toolbar header-toolbar--admin">
+      <div id="notif-center-mount" class="notif-center-mount"></div>
+      <div id="user-account-menu-mount"></div>
+    </div>
+  </div>
 </header>

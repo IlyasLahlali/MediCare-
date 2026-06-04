@@ -3,6 +3,10 @@ const pool = require("../config/db");
 const { authRequired, requireRole } = require("../middleware/authMiddleware");
 const { getPharmacySchema } = require("../utils/pharmacySchema");
 const { createNotification } = require("../utils/notificationHelper");
+const {
+  notifyAdminPharmacyValidated,
+  notifyAdminPharmacyRefused,
+} = require("../utils/adminNotificationService");
 const { attachPharmacyHoraires } = require("../utils/pharmacyHorairesDb");
 const { applyEffectiveOpenToRow } = require("../utils/pharmacyHours");
 const { gardeEffectiveSelectSql, gardePlanningSelectSql } = require("../utils/gardePublicSql");
@@ -216,6 +220,12 @@ router.put("/pharmacies/:id/valider", async (req, res) => {
       });
     }
 
+    try {
+      await notifyAdminPharmacyValidated(req.user.id, id, rows[0].nom);
+    } catch (notifErr) {
+      console.warn("Notification admin validation:", notifErr.message);
+    }
+
     res.json({ success: true, message: "Pharmacie validée avec succès" });
   } catch (err) {
     console.error(err);
@@ -237,6 +247,12 @@ router.put("/pharmacies/:id/refuser", async (req, res) => {
       titre: "Pharmacie refusée",
       message: `« ${rows[0].nom} » n'a pas été publiée. Contactez l'administration pour plus d'informations.`,
     });
+
+    try {
+      await notifyAdminPharmacyRefused(req.user.id, id, rows[0].nom);
+    } catch (notifErr) {
+      console.warn("Notification admin refus:", notifErr.message);
+    }
 
     res.json({ success: true, message: "Pharmacie refusée" });
   } catch (err) {

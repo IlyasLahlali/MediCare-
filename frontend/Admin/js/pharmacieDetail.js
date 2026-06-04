@@ -26,12 +26,17 @@ window.openModal = openModal;
 
 function renderPharmacienBlock(p, container) {
   if (!container) return;
+  const compteRefuse = adminPharmacienStatutLabel(p.pharmacien_statut);
   container.innerHTML = `
     <h3 class="admin-subtitle">Pharmacien propriétaire</h3>
     <div class="admin-info-grid">
       <div class="admin-info-item"><span>Nom</span><strong>${escapeHtml(p.pharmacien_nom || "—")}</strong></div>
       <div class="admin-info-item"><span>Email</span><strong>${escapeHtml(p.pharmacien_email || "—")}</strong></div>
-      <div class="admin-info-item"><span>Statut compte</span><strong>${escapeHtml(adminPharmacienStatutLabel(p.pharmacien_statut))}</strong></div>
+      ${
+        compteRefuse
+          ? `<div class="admin-info-item"><span>Compte pharmacien</span><strong>${escapeHtml(compteRefuse)}</strong><span class="muted" style="display:block;font-size:0.85rem">Visibilité publique = statut de la pharmacie.</span></div>`
+          : ""
+      }
       <div class="admin-info-item"><span>Inscription</span><strong>${adminFormatDate(p.pharmacien_date_creation)}</strong></div>
       <div class="admin-info-item"><span>ID pharmacien</span><strong>#${p.pharmacien_id ?? "—"}</strong></div>
     </div>`;
@@ -63,7 +68,6 @@ async function loadPharmacyDetail() {
         <div class="admin-info-item"><span>Horaires</span><strong>${escapeHtml(p.heure_ouverture || "—")} – ${escapeHtml(p.heure_fermeture || "—")}</strong></div>
         <div class="admin-info-item"><span>Ouverte</span><strong>${p.est_ouverte ? "Oui" : "Non"}</strong></div>
         <div class="admin-info-item"><span>De garde</span><strong>${p.est_de_garde ? "Oui" : "Non"}</strong></div>
-        <div class="admin-info-item"><span>Active (publiée)</span><strong>${p.est_active ? "Oui" : "Non"}</strong></div>
         <div class="admin-info-item"><span>Statut admin</span><strong>${adminStatutLabel(p.statut)}</strong></div>
         <div class="admin-info-item"><span>Coordonnées GPS</span><strong>${p.latitude != null && p.longitude != null ? `${p.latitude}, ${p.longitude}` : "—"}</strong></div>
         <div class="admin-info-item"><span>Création</span><strong>${adminFormatDate(p.date_creation)}</strong></div>

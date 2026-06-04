@@ -6,7 +6,20 @@ const { validateVilleQuartier } = require("../utils/locationLabels");
 const { statutSelectSql } = require("../utils/pharmacyStatut");
 const { getOwnedPharmacy, ownerWhereClause } = require("../utils/pharmacienHelper");
 const { savePharmacyImageFromDataUrl } = require("../utils/savePharmacyImage");
-const { parseBodyFields, reverseGeocode } = require("../utils/geocode");
+const { parseBodyFields, reverseGeocode, forwardGeocode } = require("../utils/geocode");
+const {
+  parseWeekSchedule,
+  validateWeek,
+  weekFromLegacy,
+  defaultWeek,
+} = require("../utils/weeklyPharmacyHours");
+const {
+  attachPharmacyHoraires,
+  attachPharmacyHorairesList,
+  saveNormalHours,
+} = require("../utils/pharmacyHorairesDb");
+const { setManualClose, attachManualCloseFlag } = require("../utils/pharmacyManualClose");
+const { applyEffectiveOpenToRow } = require("../utils/pharmacyHours");
 const {
   activateGarde,
   deactivateGarde,
@@ -16,14 +29,26 @@ const {
   syncGardeFlagsFromPlanning,
 } = require("../utils/gardeService");
 const { gardeEffectiveSelectSql } = require("../utils/gardePublicSql");
+const { pharmacyEffectiveOpenSelectSql } = require("../utils/pharmacyHours");
 const {
   ensureStockPharmacieSchemaOnce,
   queryPharmacienStockList,
 } = require("../utils/ensureStockPharmacieSchema");
+const { queryAvisPharmacieList } = require("../utils/avisPharmacie");
+
+const { ensurePharmacyHorairesTablesSchemaOnce } = require("../utils/pharmacyHorairesDb");
 
 const router = express.Router();
 
 router.use(authRequired, requireRole("PHARMACIEN"));
+router.use(async (req, res, next) => {
+  try {
+    await ensurePharmacyHorairesTablesSchemaOnce();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 function parseId(param) {
   return /^\d+$/.test(String(param)) ? param : null;
@@ -37,8 +62,7 @@ router.get("/pharmacies", async (req, res) => {
     let sql = `
       SELECT p.id, p.nom, p.adresse, ${s.quartierSql} AS quartier, ${s.villeSql} AS ville,
              p.telephone, p.latitude, p.longitude,
-             p.heure_ouverture, p.heure_fermeture,
-             p.est_ouverte, ${gardeEffectiveSelectSql()}, p.est_active, p.image, p.date_creation,
+             ${pharmacyEffectiveOpenSelectSql()}, ${gardeEffectiveSelectSql()}, p.image, p.date_creation,
              ${statutSelectSql("p")}
       FROM pharmacies p
       WHERE p.${s.ownerCol} = ?`;
@@ -53,6 +77,11 @@ router.get("/pharmacies", async (req, res) => {
     sql += ` ORDER BY p.nom`;
 
     const [rows] = await pool.query(sql, params);
+    await attachPharmacyHorairesList(rows);
+    for (const row of rows) {
+      applyEffectiveOpenToRow(row);
+      await attachManualCloseFlag(row);
+    }
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -115,6 +144,52 @@ router.post("/pharmacies/:id/garde/deactivate", async (req, res) => {
   }
 });
 
+async function handleManualCloseRoute(req, res, ferme) {
+  const id = parseId(req.params.id);
+  if (!id) return res.status(400).json({ error: "Identifiant invalide" });
+
+  try {
+    if (!(await getOwnedPharmacy(id, req.user.id))) {
+      return res.status(404).json({
+        error: "Pharmacie introuvable ou vous n'êtes pas le propriétaire de cette fiche.",
+      });
+    }
+    const result = await setManualClose(id, ferme);
+    if (!result.ok) return res.status(503).json({ error: result.error });
+
+    const pharmacy = await getOwnedPharmacy(id, req.user.id);
+    await attachPharmacyHoraires(pharmacy);
+    const planning = await getActivePlanning(id);
+    pharmacy.est_de_garde = isPlanningInProgress(planning);
+    await attachManualCloseFlag(pharmacy);
+
+    res.json({
+      success: true,
+      fermeture_manuelle: pharmacy.fermeture_manuelle,
+      est_ouverte: pharmacy.est_ouverte,
+      message: ferme
+        ? "Pharmacie affichée comme fermée pour les clients (jusqu'à réouverture manuelle)."
+        : "Retour au statut selon vos horaires habituels.",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+}
+
+router.put("/pharmacies/:id/fermeture-manuelle", async (req, res) => {
+  const ferme = req.body?.ferme === true || req.body?.ferme === 1 || req.body?.ferme === "1";
+  return handleManualCloseRoute(req, res, ferme);
+});
+
+router.post("/pharmacies/:id/marquer-ferme", async (req, res) => {
+  return handleManualCloseRoute(req, res, true);
+});
+
+router.post("/pharmacies/:id/marquer-ouverte", async (req, res) => {
+  return handleManualCloseRoute(req, res, false);
+});
+
 router.get("/geocode-reverse", async (req, res) => {
   const lat = parseFloat(req.query.lat);
   const lon = parseFloat(req.query.lon);
@@ -123,7 +198,35 @@ router.get("/geocode-reverse", async (req, res) => {
   }
   try {
     const geo = await reverseGeocode(lat, lon);
-    if (!geo) return res.status(502).json({ error: "Géocodage indisponible" });
+    if (!geo || (!String(geo.adresse || "").trim() && !geo.ville && !geo.quartier)) {
+      return res.status(502).json({
+        error:
+          "Impossible de lire l'adresse à cet emplacement. Saisissez-la manuellement (la position GPS reste enregistrée).",
+      });
+    }
+    res.json({
+      adresse: geo.adresse || "",
+      quartier: geo.quartier || "",
+      ville: geo.ville || "",
+      partial: !String(geo.adresse || "").trim(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+router.get("/geocode-forward", async (req, res) => {
+  try {
+    const geo = await forwardGeocode({
+      q: req.query.q,
+      adresse: req.query.adresse,
+      quartier: req.query.quartier,
+      ville: req.query.ville,
+    });
+    if (!geo) {
+      return res.status(404).json({ error: "Adresse introuvable — précisez l’adresse ou la ville." });
+    }
     res.json(geo);
   } catch (err) {
     console.error(err);
@@ -170,6 +273,9 @@ router.get("/pharmacies/:id", async (req, res) => {
     const planning = await getActivePlanning(id);
     const inProgress = isPlanningInProgress(planning);
 
+    await attachPharmacyHoraires(pharmacy);
+    pharmacy.est_de_garde = inProgress;
+    await attachManualCloseFlag(pharmacy);
     res.json({
       ...pharmacy,
       est_de_garde: inProgress,
@@ -232,43 +338,36 @@ router.post("/pharmacies", async (req, res) => {
       imagePath = savePharmacyImageFromDataUrl(imageDataUrl);
     }
 
-    const cols = ["nom", "adresse", "telephone", s.ownerCol, "est_active"];
-    const vals = [data.nom, adresse, data.telephone, req.user.id, false];
-    if (s.hasStatutAdmin) {
-      cols.push("statut_admin");
-      vals.push("en_attente");
-    }
+    const cols = ["nom", "adresse", "telephone", s.ownerCol, "statut_admin"];
+    const vals = [data.nom, adresse, data.telephone, req.user.id, "en_attente"];
 
     cols.push("quartier", "ville");
     vals.push(quartier, ville);
-    cols.push(
-      "latitude",
-      "longitude",
-      "heure_ouverture",
-      "heure_fermeture",
-      "est_ouverte",
-      "est_de_garde",
-      "image"
-    );
-    vals.push(
-      data.latitude,
-      data.longitude,
-      data.heure_ouverture,
-      data.heure_fermeture,
-      data.est_ouverte,
-      data.est_de_garde,
-      imagePath
-    );
+
+    let weekToSave = defaultWeek();
+    if (req.body.horaires_semaine !== undefined) {
+      weekToSave = parseWeekSchedule(req.body.horaires_semaine);
+      const check = validateWeek(weekToSave);
+      if (!check.ok) return res.status(400).json({ error: check.error });
+    } else if (data.heure_ouverture || data.heure_fermeture) {
+      weekToSave = weekFromLegacy(data.heure_ouverture, data.heure_fermeture) || defaultWeek();
+    }
+
+    cols.push("latitude", "longitude", "est_de_garde", "image");
+    vals.push(data.latitude, data.longitude, data.est_de_garde, imagePath);
 
     const [result] = await pool.query(
       `INSERT INTO pharmacies (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`,
       vals
     );
 
+    const saved = await saveNormalHours(result.insertId, weekToSave);
+    if (!saved.ok) return res.status(400).json({ error: saved.error });
+
     res.status(201).json({
       id: result.insertId,
       image: imagePath,
-      message: "Pharmacie créée. Elle sera visible après validation admin (est_active).",
+      message: "Pharmacie créée. Elle sera visible après validation admin.",
     });
   } catch (err) {
     console.error(err);
@@ -284,15 +383,32 @@ router.put("/pharmacies/:id", async (req, res) => {
   if (!pharmacy) return res.status(404).json({ error: "Pharmacie introuvable" });
 
   const s = getPharmacySchema();
+  let weekToSave = null;
+  if (req.body.horaires_semaine !== undefined) {
+    weekToSave = parseWeekSchedule(req.body.horaires_semaine);
+    const check = validateWeek(weekToSave);
+    if (!check.ok) return res.status(400).json({ error: check.error });
+  } else if (
+    req.body.heure_ouverture !== undefined ||
+    req.body.heure_fermeture !== undefined
+  ) {
+    await attachPharmacyHoraires(pharmacy);
+    weekToSave = weekFromLegacy(
+      req.body.heure_ouverture ?? pharmacy.heure_ouverture,
+      req.body.heure_fermeture ?? pharmacy.heure_fermeture
+    );
+    if (weekToSave) {
+      const check = validateWeek(weekToSave);
+      if (!check.ok) return res.status(400).json({ error: check.error });
+    }
+  }
+
   const fields = [
     "nom",
     "adresse",
     "telephone",
     "latitude",
     "longitude",
-    "heure_ouverture",
-    "heure_fermeture",
-    "est_ouverte",
     "est_de_garde",
   ];
   if (s.hasQuartier) fields.push("quartier");
@@ -351,10 +467,23 @@ router.put("/pharmacies/:id", async (req, res) => {
       ...values,
       id,
     ]);
-    res.json({ success: true });
+
+    if (weekToSave) {
+      const saved = await saveNormalHours(id, weekToSave);
+      if (!saved.ok) return res.status(400).json({ error: saved.error });
+    }
+
+    const updated = await getOwnedPharmacy(id, req.user.id);
+    await attachPharmacyHoraires(updated);
+    res.json({ success: true, pharmacy: updated });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
+    console.error("PUT pharmacie:", err);
+    if (err.code === "ER_CONSTRAINT_FAILED" || err.errno === 4025) {
+      return res.status(400).json({
+        error: "Horaires invalides (format JSON). Réessayez ou contactez le support.",
+      });
+    }
+    res.status(500).json({ error: err.message || "Erreur serveur" });
   }
 });
 
@@ -370,6 +499,24 @@ router.delete("/pharmacies/:id", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+router.get("/pharmacies/:id/avis", async (req, res) => {
+  const id = parseId(req.params.id);
+  if (!id) return res.status(400).json({ error: "Identifiant invalide" });
+  if (!(await getOwnedPharmacy(id, req.user.id))) {
+    return res.status(404).json({ error: "Pharmacie introuvable" });
+  }
+
+  try {
+    res.json(await queryAvisPharmacieList(id));
+  } catch (err) {
+    if (err.code === "ER_NO_SUCH_TABLE") {
+      return res.json({ note_moyenne: null, nb_avis: 0, avis: [] });
+    }
+    console.error("GET avis pharmacien:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
@@ -615,5 +762,7 @@ router.get("/medicaments/search", async (req, res) => {
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
+
+router.features = { manualClose: true };
 
 module.exports = router;

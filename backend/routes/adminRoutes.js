@@ -3,6 +3,9 @@ const pool = require("../config/db");
 const { authRequired, requireRole } = require("../middleware/authMiddleware");
 const { getPharmacySchema } = require("../utils/pharmacySchema");
 const { createNotification } = require("../utils/notificationHelper");
+const { attachPharmacyHoraires } = require("../utils/pharmacyHorairesDb");
+const { applyEffectiveOpenToRow } = require("../utils/pharmacyHours");
+const { gardeEffectiveSelectSql } = require("../utils/gardePublicSql");
 
 const router = express.Router();
 router.use(authRequired, requireRole("ADMIN"));
@@ -10,9 +13,7 @@ router.use(authRequired, requireRole("ADMIN"));
 const FILTRES = ["en_attente", "valide", "refuse"];
 
 function statutExpr(alias = "p") {
-  const s = getPharmacySchema();
-  if (s.hasStatutAdmin) return `${alias}.statut_admin`;
-  return `CASE WHEN ${alias}.est_active = 1 THEN 'valide' ELSE 'en_attente' END`;
+  return `${alias}.statut_admin`;
 }
 
 function ownerJoinSql() {
@@ -53,7 +54,7 @@ router.get("/pharmacies/search", async (req, res) => {
 
   let sql = `
     SELECT p.id, p.nom, p.adresse, ${s.quartierSql} AS quartier, ${s.villeSql} AS ville,
-           p.telephone, p.image, p.est_active, ${st} AS statut,
+           p.telephone, p.image, ${st} AS statut,
            u.nom AS pharmacien_nom, u.email AS pharmacien_email,
            (SELECT COUNT(*) FROM stock_pharmacie sp WHERE sp.id_pharmacie = p.id) AS nb_stock
     FROM pharmacies p
@@ -97,7 +98,7 @@ router.get("/pharmacies/list", async (req, res) => {
 
   let sql = `
     SELECT p.id, p.nom, p.adresse, ${s.quartierSql} AS quartier, ${s.villeSql} AS ville,
-           p.telephone, p.image, p.est_active, ${st} AS statut,
+           p.telephone, p.image, ${st} AS statut,
            u.nom AS pharmacien_nom, u.email AS pharmacien_email,
            (SELECT COUNT(*) FROM stock_pharmacie sp WHERE sp.id_pharmacie = p.id) AS nb_stock
     FROM pharmacies p
@@ -137,6 +138,7 @@ router.get("/pharmacies/:id", async (req, res) => {
     const [rows] = await pool.query(
       `SELECT p.*, ${s.quartierSql} AS quartier, ${s.villeSql} AS ville,
               ${st} AS statut,
+              ${gardeEffectiveSelectSql()},
               u.id AS pharmacien_id, u.nom AS pharmacien_nom, u.email AS pharmacien_email,
               u.statut AS pharmacien_statut, u.date_creation AS pharmacien_date_creation
        FROM pharmacies p
@@ -147,6 +149,8 @@ router.get("/pharmacies/:id", async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: "Pharmacie introuvable" });
 
     const pharmacy = rows[0];
+    await attachPharmacyHoraires(pharmacy);
+    applyEffectiveOpenToRow(pharmacy);
     let stock = [];
     try {
       const [stockRows] = await pool.query(
@@ -170,17 +174,7 @@ router.get("/pharmacies/:id", async (req, res) => {
 });
 
 async function setPharmacyStatut(pharmacyId, statut) {
-  const s = getPharmacySchema();
-  const estActive = statut === "valide";
-
-  if (s.hasStatutAdmin) {
-    await pool.query(
-      `UPDATE pharmacies SET statut_admin = ?, est_active = ? WHERE id = ?`,
-      [statut, estActive, pharmacyId]
-    );
-  } else {
-    await pool.query(`UPDATE pharmacies SET est_active = ? WHERE id = ?`, [estActive, pharmacyId]);
-  }
+  await pool.query(`UPDATE pharmacies SET statut_admin = ? WHERE id = ?`, [statut, pharmacyId]);
 }
 
 async function notifyOwner(pharmacyId, { titre, message, lien }) {
@@ -214,10 +208,6 @@ router.put("/pharmacies/:id/valider", async (req, res) => {
     await setPharmacyStatut(id, "valide");
 
     if (rows[0].owner_id) {
-      await pool.query(
-        `UPDATE utilisateurs SET statut = 'VALIDE' WHERE id = ? AND statut = 'EN_ATTENTE'`,
-        [rows[0].owner_id]
-      );
       await notifyOwner(id, {
         titre: "Pharmacie validée",
         message: `« ${rows[0].nom} » est publiée sur MediCare+ et visible par le public.`,

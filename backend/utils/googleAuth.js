@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const pool = require("../config/db");
+const { userStatutApplies } = require("./userStatut");
 const { createNotification } = require("./notificationHelper");
 const { googleHttpsGetJson } = require("./googleHttps");
 
@@ -135,7 +136,7 @@ async function findOrCreateGoogleUser({ googleId, email, nom }) {
       err.code = "PRO_ACCOUNT";
       throw err;
     }
-    if (user.statut === "REFUSE") {
+    if (userStatutApplies(user.role) && user.statut === "REFUSE") {
       const err = new Error("REFUSED");
       err.code = "REFUSED";
       throw err;

@@ -6,21 +6,11 @@
     <title>Mes pharmacies — MediCare+</title>
     <link rel="stylesheet" href="../../shared/css/base.css" />
     <link rel="stylesheet" href="../../shared/css/notifications.css" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../../shared/css/pharmacyDetail.css" />
+    <link rel="stylesheet" href="../css/style.css?v=29" />
   </head>
   <body>
-    <header class="site-header">
-      <div class="inner">
-        <a href="Dashboard.html" class="logo">MediCare+ Pro</a>
-        <div class="header-actions pharma-header-actions">
-          <span id="pharma-name"></span>
-          <div id="notif-center-mount" class="notif-center-mount"></div>
-          <a href="pharmacie.html" class="btn btn-outline">Pharmacies</a>
-          <a href="ajouterPharmacie.html" class="btn btn-outline">+ Pharmacie</a>
-          <button type="button" id="btn-logout" class="btn btn-primary">Déconnexion</button>
-        </div>
-      </div>
-    </header>
+    <header class="site-header"></header>
 
     <main class="container">
       <div class="pharma-list-header">
@@ -59,10 +49,11 @@
       </div>
     </main>
     <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/weeklyPharmacyHours.js?v=9"></script>
     <script src="../../shared/js/common.js"></script>
     <script src="../../shared/js/pharmaAuth.js"></script>
     <script src="../../shared/js/notifications.js"></script>
     <script src="../../shared/js/gardePharma.js"></script>
-    <script src="../js/pharmacie.js"></script>
+    <script src="../js/pharmacie.js?v=3"></script>
   </body>
 </html>

@@ -23,15 +23,36 @@ CREATE TABLE IF NOT EXISTS pharmacies (
     latitude DOUBLE,
     longitude DOUBLE,
     telephone VARCHAR(30),
-    heure_ouverture TIME,
-    heure_fermeture TIME,
     image VARCHAR(255),
-    est_ouverte BOOLEAN DEFAULT false,
     est_de_garde BOOLEAN DEFAULT false,
-    est_active BOOLEAN DEFAULT false,
+    statut_admin ENUM('en_attente', 'valide', 'refuse') NOT NULL DEFAULT 'en_attente',
     id_pharmacien INT,
     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_pharmacien) REFERENCES utilisateurs(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS horaires_normaux (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_pharmacie INT NOT NULL,
+    jour ENUM('lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche') NOT NULL,
+    est_ferme TINYINT(1) NOT NULL DEFAULT 0,
+    heure_ouverture TIME NULL,
+    heure_fermeture TIME NULL,
+    UNIQUE KEY uk_horaires_normaux_pharmacie_jour (id_pharmacie, jour),
+    FOREIGN KEY (id_pharmacie) REFERENCES pharmacies(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS horaires_exceptionnels (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_pharmacie INT NOT NULL,
+    date_debut DATE NOT NULL,
+    date_fin DATE NOT NULL,
+    est_ferme TINYINT(1) NOT NULL DEFAULT 0,
+    heure_ouverture TIME NULL,
+    heure_fermeture TIME NULL,
+    motif VARCHAR(200) NULL,
+    KEY idx_horaires_exc_pharmacie_dates (id_pharmacie, date_debut, date_fin),
+    FOREIGN KEY (id_pharmacie) REFERENCES pharmacies(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS medicaments (

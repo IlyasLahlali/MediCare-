@@ -43,8 +43,7 @@ const UserAccountMenu = (() => {
 
   function statutLabel(statut, role) {
     if (role !== "PHARMACIEN") return "";
-    if (statut === "EN_ATTENTE") return "Compte en attente de validation";
-    if (statut === "VALIDE") return "Compte validé";
+    if (statut === "REFUSE") return "Compte refusé — contactez l'administration";
     return "";
   }
 
@@ -295,13 +294,15 @@ const UserAccountMenu = (() => {
       profile = await MediCareAPI.me();
       const stored = getStoredUser();
       if (stored && profile) {
-        saveSession(localStorage.getItem("token"), {
+        const next = {
           ...stored,
           nom: profile.nom,
           email: profile.email,
-          statut: profile.statut,
           date_creation: profile.date_creation,
-        });
+        };
+        if (profile.statut != null) next.statut = profile.statut;
+        else delete next.statut;
+        saveSession(localStorage.getItem("token"), next);
       }
       updateTriggerLabel(profile || getStoredUser());
       updateMenuHead(profile || getStoredUser());

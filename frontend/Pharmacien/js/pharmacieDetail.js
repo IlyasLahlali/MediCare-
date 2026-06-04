@@ -1,11 +1,24 @@
 let pharmacyId = null;
 let pharmacy = null;
-let pendingToggle = null;
 let stockCache = [];
 let currentStockFilter = "";
 let stockSearchQuery = "";
 let importPreviewItems = [];
 let stockMedsListVisible = true;
+
+/** Remet stock / avis hors de #pharmacy-detail avant un re-render (évite leur suppression). */
+function restoreSectionsOutsideDetail() {
+  const detail = document.getElementById("pharmacy-detail");
+  if (!detail?.parentElement) return;
+  let anchor = detail;
+  for (const id of ["pd-stock-section", "pd-avis-section"]) {
+    const el = document.getElementById(id);
+    if (el && detail.contains(el)) {
+      anchor.insertAdjacentElement("afterend", el);
+      anchor = el;
+    }
+  }
+}
 
 /** Place la section stock après les coordonnées. */
 function mountStockSection() {
@@ -89,7 +102,7 @@ async function loadPharmaAvis() {
 
   listEl.innerHTML = '<p class="muted">Chargement des avis…</p>';
   try {
-    const data = await MediCareAPI.getAvisPharmacie(pharmacyId);
+    const data = await MediCareAPI.getPharmaAvis(pharmacyId);
     const nb = Number(data.nb_avis) || 0;
     const moy =
       data.note_moyenne != null && data.note_moyenne !== ""
@@ -132,47 +145,236 @@ const STOCK_FILTER_LABELS = {
 };
 let editImageDataUrl = null;
 let editImageRemove = false;
+let editLastGpsAdresse = "";
+
+function editPharmacyStatusBadgeHtml(p) {
+  if (typeof pharmaValidationBadgeHtml === "function") {
+    return pharmaValidationBadgeHtml(p).trim();
+  }
+  return "";
+}
+
+function editCoordsChipHtml(p) {
+  const lat = parseFloat(p.latitude);
+  const lon = parseFloat(p.longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    return '<span class="pd-edit-coords pd-edit-coords--empty muted">Position non enregistrée</span>';
+  }
+  return `<span class="pd-edit-coords" id="edit-coords-display">GPS : ${lat.toFixed(5)}, ${lon.toFixed(5)}</span>`;
+}
 
 function pharmacyEditFormHtml(p) {
   const loc = normalizeQuartierVille(p);
   const imgUrl = pharmacyImageUrl(p.image);
+  const hasPreview = imgUrl && !editImageRemove;
   return `
-    <div class="image-upload-zone">
-      <p class="muted" style="margin:0 0 0.5rem;font-weight:600">Photo de la pharmacie</p>
-      <img id="edit-image-preview" class="image-preview${imgUrl && !editImageRemove ? "" : " hidden"}" alt="Aperçu" src="${imgUrl && !editImageRemove ? imgUrl : ""}" />
-      <p id="edit-image-placeholder" class="muted${imgUrl && !editImageRemove ? " hidden" : ""}">Aucune photo — ajoutez une image de votre pharmacie</p>
-      <div class="image-upload-actions">
-        <label class="btn btn-outline btn-small">
-          ${imgUrl && !editImageRemove ? "Changer la photo" : "Choisir une photo"}
-          <input type="file" id="edit-image-input" accept="image/jpeg,image/png,image/webp" hidden />
-        </label>
-        <button type="button" id="edit-image-remove" class="btn btn-outline btn-small${imgUrl && !editImageRemove ? "" : " hidden"}">Retirer la photo</button>
+    <div class="pd-pharma-form__scroll">
+      <div class="pd-edit-modal">
+        <nav class="pd-edit-nav" aria-label="Sections du formulaire">
+          <button type="button" class="pd-edit-nav__item is-active" data-edit-section="info" aria-current="step">
+            <span class="pd-edit-nav__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+            </span>
+            <span class="pd-edit-nav__text"><strong>Identité</strong><small>Nom, photo, contact</small></span>
+          </button>
+          <button type="button" class="pd-edit-nav__item" data-edit-section="hours">
+            <span class="pd-edit-nav__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </span>
+            <span class="pd-edit-nav__text"><strong>Horaires</strong><small>Planning hebdomadaire</small></span>
+          </button>
+          <button type="button" class="pd-edit-nav__item" data-edit-section="location">
+            <span class="pd-edit-nav__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+            </span>
+            <span class="pd-edit-nav__text"><strong>Adresse</strong><small>Ville, quartier, GPS</small></span>
+          </button>
+        </nav>
+
+        <div class="pd-edit-modal__panels">
+          <section id="edit-section-info" class="pd-edit-panel is-active" data-edit-panel="info">
+            <div class="pd-edit-panel__head">
+              <h3 class="pd-edit-panel__title">Identité de l'établissement</h3>
+              <p class="pd-edit-panel__desc muted">Visible sur votre fiche et la carte publique une fois validée.</p>
+            </div>
+
+            <div class="pd-edit-identity-row">
+              <div class="pd-edit-photo-slot">
+                ${
+                  typeof pharmaPhotoUploadHtml === "function"
+                    ? pharmaPhotoUploadHtml({
+                        idPrefix: "edit-image",
+                        imgUrl: hasPreview ? imgUrl : "",
+                        title: p.nom,
+                        compact: true,
+                      })
+                    : ""
+                }
+              </div>
+              <div class="pd-edit-identity-fields">
+                <div class="pd-form-section pd-form-section--card pd-form-section--flush">
+                  <div class="form-grid-2">
+                    <label class="pd-form-field pd-form-field--wide">Nom de la pharmacie <span class="required-mark">*</span>
+                      <input type="text" name="nom" value="${escapeHtml(p.nom)}" required autocomplete="organization" placeholder="Pharmacie du Centre" />
+                    </label>
+                    <label class="pd-form-field">Téléphone
+                      <input type="tel" name="telephone" value="${escapeHtml(p.telephone || "")}" placeholder="06 12 34 56 78" autocomplete="tel" />
+                    </label>
+                  </div>
+                </div>
+                <p class="pd-edit-photo-hint muted">Photo visible sur la carte · clic sur l’aperçu pour agrandir</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="edit-section-hours" class="pd-edit-panel" data-edit-panel="hours" hidden>
+            <div class="pd-edit-panel__head">
+              <h3 class="pd-edit-panel__title">Horaires d'ouverture</h3>
+              <p class="pd-edit-panel__desc muted">Le statut ouvert / fermé est calculé automatiquement selon ces horaires.</p>
+            </div>
+            <div class="pd-form-section pd-form-section--card pd-hours-section">
+              <p class="field-hint muted pd-hours-intro">Renseignez chaque jour. Vous pouvez appliquer le même créneau à tous les jours ouverts.</p>
+              <p id="edit-hours-msg" class="pd-edit-hours-msg hidden" role="alert" aria-live="polite"></p>
+              ${typeof WeeklyPharmacyHours !== "undefined" ? WeeklyPharmacyHours.editFormHtml(p) : ""}
+            </div>
+            <p class="field-hint muted pd-hours-footer-hint">Le mode de garde se gère depuis le bouton dédié sur la fiche pharmacie.</p>
+          </section>
+
+          <section id="edit-section-location" class="pd-edit-panel" data-edit-panel="location" hidden>
+            <div class="pd-edit-panel__head">
+              <h3 class="pd-edit-panel__title">Localisation</h3>
+              <p class="pd-edit-panel__desc muted">Utilisée pour la carte, la recherche par ville/quartier et l'itinéraire.</p>
+            </div>
+            <div class="pd-form-section pd-form-section--card pd-location-section">
+              <p class="pd-location-note">La ville et le quartier alimentent les filtres de recherche des patients.</p>
+              <div class="form-grid-2 pd-location-grid">
+                <label class="pd-form-field">Ville <span class="required-mark">*</span>
+                  <input type="text" name="ville" value="${escapeHtml(loc.ville)}" required placeholder="Marrakech" autocomplete="address-level2" />
+                </label>
+                <label class="pd-form-field">Quartier <span class="required-mark">*</span>
+                  <input type="text" name="quartier" value="${escapeHtml(loc.quartier)}" required placeholder="Guéliz" autocomplete="address-level3" />
+                </label>
+              </div>
+              <input type="hidden" name="latitude" value="${p.latitude ?? ""}" />
+              <input type="hidden" name="longitude" value="${p.longitude ?? ""}" />
+              <div class="pd-edit-coords-row">${editCoordsChipHtml(p)}</div>
+              <div class="pd-address-block">
+                <div class="pd-address-block__toolbar">
+                  <span class="pd-address-block__label">Adresse complète <span class="required-mark">*</span></span>
+                  <button type="button" class="pd-btn-geo" id="edit-btn-fill-adresse" title="Utiliser la position GPS actuelle de cet appareil">
+                    <span class="pd-btn-geo__dot" aria-hidden="true"></span>
+                    Ma position actuelle
+                  </button>
+                </div>
+                <label class="pd-form-field pd-form-field--flush">
+                  <textarea name="adresse" rows="4" required placeholder="Numéro, rue, repères…">${escapeHtml(p.adresse)}</textarea>
+                </label>
+                <p class="pd-address-block__help muted">Sur place à la pharmacie, le bouton GPS remplit l'adresse automatiquement. Sinon, saisissez-la à la main.</p>
+                <p id="edit-location-msg" class="pd-edit-location-msg hidden" role="alert" aria-live="polite"></p>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
-    <label>Nom <input type="text" name="nom" value="${escapeHtml(p.nom)}" required /></label>
-    <label>Adresse <textarea name="adresse" rows="2" required>${escapeHtml(p.adresse)}</textarea></label>
-    <div class="form-grid-2">
-      <label>Ville <span class="required-mark">*</span>
-        <input type="text" name="ville" value="${escapeHtml(loc.ville)}" required placeholder="Ex. Marrakech" /></label>
-      <label>Quartier <span class="required-mark">*</span>
-        <input type="text" name="quartier" value="${escapeHtml(loc.quartier)}" required placeholder="Ex. Guéliz, Médina…" /></label>
-      <p class="field-hint muted">Ville et quartier : recherche publique. L’adresse complète sert à la carte et à l’itinéraire.</p>
-    </div>
-    <label>Téléphone <input type="tel" name="telephone" value="${escapeHtml(p.telephone || "")}" /></label>
-    <div class="form-grid-2">
-      <label>Ouverture <input type="time" name="heure_ouverture" value="${p.heure_ouverture || ""}" /></label>
-      <label>Fermeture <input type="time" name="heure_fermeture" value="${p.heure_fermeture || ""}" /></label>
-    </div>
-    <div class="form-grid-2">
-      <label>Latitude <input type="number" step="any" name="latitude" value="${p.latitude ?? ""}" /></label>
-      <label>Longitude <input type="number" step="any" name="longitude" value="${p.longitude ?? ""}" /></label>
-    </div>
-    <label><input type="checkbox" name="est_ouverte" ${p.est_ouverte ? "checked" : ""} /> Ouverte</label>
-    <p class="muted">Mode de garde : utilisez le bouton « Mode de garde » sur cette page.</p>
-    <div class="pharma-modal-footer">
-      <button type="button" class="btn btn-outline" data-close-modal="modal-edit-pharmacy">Annuler</button>
-      <button type="submit" class="btn btn-teal">Enregistrer</button>
+    <div class="pharma-modal-footer pd-pharma-modal__footer pd-pharma-modal__footer--edit">
+      <p class="pd-edit-footer__hint muted"><span class="required-mark">*</span> Champs obligatoires · les modifications sont visibles après enregistrement</p>
+      <div class="pd-edit-footer__actions">
+        <button type="button" class="btn btn-outline" data-close-modal="modal-edit-pharmacy">Annuler</button>
+        <button type="submit" class="btn btn-teal pd-edit-submit">
+          <span class="pd-edit-submit__label">Enregistrer les modifications</span>
+        </button>
+      </div>
     </div>`;
+}
+
+function updateEditCoordsDisplay(form) {
+  const chip = document.getElementById("edit-coords-display");
+  if (!chip || !form) return;
+  const lat = parseFloat(form.latitude?.value);
+  const lon = parseFloat(form.longitude?.value);
+  if (Number.isFinite(lat) && Number.isFinite(lon)) {
+    chip.textContent = `GPS : ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    chip.className = "pd-edit-coords";
+  } else {
+    chip.textContent = "Position non enregistrée";
+    chip.className = "pd-edit-coords pd-edit-coords--empty muted";
+  }
+}
+
+function setActiveEditSection(sectionId) {
+  const form = document.getElementById("form-edit-pharmacy");
+  if (!form) return;
+  form.querySelectorAll("[data-edit-section]").forEach((btn) => {
+    const active = btn.dataset.editSection === sectionId;
+    btn.classList.toggle("is-active", active);
+    btn.setAttribute("aria-current", active ? "step" : "false");
+  });
+  form.querySelectorAll("[data-edit-panel]").forEach((panel) => {
+    const active = panel.dataset.editPanel === sectionId;
+    panel.classList.toggle("is-active", active);
+    panel.hidden = !active;
+  });
+}
+
+function setupEditModalNavigation(form) {
+  if (!form) return;
+  form.querySelectorAll("[data-edit-section]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.editSection;
+      if (id) setActiveEditSection(id);
+    });
+  });
+}
+
+function updateEditModalHeader(p) {
+  const sub = document.getElementById("edit-pharmacy-subtitle");
+  const badge = document.getElementById("edit-pharmacy-badge");
+  const loc = normalizeQuartierVille(p);
+  if (sub) {
+    const parts = [p.nom];
+    if (loc.ville) parts.push(loc.ville);
+    sub.textContent = parts.filter(Boolean).join(" · ");
+  }
+  if (badge) badge.innerHTML = editPharmacyStatusBadgeHtml(p);
+}
+
+function openDeletePharmacyModal() {
+  const nameEl = document.getElementById("delete-pharmacy-name");
+  if (nameEl && pharmacy) nameEl.textContent = pharmacy.nom;
+  openPharmaModal("modal-delete-pharmacy");
+}
+
+async function toggleManualClose() {
+  const btn = document.getElementById("btn-manual-close");
+  if (!pharmacyId || !pharmacy) return;
+  if (typeof MediCareAPI?.setPharmaManualClose !== "function") {
+    alert(
+      "Module API obsolète en cache. Rechargez la page avec Ctrl+F5 (api.js doit être à jour)."
+    );
+    return;
+  }
+  const willClose = !pharmacy.fermeture_manuelle;
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add("is-loading");
+  }
+  try {
+    await MediCareAPI.setPharmaManualClose(pharmacyId, willClose);
+    pharmacy = await MediCareAPI.getPharmaPharmacy(pharmacyId);
+    renderPharmacy();
+  } catch (err) {
+    const msg = err.message || "Impossible de modifier le statut.";
+    alert(
+      msg.includes("introuvable") || msg.includes("404")
+        ? `${msg}\n\nVérifiez que vous êtes connecté avec le compte propriétaire de cette pharmacie (voir « Mes pharmacies »).`
+        : msg
+    );
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove("is-loading");
+    }
+  }
 }
 
 function openGardeModal() {
@@ -184,83 +386,338 @@ function openGardeModal() {
   });
 }
 
-function setupEditImageControls() {
-  const preview = document.getElementById("edit-image-preview");
-  const placeholder = document.getElementById("edit-image-placeholder");
-  const removeBtn = document.getElementById("edit-image-remove");
-  const fileInput = document.getElementById("edit-image-input");
+function setEditLocationMsg(text, type = "error") {
+  const el = document.getElementById("edit-location-msg");
+  if (!el) return;
+  if (!text) {
+    el.textContent = "";
+    el.hidden = true;
+    el.className = "pd-edit-location-msg hidden";
+    return;
+  }
+  el.textContent = text;
+  el.hidden = false;
+  if (type === "error") {
+    el.className = "pd-edit-location-msg error";
+  } else if (type === "warn") {
+    el.className = "pd-edit-location-msg pd-edit-location-msg--warn";
+  } else if (type === "pending") {
+    el.className = "pd-edit-location-msg muted";
+  } else {
+    el.className = "pd-edit-location-msg pd-edit-location-msg--ok";
+  }
+}
 
-  fileInput?.addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      alert("Choisissez une image (JPEG, PNG ou WebP).");
-      return;
+function suggestEditAdresseFromForm(form) {
+  const quartier = form.quartier?.value.trim();
+  const ville = form.ville?.value.trim();
+  if (quartier && ville) return `${quartier}, ${ville}, Maroc`;
+  if (ville) return `${ville}, Maroc`;
+  return "";
+}
+
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("timeout")), ms);
+    }),
+  ]);
+}
+
+async function reverseGeocodeClientFallback(lat, lon) {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&format=json&accept-language=fr&addressdetails=1&zoom=18`;
+  try {
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return "";
+    const data = await res.json();
+    return String(data.display_name || "").trim();
+  } catch {
+    return "";
+  }
+}
+
+async function resolveAdresseFromGpsCoords(lat, lon) {
+  const latN = parseFloat(lat);
+  const lonN = parseFloat(lon);
+  const client = withTimeout(reverseGeocodeClientFallback(latN, lonN), 5500).catch(() => "");
+  const server = withTimeout(
+    MediCareAPI.pharmaGeocodeReverse(latN, lonN).then((rev) =>
+      String(rev?.adresse || "").trim()
+    ),
+    5500
+  ).catch(() => "");
+
+  const [fromClient, fromServer] = await Promise.all([client, server]);
+  return (fromClient || fromServer || "").trim();
+}
+
+async function syncEditAdresseFromCoords(form, lat, lon) {
+  const latN = parseFloat(lat);
+  const lonN = parseFloat(lon);
+  if (!Number.isFinite(latN) || !Number.isFinite(lonN)) {
+    return { ok: false, message: "Position invalide." };
+  }
+
+  form.latitude.value = latN;
+  form.longitude.value = lonN;
+  updateEditCoordsDisplay(form);
+
+  const adresse = await resolveAdresseFromGpsCoords(latN, lonN);
+
+  if (adresse) {
+    form.adresse.value = adresse;
+    form.dataset.adresseSource = "gps";
+    editLastGpsAdresse = adresse;
+    return { ok: true, fromGps: true };
+  }
+
+  const fallback = suggestEditAdresseFromForm(form);
+  if (fallback) {
+    form.adresse.value = fallback;
+    form.dataset.adresseSource = "gps";
+    editLastGpsAdresse = fallback;
+    return {
+      ok: true,
+      partial: true,
+      fromGps: true,
+      message:
+        "Position GPS enregistrée. Le service cartographique n'a pas renvoyé la rue : complétez l'adresse (numéro, rue).",
+    };
+  }
+
+  return {
+    ok: false,
+    message:
+      "Position GPS reçue, mais l'adresse texte est indisponible. Saisissez-la à la main.",
+  };
+}
+
+async function resolveEditPharmacyCoords(form) {
+  const ville = form.ville.value.trim();
+  const quartier = form.quartier.value.trim();
+  const adresse = form.adresse.value.trim();
+  if (!ville || !quartier || !adresse) return null;
+
+  let lat = parseFloat(form.latitude.value);
+  let lon = parseFloat(form.longitude.value);
+  if (Number.isFinite(lat) && Number.isFinite(lon)) {
+    return { lat, lon };
+  }
+
+  try {
+    const geo = await MediCareAPI.pharmaGeocodeForward({ adresse, ville, quartier });
+    form.latitude.value = geo.latitude;
+    form.longitude.value = geo.longitude;
+    updateEditCoordsDisplay(form);
+    return { lat: geo.latitude, lon: geo.longitude };
+  } catch {
+    return null;
+  }
+}
+
+function setupEditLocationControls(form) {
+  if (!form) return;
+  editLastGpsAdresse = "";
+  delete form.dataset.adresseSource;
+  setEditLocationMsg("");
+  updateEditCoordsDisplay(form);
+
+  form.adresse?.addEventListener("input", () => {
+    setEditLocationMsg("");
+    if (
+      form.dataset.adresseSource === "gps" &&
+      form.adresse.value.trim() !== editLastGpsAdresse
+    ) {
+      form.latitude.value = "";
+      form.longitude.value = "";
+      delete form.dataset.adresseSource;
+      updateEditCoordsDisplay(form);
     }
-    editImageDataUrl = await resizePharmacyImageFile(file);
-    editImageRemove = false;
-    preview.src = editImageDataUrl;
-    preview.classList.remove("hidden");
-    placeholder.classList.add("hidden");
-    removeBtn?.classList.remove("hidden");
-    const label = fileInput.closest("label");
-    if (label) label.firstChild.textContent = "Changer la photo ";
   });
 
-  removeBtn?.addEventListener("click", () => {
-    editImageDataUrl = null;
-    editImageRemove = true;
-    preview.src = "";
-    preview.classList.add("hidden");
-    placeholder.classList.remove("hidden");
-    removeBtn.classList.add("hidden");
-    fileInput.value = "";
-    const label = fileInput.closest("label");
-    if (label) label.firstChild.textContent = "Choisir une photo ";
+  document.getElementById("edit-btn-fill-adresse")?.addEventListener("click", async () => {
+    setEditLocationMsg("");
+    const btn = document.getElementById("edit-btn-fill-adresse");
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add("is-loading");
+    }
+
+    setEditLocationMsg("Recherche du signal GPS (quelques secondes)…", "pending");
+
+    const geo = await getFreshUserPosition();
+    if (!geo) {
+      setEditLocationMsg(
+        "Position non reçue : autorisez la géolocalisation ou attendez le GPS, puis réessayez."
+      );
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove("is-loading");
+      }
+      return;
+    }
+
+    setEditLocationMsg("Position trouvée — calcul de l'adresse…", "pending");
+    const result = await syncEditAdresseFromCoords(form, geo.lat, geo.lon);
+
+    if (result.ok) {
+      const detail = result.partial
+        ? result.message
+        : "Adresse remplie depuis votre position actuelle.";
+      setEditLocationMsg(detail, result.partial ? "warn" : "ok");
+    } else {
+      setEditLocationMsg(result.message);
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove("is-loading");
+    }
   });
 }
 
-function showEditModal() {
+async function applyEditImageFile(file) {
+  if (!file?.type?.startsWith("image/")) {
+    alert("Choisissez une image (JPEG, PNG ou WebP).");
+    return;
+  }
+  editImageDataUrl = await resizePharmacyImageFile(file);
+  editImageRemove = false;
+  const title =
+    document.querySelector('#form-edit-pharmacy input[name="nom"]')?.value?.trim() ||
+    document.getElementById("edit-pharmacy-subtitle")?.textContent?.trim();
+  updatePharmaPhotoUploadUi("edit-image", {
+    hasImage: true,
+    src: editImageDataUrl,
+    title,
+  });
+}
+
+function setupEditImageControls(pharmacyForZoom) {
+  setupPharmaPhotoUpload({
+    idPrefix: "edit-image",
+    onFile: applyEditImageFile,
+    onRemove: () => {
+      editImageDataUrl = null;
+      editImageRemove = true;
+      updatePharmaPhotoUploadUi("edit-image", { hasImage: false });
+    },
+  });
+  const preview = document.getElementById("edit-image-preview");
+  if (preview?.src && !preview.classList.contains("hidden") && pharmacyForZoom) {
+    markPharmacyPhotoZoomable(preview, pharmacyForZoom.nom);
+  }
+}
+
+async function showEditModal() {
+  try {
+    pharmacy = await MediCareAPI.getPharmaPharmacy(pharmacyId);
+  } catch (err) {
+    alert(err.message || "Impossible de charger la pharmacie.");
+    return;
+  }
   editImageDataUrl = null;
   editImageRemove = false;
+  editLastGpsAdresse = "";
   const form = document.getElementById("form-edit-pharmacy");
   form.innerHTML = pharmacyEditFormHtml(pharmacy);
-  setupEditImageControls();
+  updateEditModalHeader(pharmacy);
+  setActiveEditSection("info");
+  setEditHoursMsg("");
+  setupEditModalNavigation(form);
+  setupEditImageControls(pharmacy);
+  initPharmacyDetailPhotoZoom();
+  setupEditLocationControls(form);
+  const hoursRoot = form.querySelector("#pd-weekly-hours");
+  if (hoursRoot && typeof WeeklyPharmacyHours !== "undefined") {
+    WeeklyPharmacyHours.setupForm(hoursRoot);
+  }
   form.onsubmit = async (e) => {
     e.preventDefault();
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const submitLabel = submitBtn?.querySelector(".pd-edit-submit__label");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add("is-loading");
+      if (submitLabel) submitLabel.textContent = "Enregistrement…";
+    }
     const f = form;
+    const ville = f.ville.value.trim();
+    const quartier = f.quartier.value.trim();
+    setEditLocationMsg("");
+    setEditHoursMsg("");
+    if (!ville || !quartier) {
+      setEditLocationMsg("Indiquez la ville et le quartier.");
+      resetEditSubmitBtn(submitBtn, submitLabel);
+      setActiveEditSection("location");
+      return;
+    }
+    const coords = await resolveEditPharmacyCoords(f);
+    const hoursEl = hoursRoot || f.querySelector("#pd-weekly-hours");
+    let horairesSemaine;
+    if (typeof WeeklyPharmacyHours !== "undefined") {
+      if (!hoursEl) {
+        setEditHoursMsg("Formulaire horaires introuvable — rechargez la page (Ctrl+F5).");
+        resetEditSubmitBtn(submitBtn, submitLabel);
+        return;
+      }
+      horairesSemaine = WeeklyPharmacyHours.readFromForm(hoursEl);
+      const weekCheck = WeeklyPharmacyHours.validateWeekClient(horairesSemaine);
+      if (!weekCheck.ok) {
+        setEditHoursMsg(weekCheck.error);
+        resetEditSubmitBtn(submitBtn, submitLabel);
+        setActiveEditSection("hours");
+        return;
+      }
+    }
+    const adresse = f.adresse.value.trim();
+    if (!adresse) {
+      setEditLocationMsg(
+        "Saisissez l'adresse ou utilisez « Remplir depuis ma position actuelle » (sur place à la pharmacie)."
+      );
+      resetEditSubmitBtn(submitBtn, submitLabel);
+      setActiveEditSection("location");
+      return;
+    }
+    if (!coords) {
+      setEditLocationMsg(
+        "Impossible de placer la pharmacie sur la carte — vérifiez l'adresse, la ville et le quartier."
+      );
+      resetEditSubmitBtn(submitBtn, submitLabel);
+      setActiveEditSection("location");
+      return;
+    }
     const payload = {
       nom: f.nom.value.trim(),
-      adresse: f.adresse.value.trim(),
+      adresse,
       quartier: f.quartier.value.trim(),
       ville: f.ville.value.trim(),
       telephone: f.telephone.value.trim() || null,
-      heure_ouverture: f.heure_ouverture.value || null,
-      heure_fermeture: f.heure_fermeture.value || null,
-      latitude: f.latitude.value ? parseFloat(f.latitude.value) : null,
-      longitude: f.longitude.value ? parseFloat(f.longitude.value) : null,
-      est_ouverte: f.est_ouverte.checked,
+      horaires_semaine: horairesSemaine,
+      latitude: coords.lat,
+      longitude: coords.lon,
     };
     if (editImageDataUrl) payload.imageDataUrl = editImageDataUrl;
     else if (editImageRemove) payload.removeImage = true;
-    await MediCareAPI.updatePharmaPharmacy(pharmacyId, payload);
-    closePharmaModal("modal-edit-pharmacy");
-    pharmacy = await MediCareAPI.getPharmaPharmacy(pharmacyId);
-    renderPharmacy();
+    try {
+      const saved = await MediCareAPI.updatePharmaPharmacy(pharmacyId, payload);
+      closePharmaModal("modal-edit-pharmacy");
+      pharmacy = saved.pharmacy || (await MediCareAPI.getPharmaPharmacy(pharmacyId));
+      renderPharmacy();
+    } catch (err) {
+      alert(err.message || "Enregistrement impossible.");
+    } finally {
+      resetEditSubmitBtn(submitBtn, submitLabel);
+    }
   };
   openPharmaModal("modal-edit-pharmacy");
 }
 
-function showToggleModal(field, newValue) {
-  pendingToggle = { field, newValue };
-  const labels = {
-    est_ouverte: newValue ? "ouvrir" : "fermer",
-    est_de_garde: newValue ? "activer le mode de garde" : "désactiver le mode de garde",
-  };
-  document.getElementById("modal-toggle-title").textContent = "Confirmer le changement";
-  document.getElementById("modal-toggle-text").textContent =
-    `Voulez-vous ${labels[field]} cette pharmacie ?`;
-  openPharmaModal("modal-toggle");
+function resetEditSubmitBtn(submitBtn, submitLabel) {
+  if (!submitBtn) return;
+  submitBtn.disabled = false;
+  submitBtn.classList.remove("is-loading");
+  if (submitLabel) submitLabel.textContent = "Enregistrer les modifications";
 }
 
 function isStockDisponible(s) {
@@ -696,8 +1153,21 @@ function openImportStockModal() {
   openPharmaModal("modal-import-stock");
 }
 
+function refreshStockUi() {
+  const listEl = document.getElementById("stock-list");
+  if (!listEl) return;
+  if (stockCache.length) {
+    applyStockFilter(currentStockFilter);
+    updateStockSummaryChips();
+    setStockMedsListVisible(stockMedsListVisible);
+  } else if (pharmacyId) {
+    loadStock();
+  }
+}
+
 async function loadStock() {
   const el = document.getElementById("stock-list");
+  if (!el) return;
   el.innerHTML = '<p class="muted">Chargement…</p>';
   try {
     stockCache = await MediCareAPI.getPharmaStock(pharmacyId);
@@ -719,15 +1189,17 @@ async function loadStock() {
 
 function detailHeaderBadges(p) {
   let badges = pharmaStatusPill(p);
-  if (p.est_de_garde && !p.est_active) {
+  if (p.est_de_garde && pharmaValidationStatut(p) !== "valide") {
     badges += ' <span class="badge badge-garde">De garde</span>';
   }
   return badges;
 }
 
 function pdClientState(ph) {
+  if (ph.est_de_garde) return "De garde";
+  if (ph.fermeture_manuelle) return "Fermée";
   if (typeof pharmacyIsEffectivelyOpen === "function" && pharmacyIsEffectivelyOpen(ph)) {
-    return ph.est_de_garde ? "De garde" : "Ouverte";
+    return "Ouverte";
   }
   return "Fermée";
 }
@@ -742,13 +1214,23 @@ function pdFormatRating(note) {
 function pdHeroMedia(imgUrl, altName) {
   if (imgUrl) {
     return `
-      <div class="pd-hero__media">
-        <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(altName)}" />
-        <div class="pd-hero__overlay" aria-hidden="true"></div>
-      </div>`;
+      <button
+        type="button"
+        class="pd-hero__thumb pd-hero__thumb--zoom"
+        data-pharmacy-photo="${escapeHtml(imgUrl)}"
+        data-pharmacy-photo-title="${escapeHtml(altName)}"
+        aria-label="Voir la photo de ${escapeHtml(altName)} en grand"
+      >
+        <img src="${escapeHtml(imgUrl)}" alt="" />
+        <span class="pd-hero__thumb-zoom" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/>
+          </svg>
+        </span>
+      </button>`;
   }
   return `
-    <div class="pd-hero__media pd-hero__media--placeholder" aria-hidden="true">
+    <div class="pd-hero__thumb pd-hero__thumb--placeholder" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3" stroke-linecap="round" stroke-linejoin="round"/>
         <rect x="9" y="9" width="2" height="2" fill="currentColor" stroke="none"/>
@@ -785,7 +1267,11 @@ function pdStatusTiles(ph) {
         <div>
           <p class="pd-status-tile__label">Pour les clients</p>
           <p class="pd-status-tile__value">${escapeHtml(clientOpen)}</p>
-          <p class="pd-status-tile__hint">Horaires, garde et bouton ouvert/fermé</p>
+          <p class="pd-status-tile__hint">${
+            ph.fermeture_manuelle
+              ? "Fermeture manuelle — les horaires sont ignorés aujourd'hui"
+              : "Selon les horaires du jour et la garde"
+          }</p>
         </div>
       </div>
       <div class="pd-status-tile${ph.est_de_garde ? " pd-status-tile--garde" : ""}">
@@ -797,7 +1283,7 @@ function pdStatusTiles(ph) {
         <div>
           <p class="pd-status-tile__label">Mode de garde</p>
           <p class="pd-status-tile__value">${ph.est_de_garde ? "Activé" : "Inactif"}</p>
-          <p class="pd-status-tile__hint">${ph.est_ouverte ? "Marquée ouverte" : "Marquée fermée"}</p>
+          <p class="pd-status-tile__hint">Bouton « Mode de garde » sur la fiche</p>
         </div>
       </div>
       <div class="pd-status-tile${validationClass}">
@@ -809,7 +1295,7 @@ function pdStatusTiles(ph) {
         <div>
           <p class="pd-status-tile__label">Plateforme</p>
           <p class="pd-status-tile__value">${escapeHtml(validationLabel)}</p>
-          <p class="pd-status-tile__hint">${ph.est_active ? "Visible sur la carte publique" : "Masquée jusqu'à validation"}</p>
+          <p class="pd-status-tile__hint">${pharmaValidationStatut(ph) === "valide" ? "Visible sur la carte publique" : pharmaValidationStatut(ph) === "refuse" ? "Refusée par l'administrateur" : "Masquée jusqu'à validation"}</p>
         </div>
       </div>
       <div class="pd-status-tile">
@@ -845,8 +1331,32 @@ function updateStockSummaryChips() {
   chipRupture.textContent = `${rupture} en rupture`;
 }
 
-async function renderPharmacy() {
+function setEditHoursMsg(text, tone = "error") {
+  const el = document.getElementById("edit-hours-msg");
+  if (!el) return;
+  if (!text) {
+    el.textContent = "";
+    el.classList.add("hidden");
+    el.classList.remove("pd-edit-hours-msg--ok", "pd-edit-hours-msg--warn");
+    return;
+  }
+  el.textContent = text;
+  el.classList.remove("hidden", "pd-edit-hours-msg--ok", "pd-edit-hours-msg--warn");
+  if (tone === "ok") el.classList.add("pd-edit-hours-msg--ok");
+  else if (tone === "warn") el.classList.add("pd-edit-hours-msg--warn");
+}
+
+function renderPharmacy() {
   const el = document.getElementById("pharmacy-detail");
+  if (!el || !pharmacy) return;
+
+  restoreSectionsOutsideDetail();
+
+  const crumb = document.getElementById("pd-breadcrumb-name");
+  if (crumb) crumb.textContent = pharmacy.nom;
+  document.title = `${pharmacy.nom} — MediCare+ Pro`;
+
+  try {
   const loc = normalizeQuartierVille(pharmacy);
   const s = pharmacy.stats_30j || { VUE: 0, APPEL: 0, RECHERCHE: 0 };
   const imgUrl = pharmacyImageUrl(pharmacy.image);
@@ -855,14 +1365,10 @@ async function renderPharmacy() {
       ? `${Number(pharmacy.latitude).toFixed(6)}, ${Number(pharmacy.longitude).toFixed(6)}`
       : "Non renseigné";
 
-  const crumb = document.getElementById("pd-breadcrumb-name");
-  if (crumb) crumb.textContent = pharmacy.nom;
-
-  document.title = `${pharmacy.nom} — MediCare+ Pro`;
-
   el.innerHTML = `
     <div class="pd-page">
       <article class="pd-hero">
+        <div class="pd-hero__inner">
         ${pdHeroMedia(imgUrl, pharmacy.nom)}
         <div class="pd-hero__body">
           <div class="pd-hero__top">
@@ -876,15 +1382,18 @@ async function renderPharmacy() {
               <button type="button" id="btn-garde-main" class="btn btn-garde pd-hero__garde-btn${pharmacy.est_de_garde ? " is-active" : ""}">
                 ${pharmacy.est_de_garde ? "Gérer la garde" : "Mode de garde"}
               </button>
+              <button type="button" id="btn-manual-close" class="btn btn-small pd-hero__close-btn${pharmacy.fermeture_manuelle ? " is-manual-closed" : ""}"${
+                pharmacy.est_de_garde ? ' title="Désactivez la garde pour marquer fermée"' : ""
+              }>
+                ${pharmacy.fermeture_manuelle ? "Marquer ouverte" : "Marquer fermée"}
+              </button>
             </div>
           </div>
           <div class="pd-hero__toolbar" aria-label="Gestion de la pharmacie">
             <button type="button" id="btn-edit-pharmacy" class="btn btn-teal btn-small">Modifier la pharmacie</button>
-            <button type="button" id="btn-toggle-open" class="btn btn-outline btn-small">
-              ${pharmacy.est_ouverte ? "Marquer fermée" : "Marquer ouverte"}
-            </button>
             <button type="button" id="btn-delete-pharmacy" class="btn btn-danger btn-small">Supprimer</button>
           </div>
+        </div>
         </div>
       </article>
 
@@ -965,7 +1474,11 @@ async function renderPharmacy() {
             </div>
             <div>
               <p class="pd-info-card__label">Horaires</p>
-              <p class="pd-info-card__value">${escapeHtml(pharmacy.heure_ouverture || "—")} – ${escapeHtml(pharmacy.heure_fermeture || "—")}</p>
+              <ul class="pd-info-hours-list">${
+                typeof WeeklyPharmacyHours !== "undefined"
+                  ? WeeklyPharmacyHours.listDisplayHtml(pharmacy)
+                  : `<li>${escapeHtml(pharmacy.heure_ouverture || "—")} – ${escapeHtml(pharmacy.heure_fermeture || "—")}</li>`
+              }</ul>
             </div>
           </div>
           <div class="pd-info-card">
@@ -983,20 +1496,24 @@ async function renderPharmacy() {
       </section>
     </div>`;
 
-  document.getElementById("btn-edit-pharmacy").addEventListener("click", showEditModal);
-  document.getElementById("btn-garde-main").addEventListener("click", openGardeModal);
-  document.getElementById("btn-toggle-open").addEventListener("click", () =>
-    showToggleModal("est_ouverte", !pharmacy.est_ouverte)
-  );
-  document.getElementById("btn-delete-pharmacy").addEventListener("click", () =>
-    openPharmaModal("modal-delete-pharmacy")
-  );
+  document.getElementById("btn-edit-pharmacy")?.addEventListener("click", showEditModal);
+  document.getElementById("btn-garde-main")?.addEventListener("click", openGardeModal);
+  document.getElementById("btn-manual-close")?.addEventListener("click", toggleManualClose);
+  document.getElementById("btn-delete-pharmacy")?.addEventListener("click", openDeletePharmacyModal);
   mountStockSection();
   mountAvisSection();
+  refreshStockUi();
+  } catch (err) {
+    console.error("renderPharmacy:", err);
+    el.innerHTML = `<p class="pd-error">Impossible d'afficher la pharmacie : ${escapeHtml(err.message || String(err))}</p>`;
+    restoreSectionsOutsideDetail();
+    refreshStockUi();
+  }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (!initPharmaPage()) return;
+  initPharmacyDetailPhotoZoom();
   setupModalClose();
 
   pharmacyId = new URLSearchParams(location.search).get("id");
@@ -1011,23 +1528,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderPharmacy();
     stockMedsListVisible = true;
     updateStockListToggleButton();
-    await loadStock();
+    if (!stockCache.length) await loadStock();
+    else refreshStockUi();
     await loadPharmaAvis();
   } catch (err) {
     document.getElementById("pharmacy-detail").innerHTML = `<p class="pd-error">${escapeHtml(err.message)}</p>`;
+    restoreSectionsOutsideDetail();
+    try {
+      await loadStock();
+    } catch {
+      /* ignore */
+    }
     return;
   }
-
-  document.getElementById("confirm-toggle").addEventListener("click", async () => {
-    if (!pendingToggle) return;
-    const body = {};
-    body[pendingToggle.field] = pendingToggle.newValue;
-    await MediCareAPI.updatePharmaPharmacy(pharmacyId, body);
-    closePharmaModal("modal-toggle");
-    pendingToggle = null;
-    pharmacy = await MediCareAPI.getPharmaPharmacy(pharmacyId);
-    renderPharmacy();
-  });
 
   document.getElementById("btn-toggle-stock-list")?.addEventListener("click", () => {
     setStockMedsListVisible(!stockMedsListVisible);
@@ -1163,8 +1676,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("confirm-delete-pharmacy").addEventListener("click", async () => {
-    await MediCareAPI.deletePharmaPharmacy(pharmacyId);
-    window.location.href = "pharmacie.html";
+    const btn = document.getElementById("confirm-delete-pharmacy");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Suppression…";
+    }
+    try {
+      await MediCareAPI.deletePharmaPharmacy(pharmacyId);
+      window.location.href = "pharmacie.html";
+    } catch (err) {
+      alert(err.message || "Suppression impossible.");
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Supprimer définitivement";
+      }
+    }
   });
 
   document.getElementById("form-add-stock").addEventListener("submit", async (e) => {

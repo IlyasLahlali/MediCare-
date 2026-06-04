@@ -2,8 +2,18 @@ const { getPharmacySchema } = require("./pharmacySchema");
 
 function statutSelectSql(alias = "p") {
   const s = getPharmacySchema();
-  if (s.hasStatutAdmin) return `${alias}.statut_admin AS statut`;
-  return `CASE WHEN ${alias}.est_active = 1 THEN 'valide' ELSE 'en_attente' END AS statut`;
+  if (!s.hasStatutAdmin) {
+    throw new Error("Colonne statut_admin absente — redémarrez le serveur (migration auto).");
+  }
+  return `${alias}.statut_admin AS statut`;
 }
 
-module.exports = { statutSelectSql };
+function pharmacyPublishedSql(alias = "p") {
+  const s = getPharmacySchema();
+  if (!s.hasStatutAdmin) {
+    throw new Error("Colonne statut_admin absente — redémarrez le serveur (migration auto).");
+  }
+  return `${alias}.statut_admin = 'valide'`;
+}
+
+module.exports = { statutSelectSql, pharmacyPublishedSql };

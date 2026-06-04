@@ -5,6 +5,7 @@ const pool = require("../config/db");
 const { authRequired } = require("../middleware/authMiddleware");
 const { createNotification } = require("../utils/notificationHelper");
 const { signAuthToken, authUserPayload } = require("../utils/authToken");
+const { assertUserMayLogin, attachPublicUserStatut } = require("../utils/userStatut");
 const {
   getGoogleClientId,
   verifyGoogleCredential,
@@ -65,11 +66,10 @@ router.post("/google", async (req, res) => {
     const profile = await verifyGoogleCredential(credential);
     const user = await findOrCreateGoogleUser(profile);
 
-    if (user.statut === "REFUSE") {
-      return res.status(403).json({ error: "Compte refusé par l'administrateur" });
-    }
-    if (user.statut === "EN_ATTENTE" && user.role !== "PHARMACIEN") {
-      return res.status(403).json({ error: "Compte en attente de validation" });
+    try {
+      assertUserMayLogin(user);
+    } catch (e) {
+      return res.status(e.status || 403).json({ error: e.message });
     }
 
     const token = signAuthToken(user);
@@ -92,7 +92,7 @@ router.get("/me", authRequired, async (req, res) => {
       [req.user.id]
     );
     if (!rows.length) return res.status(404).json({ error: "Utilisateur introuvable" });
-    res.json(rows[0]);
+    res.json(attachPublicUserStatut(rows[0]));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });
@@ -107,7 +107,7 @@ router.post("/register", async (req, res) => {
 
   const allowedRoles = ["UTILISATEUR", "PHARMACIEN"];
   const userRole = allowedRoles.includes(role) ? role : "UTILISATEUR";
-  const statut = userRole === "PHARMACIEN" ? "EN_ATTENTE" : "VALIDE";
+  const statut = "VALIDE";
 
   try {
     const hash = await bcrypt.hash(mot_de_passe, 10);
@@ -190,14 +190,14 @@ async function patchUserProfile(req, res, successMessage = "Profil mis à jour")
 
     res.json({
       message: successMessage,
-      user: {
+      user: attachPublicUserStatut({
         id: user.id,
         nom: nextNom,
         email: nextEmail,
         role: user.role,
         statut: user.statut,
         date_creation: user.date_creation,
-      },
+      }),
     });
   } catch (err) {
     if (err.code === "ER_DUP_ENTRY") {
@@ -374,11 +374,10 @@ router.post("/login", async (req, res) => {
     const ok = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
     if (!ok) return res.status(401).json({ error: "Identifiants invalides" });
 
-    if (user.statut === "REFUSE") {
-      return res.status(403).json({ error: "Compte refusé par l'administrateur" });
-    }
-    if (user.statut === "EN_ATTENTE" && user.role !== "PHARMACIEN") {
-      return res.status(403).json({ error: "Compte en attente de validation" });
+    try {
+      assertUserMayLogin(user);
+    } catch (e) {
+      return res.status(e.status || 403).json({ error: e.message });
     }
 
     const token = signAuthToken(user);

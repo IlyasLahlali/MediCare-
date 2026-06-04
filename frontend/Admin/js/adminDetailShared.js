@@ -11,9 +11,8 @@ function adminStatutClass(statut) {
 }
 
 function adminPharmacienStatutLabel(statut) {
-  if (statut === "VALIDE") return "Compte validé";
-  if (statut === "REFUSE") return "Compte refusé";
-  return "En attente de validation";
+  if (statut === "REFUSE") return "Compte refusé — accès bloqué";
+  return "";
 }
 
 function adminRenderStock(stock, container) {

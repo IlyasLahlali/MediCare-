@@ -22,7 +22,10 @@ function renderPharmacyCards(list) {
     .map((p) =>
       renderPharmacyCard(p, {
         relativeUrl: true,
+        zone: "pharmacien",
+        cardClickable: true,
         badgesExtra: pharmaValidationBadgeHtml(p),
+        metaExtra: typeof pharmaOwnerCardMetaExtra === "function" ? pharmaOwnerCardMetaExtra(p) : "",
         actionsHtml: pharmaPharmacyCardActions(p),
       })
     )
@@ -83,8 +86,9 @@ function applyFilter(statut = currentFilter) {
     return;
   }
 
-  listEl.className = "pharmacy-list";
+  listEl.className = "pharmacy-list pharma-owner-list";
   listEl.innerHTML = renderPharmacyCards(filtered);
+  bindPharmacyCardClicks(listEl);
 }
 
 async function loadPharmacies() {

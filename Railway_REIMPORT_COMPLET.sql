@@ -49,9 +49,8 @@ CREATE TABLE pharmacies (
     heure_ouverture TIME,
     heure_fermeture TIME,
     image VARCHAR(255),
-    est_ouverte BOOLEAN DEFAULT false,
     est_de_garde BOOLEAN DEFAULT false,
-    est_active BOOLEAN DEFAULT false,
+    statut_admin ENUM('en_attente', 'valide', 'refuse') NOT NULL DEFAULT 'en_attente',
     id_pharmacien INT,
     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_pharmacien) REFERENCES utilisateurs(id) ON DELETE CASCADE

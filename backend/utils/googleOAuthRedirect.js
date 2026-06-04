@@ -6,6 +6,7 @@ const {
   googleAuthErrorMessage,
 } = require("./googleAuth");
 const { signAuthToken, authUserPayload } = require("./authToken");
+const { assertUserMayLogin } = require("./userStatut");
 const { googleHttpsPostForm } = require("./googleHttps");
 
 const pendingStates = new Map();
@@ -143,11 +144,10 @@ async function handleGoogleOAuthCallback(req, res) {
     const profile = await verifyGoogleCredential(idToken);
     const user = await findOrCreateGoogleUser(profile);
 
-    if (user.statut === "REFUSE") {
-      return res.redirect(loginUrlWithError(req, "Compte refusé par l'administrateur."));
-    }
-    if (user.statut === "EN_ATTENTE" && user.role !== "PHARMACIEN") {
-      return res.redirect(loginUrlWithError(req, "Compte en attente de validation."));
+    try {
+      assertUserMayLogin(user);
+    } catch (e) {
+      return res.redirect(loginUrlWithError(req, e.message));
     }
 
     const token = signAuthToken(user);

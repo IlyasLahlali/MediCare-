@@ -56,12 +56,23 @@ function formatPharmacyTime(value) {
 }
 
 function formatPharmacyHours(open, close) {
+  if (open && typeof open === "object" && typeof WeeklyPharmacyHours !== "undefined") {
+    return WeeklyPharmacyHours.compactDisplay(open) || "—";
+  }
   const start = formatPharmacyTime(open);
   const end = formatPharmacyTime(close);
   if (start && end) return `${start} – ${end}`;
   if (start) return `Dès ${start}`;
   if (end) return `Jusqu'à ${end}`;
   return "—";
+}
+
+/** Horaires sur cartes (liste / dashboard) : jour courant, pas la semaine entière. */
+function formatPharmacyCardHours(p) {
+  if (p && typeof p === "object" && typeof WeeklyPharmacyHours !== "undefined") {
+    return WeeklyPharmacyHours.cardDisplay(p) || "—";
+  }
+  return formatPharmacyHours(p);
 }
 
 function formatPharmacyDateTimeLabel(value) {
@@ -91,7 +102,7 @@ function formatGardePlanningRange(debut, fin) {
 }
 
 function pharmacyHoursMetaHtml(p) {
-  const hours = formatPharmacyHours(p.heure_ouverture, p.heure_fermeture);
+  const hours = formatPharmacyHours(p);
   const gardeRange = formatGardePlanningRange(p.garde_date_debut, p.garde_date_fin);
   const gardeLine =
     p.est_de_garde &&
@@ -105,7 +116,7 @@ function pharmacyHoursMetaHtml(p) {
 }
 
 function pharmacyHoursDetailHtml(p) {
-  const hours = formatPharmacyHours(p.heure_ouverture, p.heure_fermeture);
+  const hours = formatPharmacyHours(p);
   const gardeRange = formatGardePlanningRange(p.garde_date_debut, p.garde_date_fin);
   let html = `<p><strong>Horaires :</strong> ${escapeHtml(hours)}</p>`;
   if (p.est_de_garde) {
@@ -298,10 +309,59 @@ function getUserPosition() {
         resolve({
           lat: pos.coords.latitude,
           lon: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
         }),
       () => resolve(null),
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
+  });
+}
+
+/** Position GPS fraîche (pas de cache session) — rapide, puis précision si possible. */
+function getFreshUserPosition() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+
+    let settled = false;
+    let best = null;
+    let watchId = null;
+
+    const toGeo = (pos) => ({
+      lat: pos.coords.latitude,
+      lon: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+    });
+
+    const finish = (geo) => {
+      if (settled) return;
+      settled = true;
+      if (watchId != null) navigator.geolocation.clearWatch(watchId);
+      clearTimeout(hardStop);
+      resolve(geo || best);
+    };
+
+    const onFix = (pos) => {
+      const geo = toGeo(pos);
+      if (!best || geo.accuracy < best.accuracy) best = geo;
+      if (geo.accuracy <= 35) finish(geo);
+    };
+
+    watchId = navigator.geolocation.watchPosition(onFix, () => {}, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 7000,
+    });
+
+    navigator.geolocation.getCurrentPosition(onFix, () => {}, {
+      enableHighAccuracy: false,
+      maximumAge: 0,
+      timeout: 4000,
+    });
+
+    const hardStop = setTimeout(() => finish(best), 8000);
   });
 }
 
@@ -386,8 +446,12 @@ function parseScheduleMinutes(value) {
   return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
 }
 
-/** Ouverte selon horaires ; sans horaires → est_ouverte manuel. */
+/** Ouverte selon horaires du jour ; sans horaires → fermé (est_ouverte API = calculé). */
 function isPharmacyOpenBySchedule(p, date = new Date()) {
+  if (typeof WeeklyPharmacyHours !== "undefined") {
+    const byWeek = WeeklyPharmacyHours.isOpenBySchedule(p, date);
+    if (byWeek !== null) return byWeek;
+  }
   const openM = parseScheduleMinutes(p.heure_ouverture);
   const closeM = parseScheduleMinutes(p.heure_fermeture);
   if (openM == null || closeM == null) return null;
@@ -398,6 +462,7 @@ function isPharmacyOpenBySchedule(p, date = new Date()) {
 
 function pharmacyIsEffectivelyOpen(p) {
   if (p.est_de_garde) return true;
+  if (p.fermeture_manuelle) return false;
   const bySchedule = isPharmacyOpenBySchedule(p);
   if (bySchedule !== null) return bySchedule;
   return !!p.est_ouverte;
@@ -649,7 +714,7 @@ function renderPharmacyDetailHero(p, options = {}) {
       ? `<span class="pharmacy-detail-sheet__chip pharmacy-detail-sheet__chip--dist">À ${formatDistance(Number(p.distance_km))}</span>`
       : "";
   const loc = formatQuartierVille(p);
-  const hours = formatPharmacyHours(p.heure_ouverture, p.heure_fermeture);
+  const hours = formatPharmacyHours(p);
   const gardeRange = formatGardePlanningRange(p.garde_date_debut, p.garde_date_fin);
 
   const thumbLabel = `Agrandir la photo de ${p.nom || "la pharmacie"}`;
@@ -806,6 +871,55 @@ function closePharmacyPhotoLightbox() {
 
 let pharmacyPhotoLightboxBound = false;
 
+function pharmacyPhotoZoomTitle(el) {
+  return (
+    el?.getAttribute("data-pharmacy-photo-title") ||
+    document.getElementById("nom")?.value?.trim() ||
+    document.getElementById("edit-pharmacy-subtitle")?.textContent?.trim() ||
+    "Pharmacie"
+  );
+}
+
+function pharmacyPhotoZoomSrc(el) {
+  if (!el) return "";
+  const fromAttr = el.getAttribute("data-pharmacy-photo");
+  if (fromAttr) return fromAttr;
+  if (el.matches("img") && el.src && !el.classList.contains("hidden")) return el.src;
+  const img = el.querySelector?.("img[src]");
+  if (img?.src && !img.classList.contains("hidden")) return img.src;
+  return "";
+}
+
+function markPharmacyPhotoZoomable(imgEl, title) {
+  if (!imgEl) return;
+  imgEl.classList.add("js-pharmacy-photo-preview");
+  if (title) imgEl.setAttribute("data-pharmacy-photo-title", title);
+  imgEl.setAttribute("role", "button");
+  imgEl.setAttribute("tabindex", "0");
+  imgEl.setAttribute(
+    "aria-label",
+    title ? `Voir la photo de ${title} en grand` : "Voir la photo en grand"
+  );
+}
+
+function unmarkPharmacyPhotoZoomable(imgEl) {
+  if (!imgEl) return;
+  imgEl.classList.remove("js-pharmacy-photo-preview");
+  imgEl.removeAttribute("data-pharmacy-photo-title");
+  imgEl.removeAttribute("role");
+  imgEl.removeAttribute("tabindex");
+  imgEl.removeAttribute("aria-label");
+}
+
+function tryOpenPharmacyPhotoFromTarget(target) {
+  const el = target.closest("[data-pharmacy-photo], .js-pharmacy-photo-preview");
+  if (!el) return false;
+  const src = pharmacyPhotoZoomSrc(el);
+  if (!src) return false;
+  openPharmacyPhotoLightbox(src, pharmacyPhotoZoomTitle(el));
+  return true;
+}
+
 function initPharmacyDetailPhotoZoom() {
   ensurePharmacyPhotoLightbox();
 
@@ -813,13 +927,8 @@ function initPharmacyDetailPhotoZoom() {
     pharmacyPhotoLightboxBound = true;
 
     document.addEventListener("click", (e) => {
-      const zoomBtn = e.target.closest("[data-pharmacy-photo]");
-      if (zoomBtn) {
-        const src = zoomBtn.getAttribute("data-pharmacy-photo");
-        if (src) {
-          e.preventDefault();
-          openPharmacyPhotoLightbox(src, zoomBtn.getAttribute("data-pharmacy-photo-title") || "");
-        }
+      if (tryOpenPharmacyPhotoFromTarget(e.target)) {
+        e.preventDefault();
         return;
       }
 
@@ -834,7 +943,17 @@ function initPharmacyDetailPhotoZoom() {
 
     document.addEventListener("keydown", (e) => {
       const lb = document.getElementById("pharmacy-photo-lightbox");
-      if (!lb || lb.hidden) return;
+      if (!lb || lb.hidden) {
+        if (
+          (e.key === "Enter" || e.key === " ") &&
+          e.target.classList?.contains("js-pharmacy-photo-preview") &&
+          !e.target.classList.contains("hidden")
+        ) {
+          e.preventDefault();
+          tryOpenPharmacyPhotoFromTarget(e.target);
+        }
+        return;
+      }
       if (e.key === "Escape") closePharmacyPhotoLightbox();
     });
   }
@@ -1142,7 +1261,11 @@ function initPharmacyDetailStock({ zone, pharmacyId }) {
 
 function renderPharmacyCard(p, options = {}) {
   options = normalizePharmacyCardOptions(options);
-  const isEnhanced = options.zone === "public" || options.zone === "utilisateur";
+  const isEnhanced =
+    options.zone === "public" || options.zone === "utilisateur" || options.zone === "pharmacien";
+  const clickable = options.actionsHtml
+    ? options.cardClickable === true
+    : options.clickable !== false;
   const distKm =
     p.distance_km != null
       ? Number(p.distance_km)
@@ -1159,7 +1282,6 @@ function renderPharmacyCard(p, options = {}) {
   const titleExtra = options.titleExtra || "";
   const badgesExtra = options.badgesExtra || "";
   const metaExtra = options.metaExtra || "";
-  const clickable = !options.actionsHtml;
   const actionsHtml =
     options.actionsHtml ||
     (isEnhanced
@@ -1171,6 +1293,7 @@ function renderPharmacyCard(p, options = {}) {
     "pharmacy-card-with-img",
     clickable ? "pharmacy-card-clickable" : "",
     isEnhanced ? "pharmacy-card--enhanced" : "",
+    options.zone === "pharmacien" ? "pharmacy-card--pharmacien" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -1178,7 +1301,7 @@ function renderPharmacyCard(p, options = {}) {
     ? ` class="${cardClasses}" data-href="${escapeHtml(detailUrl)}" tabindex="0" role="link" aria-label="Ouvrir la fiche de ${escapeHtml(p.nom)}"`
     : ` class="${cardClasses}"`;
 
-  const hours = formatPharmacyHours(p.heure_ouverture, p.heure_fermeture);
+  const hours = isEnhanced ? formatPharmacyCardHours(p) : formatPharmacyHours(p);
   const gardeRange = formatGardePlanningRange(p.garde_date_debut, p.garde_date_fin);
   const gardeLine =
     p.est_de_garde &&
@@ -1200,9 +1323,8 @@ function renderPharmacyCard(p, options = {}) {
     ? `<p class="pharmacy-card-meta pharmacy-card-meta--loc">
         <span class="pharmacy-card-meta-icon" aria-hidden="true">📍</span>${escapeHtml(loc)}
       </p>
-      <p class="pharmacy-card-meta">
-        <span class="pharmacy-card-meta-icon" aria-hidden="true">🕐</span>
-        <span class="pharmacy-hours-label">Horaires</span> ${escapeHtml(hours)}
+      <p class="pharmacy-card-meta pharmacy-card-meta--hours">
+        <span class="pharmacy-card-meta-icon" aria-hidden="true">🕐</span>${escapeHtml(hours)}
       </p>
       ${
         p.telephone
@@ -1520,7 +1642,9 @@ function mountPharmacyList(container, list, options = {}) {
     let headerFile = "header.html";
     if (
       (zone === "Utilisateur" || zone === "Pharmacien") &&
-      /\/(login|register)\.html$/i.test(location.pathname)
+      /\/(login|register|mot-de-passe-oublie|reinitialiser-mot-de-passe)\.html$/i.test(
+        location.pathname
+      )
     ) {
       headerFile = "header-auth.html";
     }
@@ -1533,8 +1657,11 @@ function mountPharmacyList(container, list, options = {}) {
     const existing = document.querySelector(
       "header.site-header, header.dashboard-header.admin-header"
     );
+    const appHeaderMount = document.getElementById("app-header");
     if (existing) {
       existing.replaceWith(el);
+    } else if (appHeaderMount) {
+      appHeaderMount.replaceWith(el);
     } else {
       document.body.insertAdjacentElement("afterbegin", el);
     }
@@ -1669,7 +1796,11 @@ function mountPharmacyList(container, list, options = {}) {
 
     rebindLayoutActions();
 
-    if (zoneMatch[1] === "Public" || zoneMatch[1] === "Utilisateur") {
+    if (
+      zoneMatch[1] === "Public" ||
+      zoneMatch[1] === "Utilisateur" ||
+      zoneMatch[1] === "Pharmacien"
+    ) {
       await new Promise((resolve) => {
         if (typeof initAppHeader === "function") {
           initAppHeader();

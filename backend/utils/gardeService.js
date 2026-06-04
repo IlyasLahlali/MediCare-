@@ -76,7 +76,7 @@ async function syncGardeFlagsFromPlanning(pharmacyId = null) {
     await pool.query(
       `UPDATE pharmacies p
        INNER JOIN planning_garde pg ON pg.id_pharmacie = p.id
-       SET p.est_de_garde = true, p.est_ouverte = true
+       SET p.est_de_garde = true
        WHERE pg.est_actif = 1
          AND pg.date_debut <= NOW()
          AND pg.date_fin >= NOW()
@@ -167,10 +167,12 @@ async function deactivateGarde(pharmacyId, userId) {
 }
 
 async function getGardeSummaryForUser(userId, ownerCol) {
+  const { pharmacyEffectiveOpenSelectSql } = require("./pharmacyHours");
+
   const [pharmacies] = await pool.query(
-    `SELECT id, nom, est_de_garde, est_ouverte, est_active
-     FROM pharmacies WHERE ${ownerCol} = ?
-     ORDER BY nom`,
+    `SELECT p.id, p.nom, p.est_de_garde, ${pharmacyEffectiveOpenSelectSql()}, p.statut_admin
+     FROM pharmacies p WHERE p.${ownerCol} = ?
+     ORDER BY p.nom`,
     [userId]
   );
 
@@ -182,8 +184,9 @@ async function getGardeSummaryForUser(userId, ownerCol) {
       id: p.id,
       nom: p.nom,
       est_de_garde: inProgress,
-      est_ouverte: !!p.est_ouverte,
-      est_active: !!p.est_active,
+      est_ouverte: inProgress || !!Number(p.est_ouverte),
+      statut_admin: p.statut_admin,
+      publiee: p.statut_admin === "valide",
       planning: planning
         ? {
             id: planning.id,

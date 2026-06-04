@@ -4,6 +4,7 @@ const { authRequired, requireRole } = require("../middleware/authMiddleware");
 const { getPublicPharmacySql } = require("../utils/publicPharmacy");
 const { gardePlanningSelectSql, gardeEffectiveSelectSql } = require("../utils/gardePublicSql");
 const { pharmacyEffectiveOpenSelectSql } = require("../utils/pharmacyHours");
+const { attachPharmacyHorairesList } = require("../utils/pharmacyHorairesDb");
 const { getPharmacySchema } = require("../utils/pharmacySchema");
 const { createNotification, hasRecentNotification } = require("../utils/notificationHelper");
 
@@ -16,9 +17,7 @@ router.get("/", async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT p.id, p.nom, p.adresse, ${s.quartierSql} AS quartier, ${s.villeSql} AS ville,
-              p.telephone, p.latitude, p.longitude,
-              p.heure_ouverture, p.heure_fermeture,
-              p.image,
+              p.telephone, p.latitude, p.longitude, p.image,
               ${pharmacyEffectiveOpenSelectSql()},
               ${gardeEffectiveSelectSql()},
               ${gardePlanningSelectSql()},
@@ -29,6 +28,7 @@ router.get("/", async (req, res) => {
        ORDER BY f.date_creation DESC`,
       [req.user.id]
     );
+    await attachPharmacyHorairesList(rows);
     res.json(rows);
   } catch (err) {
     console.error(err);

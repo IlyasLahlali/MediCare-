@@ -11,6 +11,7 @@ const {
   pharmacyCountsAsOpenSql,
   applyEffectiveOpenToRow,
 } = require("../utils/pharmacyHours");
+const { attachPharmacyHoraires } = require("../utils/pharmacyHorairesDb");
 const { gardeInProgressExistsSql } = require("../utils/gardePublicSql");
 
 const router = express.Router();
@@ -236,8 +237,7 @@ router.get("/", async (req, res) => {
     let sql = `
       SELECT p.id, p.nom, p.adresse,
              ${s.quartierSql} AS quartier, ${s.villeSql} AS ville,
-             p.latitude, p.longitude, p.telephone,
-             p.heure_ouverture, p.heure_fermeture, p.image,
+             p.latitude, p.longitude, p.telephone, p.image,
              ${pharmacyEffectiveOpenSelectSql()},
              ${gardeEffectiveSelectSql()},
              ${gardePlanningSelectSql()}
@@ -259,7 +259,7 @@ router.get("/", async (req, res) => {
     if (hasGeo) {
       sql += ` ORDER BY (p.latitude IS NULL OR p.longitude IS NULL), distance_km ASC, p.nom`;
     } else {
-      sql += ` ORDER BY p.est_de_garde DESC, p.est_ouverte DESC, p.nom`;
+      sql += ` ORDER BY est_de_garde DESC, est_ouverte DESC, p.nom`;
     }
 
     const [rows] = await pool.query(sql, params);
@@ -374,6 +374,7 @@ router.get("/:id", async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: "Pharmacie introuvable" });
     const row = rows[0];
     row.est_de_garde = !!(row.garde_date_debut && row.garde_date_fin);
+    await attachPharmacyHoraires(row);
     applyEffectiveOpenToRow(row);
     res.json(row);
   } catch (err) {

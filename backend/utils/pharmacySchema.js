@@ -26,10 +26,12 @@ async function loadPharmacySchema() {
     quartierSql: hasQuartier ? "p.quartier" : "NULL",
     villeSql: hasVille ? "p.ville" : "NULL",
     PUBLIC_PHARMACY_SQL: `
-      p.est_active = true
+      p.statut_admin = 'valide'
       AND EXISTS (
         SELECT 1 FROM utilisateurs u
-        WHERE u.id = p.${ownerCol} AND u.statut = 'VALIDE'
+        WHERE u.id = p.${ownerCol}
+          AND u.role = 'PHARMACIEN'
+          AND u.statut <> 'REFUSE'
       )
     `,
   };
@@ -60,4 +62,13 @@ function requireLocationColumns(schema) {
   }
 }
 
-module.exports = { loadPharmacySchema, getPharmacySchema, requireLocationColumns };
+function invalidatePharmacySchemaCache() {
+  schema = null;
+}
+
+module.exports = {
+  loadPharmacySchema,
+  getPharmacySchema,
+  requireLocationColumns,
+  invalidatePharmacySchemaCache,
+};

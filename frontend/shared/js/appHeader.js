@@ -9,7 +9,9 @@ function initAppHeader() {
 
   let activePage = page;
   if (page === "pharmacieDetail") {
-    activePage = zone === "utilisateur" ? "Dashboard" : "pharmacies-proches";
+    if (zone === "pharmacien") activePage = "pharmacie";
+    else if (zone === "utilisateur") activePage = "Dashboard";
+    else activePage = "pharmacies-proches";
   }
   if (hash === "pharmacies-proches") activePage = "pharmacies-proches";
   if (hash === "hero-search") activePage = "hero-search";

@@ -73,7 +73,7 @@ const PharmacyMap = (() => {
       <p class="popup-badges">${pharmacyBadges(p)}</p>
       ${dist}
       <p class="muted">${escapeHtml(formatQuartierVille(p) !== "—" ? formatQuartierVille(p) : p.adresse)}</p>
-      <p class="muted"><span class="pharmacy-hours-label">Horaires</span> ${escapeHtml(formatPharmacyHours(p.heure_ouverture, p.heure_fermeture))}</p>
+      <p class="muted"><span class="pharmacy-hours-label">Horaires</span> ${escapeHtml(formatPharmacyHours(p))}</p>
       ${
         p.est_de_garde
           ? `<p class="muted pharmacy-garde-hours">Garde : ${escapeHtml(

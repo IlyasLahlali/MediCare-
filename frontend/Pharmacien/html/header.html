@@ -1,11 +1,36 @@
-<header class="site-header">
+<header class="site-header app-header" data-zone="pharmacien">
   <div class="inner">
-    <a href="Dashboard.html" class="logo">MediCare+ Pro</a>
-    <div class="header-actions pharma-header-actions">
+    <a href="Dashboard.html" class="logo" aria-label="Tableau de bord MediCare+ Pro">
+      <span class="logo-icon" aria-hidden="true">✚</span>
+      <span class="logo-text">MediCare<span class="logo-accent">+</span> Pro</span>
+    </a>
+
+    <button
+      type="button"
+      class="header-menu-toggle"
+      id="header-menu-toggle"
+      aria-expanded="false"
+      aria-controls="header-main-nav"
+    >
+      <span class="sr-only">Ouvrir le menu</span>
+      <span class="menu-bar" aria-hidden="true"></span>
+    </button>
+
+    <nav class="header-nav" id="header-main-nav" aria-label="Navigation pharmacien">
+      <a href="Dashboard.html" class="header-nav-link" data-nav-page="Dashboard">Accueil</a>
+      <a href="pharmacie.html" class="header-nav-link" data-nav-page="pharmacie">Mes pharmacies</a>
+      <a href="#mc-zone-footer" class="header-nav-link" data-nav-page="contact" title="Contact et mentions légales">Contact</a>
+    </nav>
+
+    <div class="header-toolbar header-toolbar--pharma">
       <div id="notif-center-mount" class="notif-center-mount"></div>
-      <a href="#mc-zone-footer" class="btn btn-outline" id="btn-contact-header">Contact</a>
-      <a href="pharmacie.html" class="btn btn-outline">Pharmacies</a>
-      <a href="ajouterPharmacie.html" class="btn btn-outline">+ Pharmacie</a>
+      <a
+        href="ajouterPharmacie.html"
+        class="btn btn-primary btn-compact header-add-pharma"
+        data-nav-page="ajouterPharmacie"
+      >
+        + Pharmacie
+      </a>
       <div id="user-account-menu-mount"></div>
     </div>
   </div>

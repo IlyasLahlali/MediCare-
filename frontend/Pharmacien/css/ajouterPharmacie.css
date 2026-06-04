@@ -1,103 +1,788 @@
-.add-pharmacy-page h1 {
-  margin-bottom: 0.35rem;
+/* Page Ajouter une pharmacie — refonte finale */
+
+.ap-body {
+  background:
+    radial-gradient(ellipse 120% 80% at 100% -20%, rgba(45, 212, 191, 0.12), transparent 50%),
+    radial-gradient(ellipse 80% 60% at 0% 0%, rgba(13, 148, 136, 0.08), transparent 45%),
+    linear-gradient(180deg, #f0fdfa 0%, #f8fafc 14rem, #f1f5f9 100%);
+  min-height: 100vh;
 }
 
-.add-pharmacy-form .card {
-  margin-bottom: 1.25rem;
+.add-pharmacy-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-bottom: 5rem;
 }
 
-.add-pharmacy-form label {
-  display: block;
-  margin-bottom: 0.85rem;
-  font-size: 0.88rem;
+/* —— Hero —— */
+.ap-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin: 1.5rem 0 1rem;
+  padding: 1.5rem 1.65rem;
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 12px 40px rgba(15, 23, 42, 0.07);
 }
 
-.add-pharmacy-form input[type="text"],
-.add-pharmacy-form input[type="tel"],
-.add-pharmacy-form input[type="time"],
-.add-pharmacy-form textarea {
-  width: 100%;
-  margin-top: 0.35rem;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
+.ap-hero__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.image-upload-zone {
-  text-align: center;
-  padding: 1rem;
-  border: 2px dashed #cbd5e1;
-  border-radius: 12px;
-  background: #f8fafc;
+.ap-hero__brand {
+  display: flex;
+  gap: 1.1rem;
+  align-items: flex-start;
 }
 
-.image-preview {
-  max-width: 100%;
-  max-height: 220px;
-  border-radius: 10px;
-  margin-bottom: 0.75rem;
-  object-fit: cover;
+.ap-hero__icon {
+  flex-shrink: 0;
+  width: 3.25rem;
+  height: 3.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #0d9488 0%, #14b8a6 100%);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(13, 148, 136, 0.35);
 }
 
-.image-preview.hidden {
-  display: none;
+.ap-hero__eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #0d9488;
 }
 
-.location-map {
-  height: 320px;
-  border-radius: 12px;
-  margin: 0.75rem 0;
-  border: 1px solid #e2e8f0;
-  z-index: 1;
+.ap-hero h1 {
+  margin: 0;
+  font-size: clamp(1.45rem, 3.5vw, 1.85rem);
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
-.map-actions-row {
+.ap-hero__lead {
+  margin: 0.5rem 0 0;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: #475569;
+  max-width: 40rem;
+}
+
+.ap-hero__badges {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.coords-display {
-  font-size: 0.82rem;
-  font-family: ui-monospace, monospace;
+.ap-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
 }
 
-.location-map-hint {
-  margin: 0.5rem 0 0;
+.ap-hero__badge--pending {
+  color: #b45309;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.ap-hero__badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  animation: ap-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ap-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.ap-hero__back {
+  flex-shrink: 0;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* —— Mobile step pills —— */
+.ap-steps-mobile {
+  display: none;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+  padding: 0.25rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.ap-steps-mobile::-webkit-scrollbar {
+  display: none;
+}
+
+.ap-steps-mobile__item {
+  flex: 1 0 auto;
+  min-width: 7.5rem;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.ap-steps-mobile__item.is-active {
+  color: #0f766e;
+  background: #ecfdf5;
+  border-color: #5eead4;
+}
+
+.ap-steps-mobile__item.is-done {
+  color: #0d9488;
+  border-color: #99f6e4;
+}
+
+/* —— Layout —— */
+.ap-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: 1.35rem;
+  align-items: start;
+}
+
+.ap-sidebar {
+  position: sticky;
+  top: 5.5rem;
+}
+
+.ap-sidebar__card {
+  padding: 1.15rem 1.1rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
+}
+
+.ap-sidebar__title {
+  margin: 0 0 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.ap-step-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ap-step-list__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.65rem 0.7rem;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ap-step-list__btn:hover {
+  background: #f8fafc;
+}
+
+.ap-step-list__btn.is-active {
+  background: #ecfdf5;
+  border-color: #99f6e4;
+}
+
+.ap-step-list__btn.is-done .ap-step-list__icon {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.ap-step-list__btn.is-done .ap-step-list__state::after {
+  content: "✓";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fff;
+  background: #0d9488;
+  border-radius: 50%;
+}
+
+.ap-step-list__icon {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.ap-step-list__btn.is-active .ap-step-list__icon {
+  background: #fff;
+  color: #0d9488;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.15);
+}
+
+.ap-step-list__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.ap-step-list__text strong {
   font-size: 0.88rem;
+  color: #0f172a;
 }
 
-.location-address-display {
-  margin-top: 0.65rem;
-  padding: 0.65rem 0.85rem;
-  background: #f0fdfa;
-  border: 1px solid #99f6e4;
-  border-radius: 8px;
-  font-size: 0.9rem;
+.ap-step-list__text small {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.ap-step-list__state {
+  flex-shrink: 0;
+  width: 1.35rem;
+}
+
+/* —— Main form —— */
+.ap-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ap-form-card {
+  padding: 0.35rem 1.5rem 1.5rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.08);
+}
+
+.ap-page-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.ap-panel {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ap-panel:last-child {
+  border-bottom: none;
+  padding-bottom: 0.5rem;
+}
+
+.ap-panel:first-child {
+  padding-top: 1.1rem;
+}
+
+.ap-panel__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.ap-panel__step {
+  flex-shrink: 0;
+  width: 2.35rem;
+  height: 2.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #0d9488, #14b8a6);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
+}
+
+.ap-panel__title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.ap-panel__desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  color: #64748b;
   line-height: 1.45;
 }
 
-.location-address-display span {
+.ap-panel.is-highlight {
+  animation: ap-panel-highlight 1.2s ease-out;
+}
+
+@keyframes ap-panel-highlight {
+  0% {
+    background: rgba(240, 253, 250, 0.9);
+    border-radius: 12px;
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+/* —— Identity —— */
+.ap-identity-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 300px) minmax(0, 1fr);
+  gap: 1.35rem;
+  align-items: start;
+}
+
+.ap-identity-grid__photo {
+  min-width: 0;
+}
+
+.ap-identity-grid__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.ap-field-card {
+  padding: 1.1rem 1.15rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+}
+
+.ap-field-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.ap-tip {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fde68a;
+  border-radius: 14px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: #78350f;
+}
+
+.ap-tip__icon {
+  flex-shrink: 0;
+  color: #d97706;
+}
+
+.ap-tip p {
+  margin: 0;
+}
+
+/* —— Location —— */
+.ap-location-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.ap-map-card {
+  padding: 1rem 1.1rem 1.1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+}
+
+.ap-map-card__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.ap-geo-btn {
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.2);
+}
+
+.ap-map-card__hint {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #64748b;
+}
+
+.ap-location-map {
+  height: min(380px, 52vh);
+  min-height: 280px;
+  border-radius: 14px;
+  border: 1px solid #cbd5e1;
+  box-shadow:
+    inset 0 1px 3px rgba(15, 23, 42, 0.06),
+    0 4px 20px rgba(15, 23, 42, 0.06);
+}
+
+.ap-map-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.ap-address-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.75rem 0.9rem;
+  background: #ecfdf5;
+  border: 1px solid #99f6e4;
+  border-radius: 12px;
   color: #0f766e;
+}
+
+.ap-address-chip[hidden] {
+  display: none !important;
+}
+
+.ap-address-chip svg {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.ap-address-chip__label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.ap-address-chip__text {
+  margin: 0.15rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #134e4a;
+  line-height: 1.45;
+}
+
+.ap-address-card__title {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ap-address-card__intro {
+  margin: 0 0 1rem;
+  font-size: 0.84rem;
+}
+
+/* —— Hours —— */
+.ap-hours-card__intro {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+}
+
+.ap-hours-card__footer {
+  margin: 1rem 0 0;
+  font-size: 0.82rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.ap-hours-card .pd-hours-section {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+/* —— Footer —— */
+.ap-form-footer {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 20;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.ap-form-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow:
+    0 4px 24px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+  backdrop-filter: blur(10px);
+}
+
+.ap-form-footer__status {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.ap-form-msg {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  min-height: 1.35rem;
+}
+
+.ap-form-msg:not(:empty) {
+  margin-bottom: 0.35rem;
+}
+
+.ap-form-msg.error {
+  color: #b91c1c;
+  background: #fee2e2;
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
   font-weight: 600;
 }
 
-.form-submit-row {
+.ap-form-msg.success {
+  color: #0f766e;
+  background: #ecfdf5;
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.ap-form-footer__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: flex-end;
-  margin-bottom: 2rem;
+  gap: 0.55rem;
 }
 
-.form-grid-2 {
+.ap-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 55%, #14b8a6 100%);
+  color: #fff;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow:
+    0 4px 6px rgba(15, 118, 110, 0.12),
+    0 10px 28px rgba(13, 148, 136, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
+}
+
+.ap-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 10px rgba(15, 118, 110, 0.15),
+    0 14px 36px rgba(13, 148, 136, 0.4);
+}
+
+.ap-submit:focus-visible {
+  outline: 3px solid #99f6e4;
+  outline-offset: 3px;
+}
+
+.ap-submit.is-loading,
+.ap-submit:disabled {
+  opacity: 0.88;
+  pointer-events: none;
+  transform: none;
+}
+
+.ap-submit__icon {
+  flex-shrink: 0;
+  padding: 0.4rem;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+}
+
+.ap-submit__label {
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.add-pharmacy-page .form-grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.85rem 1rem;
 }
 
-@media (max-width: 520px) {
-  .form-grid-2 {
+@media (min-width: 721px) {
+  .add-pharmacy-page .form-grid-2 .pd-form-field--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+img.js-pharmacy-photo-preview:not(.hidden) {
+  cursor: zoom-in;
+}
+
+img.js-pharmacy-photo-preview:not(.hidden):focus-visible {
+  outline: 3px solid #2dd4bf;
+  outline-offset: 3px;
+}
+
+/* —— Responsive —— */
+@media (max-width: 900px) {
+  .ap-layout {
     grid-template-columns: 1fr;
+  }
+
+  .ap-sidebar {
+    position: static;
+  }
+
+  .ap-sidebar__card {
+    padding: 1rem;
+  }
+
+  .ap-step-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .ap-step-list li {
+    flex: 1 1 calc(33% - 0.35rem);
+    min-width: 7rem;
+  }
+
+  .ap-step-list__btn {
+    flex-direction: column;
+    text-align: center;
+    padding: 0.55rem 0.4rem;
+  }
+
+  .ap-step-list__text small {
+    display: none;
+  }
+
+  .ap-step-list__state {
+    display: none;
+  }
+
+}
+
+@media (max-width: 768px) {
+  .ap-steps-mobile {
+    display: flex;
+  }
+
+  .ap-sidebar {
+    display: none;
+  }
+
+  .ap-hero {
+    flex-direction: column;
+    padding: 1.2rem;
+  }
+
+  .ap-hero__back {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ap-form-card {
+    padding: 0.25rem 1rem 1rem;
+    border-radius: 18px;
+  }
+
+  .ap-identity-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ap-form-footer__inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ap-form-footer__actions {
+    flex-direction: column-reverse;
+  }
+
+  .ap-form-footer__actions .btn,
+  .ap-submit {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .add-pharmacy-page .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .ap-location-map {
+    min-height: 240px;
   }
 }

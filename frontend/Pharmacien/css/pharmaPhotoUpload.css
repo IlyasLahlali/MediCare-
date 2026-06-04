@@ -1,0 +1,307 @@
+/* Zone d’ajout / modification de photo pharmacie */
+
+.pharma-photo-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.pharma-photo-upload__frame {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #f8fafc 0%, #ecfdf5 55%, #f0fdfa 100%);
+  border: 2px dashed #94a3b8;
+  min-height: 240px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
+}
+
+.pharma-photo-upload:not(.has-image) .pharma-photo-upload__frame {
+  cursor: pointer;
+}
+
+.pharma-photo-upload:not(.has-image) .pharma-photo-upload__frame:hover {
+  border-color: #2dd4bf;
+  box-shadow: 0 8px 28px rgba(13, 148, 136, 0.12);
+}
+
+.pharma-photo-upload.is-dragover .pharma-photo-upload__frame {
+  border-color: #14b8a6;
+  border-style: solid;
+  background: #f0fdfa;
+  box-shadow:
+    inset 0 0 0 3px rgba(20, 184, 166, 0.2),
+    0 12px 32px rgba(13, 148, 136, 0.15);
+}
+
+.pharma-photo-upload.has-image .pharma-photo-upload__frame {
+  border-style: solid;
+  border-color: #99f6e4;
+  min-height: 0;
+  aspect-ratio: 4 / 3;
+  max-height: 320px;
+}
+
+.pharma-photo-upload__preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  z-index: 2;
+}
+
+.pharma-photo-upload__preview.hidden {
+  display: none;
+}
+
+.pharma-photo-upload__empty {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1.25rem;
+  min-height: 240px;
+  text-align: center;
+}
+
+.pharma-photo-upload__empty.hidden {
+  display: none;
+}
+
+.pharma-photo-upload__ring {
+  width: 4.5rem;
+  height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #0d9488;
+  box-shadow: 0 4px 20px rgba(13, 148, 136, 0.15);
+  margin-bottom: 0.25rem;
+}
+
+.pharma-photo-upload__ring svg {
+  display: block;
+}
+
+.pharma-photo-upload__empty-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.pharma-photo-upload__empty-hint {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #64748b;
+  max-width: 16rem;
+  line-height: 1.45;
+}
+
+.pharma-photo-upload__formats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.pharma-photo-upload__formats span {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f766e;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #ccfbf1;
+  border-radius: 6px;
+}
+
+.pharma-photo-upload__remove-fab {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.25);
+  transition: background 0.15s, transform 0.12s, border-color 0.15s;
+}
+
+.pharma-photo-upload__remove-fab:hover {
+  background: #dc2626;
+  border-color: #fecaca;
+  transform: scale(1.05);
+}
+
+.pharma-photo-upload__remove-fab:focus-visible {
+  outline: 3px solid #f87171;
+  outline-offset: 2px;
+}
+
+.pharma-photo-upload__remove-fab.hidden {
+  display: none;
+}
+
+.pharma-photo-upload__remove-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 0.15rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #b91c1c;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.pharma-photo-upload__remove-text:hover {
+  color: #991b1b;
+  background: #fef2f2;
+  text-decoration: none;
+}
+
+.pharma-photo-upload__remove-text.hidden {
+  display: none;
+}
+
+.pharma-photo-upload--compact .pharma-photo-upload__remove-text {
+  display: none;
+}
+
+.pharma-photo-upload__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0) 45%,
+    rgba(15, 23, 42, 0.55) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.pharma-photo-upload.has-image .pharma-photo-upload__overlay {
+  opacity: 1;
+}
+
+.pharma-photo-upload.has-image:hover .pharma-photo-upload__overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.08) 0%,
+    rgba(15, 23, 42, 0.65) 100%
+  );
+}
+
+.pharma-photo-upload__zoom-pill {
+  position: absolute;
+  left: 50%;
+  bottom: 0.85rem;
+  transform: translateX(-50%);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.65);
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.pharma-photo-upload__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pharma-photo-upload__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.pharma-photo-upload__btn svg {
+  flex-shrink: 0;
+}
+
+.pharma-photo-upload__btn--primary {
+  flex: 1;
+  min-width: 10rem;
+  color: #fff;
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
+}
+
+.pharma-photo-upload__btn--primary:hover {
+  filter: brightness(1.05);
+}
+
+.pharma-photo-upload__btn input[type="file"] {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+img.pharma-photo-upload__preview.js-pharmacy-photo-preview:not(.hidden) {
+  cursor: zoom-in;
+}
+
+img.pharma-photo-upload__preview.js-pharmacy-photo-preview:not(.hidden):focus-visible {
+  outline: 3px solid #2dd4bf;
+  outline-offset: -3px;
+}
+
+.ap-identity-grid__photo .pharma-photo-upload__frame {
+  min-height: 260px;
+}
+
+@media (max-width: 768px) {
+  .pharma-photo-upload__footer {
+    flex-direction: column;
+  }
+
+  .pharma-photo-upload__btn--primary {
+    width: 100%;
+  }
+
+}

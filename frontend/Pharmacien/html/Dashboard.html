@@ -3,89 +3,139 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tableau de bord — Pharmacien</title>
+    <title>Tableau de bord — MediCare+ Pro</title>
     <link rel="stylesheet" href="../../shared/css/base.css" />
     <link rel="stylesheet" href="../../shared/css/notifications.css" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../../shared/css/pharmacyDetail.css" />
+    <link rel="stylesheet" href="../css/style.css?v=30" />
+    <link rel="stylesheet" href="../css/dashboard.css?v=7" />
   </head>
   <body class="pharma-dashboard-page">
-    <header class="site-header pharma-dashboard-header">
-      <div class="inner">
-        <a href="Dashboard.html" class="logo">MediCare+ Pro</a>
-        <div class="header-actions pharma-header-actions">
-          <span id="pharma-name" class="pharma-header-name"></span>
-          <div id="notif-center-mount" class="notif-center-mount"></div>
-          <a href="#mc-zone-footer" class="btn btn-outline" id="btn-contact-header">Contact</a>
-          <a href="pharmacie.html" class="btn btn-outline">Pharmacies</a>
-          <a href="ajouterPharmacie.html" class="btn btn-outline">+ Pharmacie</a>
-          <button type="button" id="btn-logout" class="btn btn-primary">Déconnexion</button>
-        </div>
-      </div>
-    </header>
+    <header class="site-header"></header>
 
-    <section class="pharma-welcome" aria-labelledby="pharma-welcome-title">
-      <div class="pharma-welcome__card">
-        <div class="pharma-welcome__bg" aria-hidden="true"></div>
-        <div class="pharma-welcome__inner">
-          <div class="pharma-welcome__copy">
-            <p class="pharma-welcome__eyebrow">MediCare+ Pro</p>
-            <h1 class="pharma-welcome__title" id="pharma-welcome-title">
-              <span class="pharma-welcome__name" id="pharma-greeting-name">Tableau de bord</span>
-            </h1>
-            <p class="pharma-welcome__lead" id="pharma-welcome-lead">
-              Gérez vos pharmacies, stocks et gardes depuis votre espace professionnel.
-            </p>
-            <div class="pharma-welcome__chips" id="pharma-welcome-chips" hidden></div>
-            <p class="pharma-welcome__meta" id="pharma-welcome-meta"></p>
+    <section class="pd-hero" aria-labelledby="pd-hero-title">
+      <div class="pd-hero__card">
+        <div class="pd-hero__bg" aria-hidden="true"></div>
+        <div class="pd-hero__container">
+          <div class="pd-hero__inner">
+            <div class="pd-hero__main">
+              <p class="pd-hero__eyebrow">Espace professionnel</p>
+              <div class="pd-hero__greeting" id="pd-hero-title">
+                <p class="pd-hero__salute" id="pharma-greeting-salute" aria-hidden="true">Bonjour</p>
+                <h1 class="pd-hero__name" id="pharma-greeting-name">—</h1>
+              </div>
+              <p class="pd-hero__lead" id="pharma-welcome-lead">
+                Pilotez vos pharmacies, gardes et visibilité sur MediCare+.
+              </p>
+            </div>
+            <aside class="pd-hero__aside">
+              <p class="pd-hero__date" id="pharma-welcome-meta"></p>
+              <div class="pd-hero__stat" id="pharma-hero-stat" hidden>
+                <span class="pd-hero__stat-value" id="pharma-hero-stat-value">0</span>
+                <span class="pd-hero__stat-label" id="pharma-hero-stat-label">interactions</span>
+              </div>
+              <div class="pd-hero__chips" id="pharma-welcome-chips" hidden></div>
+            </aside>
           </div>
         </div>
       </div>
     </section>
 
-    <main class="container pharma-dashboard-main">
-      <section class="card garde-dashboard-card">
-        <header class="pharma-section-head">
-          <div>
-            <h2>Pharmacies en garde</h2>
-            <p class="muted">
-              Établissements signalés « de garde » sur MediCare+. Activez ou modifiez une garde depuis
-              chaque fiche.
-            </p>
+    <div class="pd-insights-bar">
+      <div class="pd-insights-bar__inner" id="pd-insights"></div>
+    </div>
+
+    <main class="container pd-dashboard">
+      <div class="pd-layout pd-layout--top">
+        <section class="pd-panel pd-panel--garde" aria-labelledby="pd-garde-title">
+          <header class="pd-panel__head">
+            <div class="pd-panel__title-wrap">
+              <span class="pd-panel__icon pd-panel__icon--garde" aria-hidden="true">🌙</span>
+              <div>
+                <h2 id="pd-garde-title">
+                  Pharmacies de garde
+                  <span class="pd-panel__badge" id="pd-garde-badge" hidden></span>
+                </h2>
+                <p>Établissements signalés « de garde » auprès du public.</p>
+              </div>
+            </div>
+            <a href="pharmacie.html" class="pd-panel__link">Toutes →</a>
+          </header>
+          <div id="garde-summary-list" class="pd-garde-list">
+            <p class="pd-loading">Chargement…</p>
           </div>
-        </header>
-        <div id="garde-summary-list" class="pharmacy-list">
-          <p class="muted">Chargement…</p>
-        </div>
-      </section>
+        </section>
 
-      <header class="pharma-stats-head">
-        <h2>Statistiques</h2>
-        <p class="muted">Activité sur les <span id="stat-period">7</span> derniers jours</p>
-      </header>
-
-      <div class="stats-grid" id="stats-cards">
-        <p class="muted">Chargement…</p>
+        <section class="pd-panel pd-panel--overview" aria-labelledby="pd-overview-title" id="pd-overview-panel">
+          <header class="pd-panel__head">
+            <div class="pd-panel__title-wrap">
+              <span class="pd-panel__icon" aria-hidden="true">📊</span>
+              <div>
+                <h2 id="pd-overview-title">Vue d’ensemble</h2>
+                <p>État de vos établissements en un coup d’œil.</p>
+              </div>
+            </div>
+          </header>
+          <div id="pharmacy-overview" class="pd-overview-grid">
+            <p class="pd-loading">Chargement…</p>
+          </div>
+          <div id="pd-recent-pharmacies" class="pd-recent" hidden></div>
+        </section>
       </div>
 
-      <section class="card">
-        <h2>Trafic quotidien</h2>
-        <div id="traffic-chart" class="traffic-chart"></div>
-      </section>
+      <section class="pd-analytics" id="pd-analytics" aria-labelledby="pd-stats-title">
+        <header class="pd-analytics__head">
+          <div class="pd-analytics__title-wrap">
+            <span class="pd-analytics__icon" aria-hidden="true">📈</span>
+            <div>
+              <h2 id="pd-stats-title">Activité &amp; performance</h2>
+              <p id="pd-stats-subtitle">Interactions patients sur les 7 derniers jours.</p>
+            </div>
+          </div>
+          <div class="pd-period" role="group" aria-label="Période des statistiques">
+            <button type="button" class="pd-period__btn is-active" data-period="7">7 j</button>
+            <button type="button" class="pd-period__btn" data-period="14">14 j</button>
+            <button type="button" class="pd-period__btn" data-period="30">30 j</button>
+          </div>
+        </header>
 
-      <section class="card">
-        <h2>Performance par pharmacie</h2>
-        <div id="pharma-stats-table" class="pharma-table-wrap">
-          <p class="muted">Chargement…</p>
+        <div id="stats-warning" class="pd-alert hidden" role="status"></div>
+
+        <div class="pd-kpi-grid" id="stats-cards">
+          <p class="pd-loading">Chargement des indicateurs…</p>
+        </div>
+
+        <div class="pd-charts-row">
+          <section class="pd-panel pd-chart-panel">
+            <header class="pd-subpanel-head">
+              <h3>Trafic quotidien</h3>
+              <p class="muted">Vues, appels et recherches médicament</p>
+            </header>
+            <div id="traffic-chart-summary" class="pd-chart-summary hidden"></div>
+            <div id="traffic-chart-legend" class="pd-chart-legend hidden"></div>
+            <div id="traffic-chart" class="pd-chart" role="img" aria-label="Graphique du trafic quotidien"></div>
+          </section>
+
+          <section class="pd-panel pd-perf-panel">
+            <header class="pd-subpanel-head">
+              <h3>Classement pharmacies</h3>
+              <p class="muted">Par volume d’interactions sur la période</p>
+            </header>
+            <div id="pharma-stats-table">
+              <p class="pd-loading">Chargement…</p>
+            </div>
+          </section>
         </div>
       </section>
     </main>
 
     <script src="../../shared/js/api.js"></script>
+    <script src="../../shared/js/weeklyPharmacyHours.js?v=9"></script>
     <script src="../../shared/js/common.js"></script>
     <script src="../../shared/js/userAuth.js"></script>
-    <script src="../../shared/js/pharmaAuth.js"></script>
+    <script src="../../shared/js/pharmaAuth.js?v=33"></script>
     <script src="../../shared/js/notifications.js"></script>
     <script src="../../shared/js/gardePharma.js"></script>
-    <script src="../js/Dashboard.js"></script>
+    <script src="../js/Dashboard.js?v=5"></script>
   </body>
 </html>

@@ -8,23 +8,9 @@ function gardeInProgressExistsSql(pharmacyAlias = "p") {
   )`;
 }
 
-/**
- * Ouverte selon heure_ouverture / heure_fermeture (jour même).
- * Sans horaires → repli sur est_ouverte (manuel pharmacien).
- */
-function pharmacyOpenByScheduleSql(alias = "p") {
-  const a = alias;
-  return `(CASE
-    WHEN ${a}.heure_ouverture IS NOT NULL AND ${a}.heure_fermeture IS NOT NULL THEN
-      (CASE
-        WHEN ${a}.heure_ouverture < ${a}.heure_fermeture THEN
-          (CURTIME() >= ${a}.heure_ouverture AND CURTIME() < ${a}.heure_fermeture)
-        ELSE
-          (CURTIME() >= ${a}.heure_ouverture OR CURTIME() < ${a}.heure_fermeture)
-      END)
-    ELSE IFNULL(${a}.est_ouverte, 0)
-  END)`;
-}
+/** Ouverte selon horaires_normaux / exceptions (jour même). Sans horaires → fermé. */
+const { isOpenByWeekRow } = require("./weeklyPharmacyHours");
+const { pharmacyOpenByScheduleSql } = require("./pharmacyHorairesDb");
 
 function pharmacyEffectiveOpenSelectSql() {
   return `(${pharmacyOpenByScheduleSql("p")}) AS est_ouverte`;
@@ -44,12 +30,10 @@ function parseScheduleMinutes(value) {
 }
 
 function isOpenByScheduleRow(row, date = new Date()) {
-  const openM = parseScheduleMinutes(row.heure_ouverture);
-  const closeM = parseScheduleMinutes(row.heure_fermeture);
-  if (openM == null || closeM == null) return null;
-  const nowM = date.getHours() * 60 + date.getMinutes();
-  if (openM < closeM) return nowM >= openM && nowM < closeM;
-  return nowM >= openM || nowM < closeM;
+  const byWeek = isOpenByWeekRow(row, date);
+  if (byWeek !== null) return byWeek;
+
+  return null;
 }
 
 function applyEffectiveOpenToRow(row) {
@@ -61,7 +45,7 @@ function applyEffectiveOpenToRow(row) {
   } else if (bySchedule !== null) {
     row.est_ouverte = bySchedule;
   } else {
-    row.est_ouverte = !!row.est_ouverte;
+    row.est_ouverte = false;
   }
   return row;
 }

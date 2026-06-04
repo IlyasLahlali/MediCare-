@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ajouter une pharmacie — MediCare+</title>
     <link rel="stylesheet" href="../../shared/css/base.css" />
-<link rel="stylesheet" href="../../shared/css/notifications.css" />
+    <link rel="stylesheet" href="../../shared/css/notifications.css" />
     <link rel="stylesheet" href="../../shared/css/map.css" />
     <link rel="stylesheet" href="../css/style.css" />
-    <link rel="stylesheet" href="../css/ajouterPharmacie.css" />
+    <link rel="stylesheet" href="../css/pharmacieDetail.css?v=41" />
+    <link rel="stylesheet" href="../css/pharmaPhotoUpload.css?v=3" />
+    <link rel="stylesheet" href="../css/ajouterPharmacie.css?v=7" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -16,121 +18,248 @@
       crossorigin=""
     />
   </head>
-  <body>
-    <header class="site-header">
-      <div class="inner">
-        <a href="Dashboard.html" class="logo">MediCare+ Pro</a>
-        <div class="header-actions pharma-header-actions">
-          <span id="pharma-name"></span>
-          <div id="notif-center-mount" class="notif-center-mount"></div>
-          <a href="pharmacie.html" class="btn btn-outline">Pharmacies</a>
-          <a href="ajouterPharmacie.html" class="btn btn-outline">+ Pharmacie</a>
-          <button type="button" id="btn-logout" class="btn btn-primary">Déconnexion</button>
-        </div>
-      </div>
-    </header>
+  <body class="ap-body">
+    <header class="site-header"></header>
 
     <main class="container add-pharmacy-page">
-      <h1>Ajouter une pharmacie</h1>
-      <p class="muted">
-        Placez le repère à l’emplacement exact, ajoutez une photo et complétez les informations.
-      </p>
-
-      <form id="form-add-pharmacy" class="add-pharmacy-form">
-        <section class="card">
-          <h2>Photo de la pharmacie</h2>
-          <div class="image-upload-zone">
-            <img id="image-preview" class="image-preview hidden" alt="Aperçu" />
-            <p id="image-placeholder" class="muted">Aucune image sélectionnée</p>
-            <label class="btn btn-outline btn-small">
-              Choisir une photo
-              <input type="file" id="image-input" accept="image/jpeg,image/png,image/webp" hidden />
-            </label>
+      <header class="ap-hero">
+        <div class="ap-hero__main">
+          <div class="ap-hero__brand">
+            <span class="ap-hero__icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-3"/><path d="M9 9v0"/><path d="M9 12v0"/><path d="M9 15v0"/>
+              </svg>
+            </span>
+            <div>
+              <p class="ap-hero__eyebrow">Espace professionnel</p>
+              <h1>Ajouter une pharmacie</h1>
+              <p class="ap-hero__lead">
+                Renseignez l’identité, la position sur la carte et les horaires. Votre fiche sera visible pour les patients après validation par l’équipe MediCare+.
+              </p>
+            </div>
           </div>
-        </section>
+          <ul class="ap-hero__badges" aria-label="Informations">
+            <li class="ap-hero__badge ap-hero__badge--pending">
+              <span class="ap-hero__badge-dot" aria-hidden="true"></span>
+              Statut initial : en attente
+            </li>
+          </ul>
+        </div>
+        <a href="pharmacie.html" class="btn btn-outline ap-hero__back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+          Mes pharmacies
+        </a>
+      </header>
 
-        <section class="card">
-          <h2>Localisation de la pharmacie</h2>
-          <p class="muted">
-            Indiquez l’emplacement sur la carte : l’adresse exacte sera calculée automatiquement pour la
-            carte publique et l’itinéraire.
-          </p>
-          <div class="map-actions-row">
-            <button type="button" id="btn-locate" class="btn btn-teal">
-              <span aria-hidden="true">📍</span> Localiser ma pharmacie (ma position)
-            </button>
-          </div>
-          <p class="muted location-map-hint">Ou cliquez sur la carte / déplacez le repère.</p>
-          <div id="location-map" class="location-map"></div>
-          <p id="coords-display" class="coords-display muted">Repère non placé</p>
-          <p id="location-address-display" class="location-address-display muted" hidden>
-            Adresse enregistrée : <span id="location-address-text"></span>
-          </p>
-          <input type="hidden" id="latitude" name="latitude" required />
-          <input type="hidden" id="longitude" name="longitude" required />
-          <input type="hidden" id="adresse" name="adresse" />
-        </section>
+      <nav class="ap-steps-mobile" aria-label="Étapes du formulaire">
+        <button type="button" class="ap-steps-mobile__item is-active" data-ap-goto="info">1 · Identité</button>
+        <button type="button" class="ap-steps-mobile__item" data-ap-goto="location">2 · Carte</button>
+        <button type="button" class="ap-steps-mobile__item" data-ap-goto="hours">3 · Horaires</button>
+      </nav>
 
-        <section class="card">
-          <h2>Informations</h2>
-          <label>Nom de la pharmacie <input type="text" id="nom" name="nom" required /></label>
-          <p class="field-hint muted">
-            Ville et quartier servent à la recherche des patients (listes proposées depuis les pharmacies
-            déjà enregistrées).
-          </p>
-          <div class="form-grid-2">
-            <label>
-              Ville <span class="required-mark">*</span>
-              <input
-                type="text"
-                id="ville"
-                name="ville"
-                list="ville-suggestions"
-                required
-                autocomplete="address-level2"
-                placeholder="Ex. Marrakech"
-              />
-            </label>
-            <label>
-              Quartier <span class="required-mark">*</span>
-              <input
-                type="text"
-                id="quartier"
-                name="quartier"
-                list="quartier-suggestions"
-                required
-                autocomplete="address-level3"
-                placeholder="Ex. Guéliz, Médina"
-              />
-            </label>
+      <form id="form-add-pharmacy" class="ap-layout" novalidate>
+        <aside class="ap-sidebar" aria-label="Étapes du formulaire">
+          <div class="ap-sidebar__card">
+            <p class="ap-sidebar__title">Étapes</p>
+            <ol class="ap-step-list">
+              <li>
+                <button type="button" class="ap-step-list__btn is-active" data-ap-goto="info" id="ap-nav-info">
+                  <span class="ap-step-list__icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+                  </span>
+                  <span class="ap-step-list__text">
+                    <strong>Identité</strong>
+                    <small>Photo, nom, téléphone</small>
+                  </span>
+                  <span class="ap-step-list__state" id="ap-state-info" aria-hidden="true"></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="ap-step-list__btn" data-ap-goto="location" id="ap-nav-location">
+                  <span class="ap-step-list__icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                  </span>
+                  <span class="ap-step-list__text">
+                    <strong>Localisation</strong>
+                    <small>Carte, ville, adresse</small>
+                  </span>
+                  <span class="ap-step-list__state" id="ap-state-location" aria-hidden="true"></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="ap-step-list__btn" data-ap-goto="hours" id="ap-nav-hours">
+                  <span class="ap-step-list__icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                  </span>
+                  <span class="ap-step-list__text">
+                    <strong>Horaires</strong>
+                    <small>Planning hebdomadaire</small>
+                  </span>
+                  <span class="ap-step-list__state" id="ap-state-hours" aria-hidden="true"></span>
+                </button>
+              </li>
+            </ol>
           </div>
-          <datalist id="ville-suggestions"></datalist>
-          <datalist id="quartier-suggestions"></datalist>
-          <label>Téléphone <input type="tel" id="telephone" name="telephone" /></label>
-          <div class="form-grid-2">
-            <label>Ouverture <input type="time" id="heure_ouverture" name="heure_ouverture" /></label>
-            <label>Fermeture <input type="time" id="heure_fermeture" name="heure_fermeture" /></label>
-          </div>
-          <label><input type="checkbox" id="est_ouverte" name="est_ouverte" /> Pharmacie ouverte</label>
-          <label><input type="checkbox" id="est_de_garde" name="est_de_garde" /> De garde</label>
-        </section>
+        </aside>
 
-        <p id="form-msg" class="muted"></p>
-        <div class="form-submit-row">
-          <a href="pharmacie.html" class="btn btn-outline">Annuler</a>
-          <button type="submit" class="btn btn-teal" id="btn-submit">Enregistrer la pharmacie</button>
+        <div class="ap-main">
+          <div class="ap-form-card">
+            <div class="ap-page-stack">
+              <section class="ap-panel" id="ap-section-info" data-ap-step="info">
+                <header class="ap-panel__head">
+                  <span class="ap-panel__step" aria-hidden="true">1</span>
+                  <div class="ap-panel__titles">
+                    <h2 class="ap-panel__title">Identité de l'établissement</h2>
+                    <p class="ap-panel__desc">Ce que les patients verront en premier sur votre fiche.</p>
+                  </div>
+                </header>
+
+                <div class="ap-identity-grid">
+                  <div class="ap-identity-grid__photo" id="add-photo-mount" aria-label="Photo de la pharmacie"></div>
+                  <div class="ap-identity-grid__fields">
+                    <div class="ap-field-card">
+                      <div class="form-grid-2">
+                        <label class="pd-form-field pd-form-field--wide">
+                          <span class="ap-field-label">Nom de la pharmacie <span class="required-mark">*</span></span>
+                          <input type="text" id="nom" name="nom" required autocomplete="organization" placeholder="Pharmacie du Centre" />
+                        </label>
+                        <label class="pd-form-field">
+                          <span class="ap-field-label">Téléphone</span>
+                          <input type="tel" id="telephone" name="telephone" autocomplete="tel" placeholder="06 12 34 56 78" />
+                        </label>
+                      </div>
+                    </div>
+                    <aside class="ap-tip" aria-label="Conseil">
+                      <span class="ap-tip__icon" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
+                      </span>
+                      <p>Une <strong>photo nette de la devanture</strong> et un nom exact facilitent la recherche sur la carte MediCare+.</p>
+                    </aside>
+                  </div>
+                </div>
+              </section>
+
+              <section class="ap-panel" id="ap-section-location" data-ap-step="location">
+                <header class="ap-panel__head">
+                  <span class="ap-panel__step" aria-hidden="true">2</span>
+                  <div class="ap-panel__titles">
+                    <h2 class="ap-panel__title">Localisation</h2>
+                    <p class="ap-panel__desc">Positionnez le repère, puis complétez ville, quartier et adresse.</p>
+                  </div>
+                </header>
+
+                <div class="ap-location-stack">
+                  <div class="ap-map-card">
+                    <div class="ap-map-card__toolbar">
+                      <button type="button" id="btn-locate" class="pd-btn-geo ap-geo-btn">
+                        <span class="pd-btn-geo__dot" aria-hidden="true"></span>
+                        Utiliser ma position
+                      </button>
+                      <p class="ap-map-card__hint">Ou cliquez sur la carte et déplacez le repère.</p>
+                    </div>
+                    <div id="location-map" class="location-map ap-location-map"></div>
+                    <div class="ap-map-card__meta">
+                      <p id="coords-display" class="pd-edit-coords pd-edit-coords--empty muted">Repère non placé sur la carte</p>
+                      <div id="location-address-display" class="ap-address-chip" hidden>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                        <div>
+                          <span class="ap-address-chip__label">Adresse détectée</span>
+                          <p id="location-address-text" class="ap-address-chip__text"></p>
+                        </div>
+                      </div>
+                    </div>
+                    <input type="hidden" id="latitude" name="latitude" />
+                    <input type="hidden" id="longitude" name="longitude" />
+                  </div>
+
+                  <div class="ap-field-card ap-address-card">
+                    <h3 class="ap-address-card__title">Adresse affichée aux patients</h3>
+                    <p class="ap-address-card__intro muted">La ville et le quartier alimentent les filtres de recherche.</p>
+                    <div class="form-grid-2 pd-location-grid">
+                      <label class="pd-form-field">
+                        <span class="ap-field-label">Ville <span class="required-mark">*</span></span>
+                        <input
+                          type="text"
+                          id="ville"
+                          name="ville"
+                          list="ville-suggestions"
+                          required
+                          autocomplete="address-level2"
+                          placeholder="Marrakech"
+                        />
+                      </label>
+                      <label class="pd-form-field">
+                        <span class="ap-field-label">Quartier <span class="required-mark">*</span></span>
+                        <input
+                          type="text"
+                          id="quartier"
+                          name="quartier"
+                          list="quartier-suggestions"
+                          required
+                          autocomplete="address-level3"
+                          placeholder="Guéliz, Médina…"
+                        />
+                      </label>
+                    </div>
+                    <datalist id="ville-suggestions"></datalist>
+                    <datalist id="quartier-suggestions"></datalist>
+                    <label class="pd-form-field pd-form-field--wide">
+                      <span class="ap-field-label">Adresse complète <span class="required-mark">*</span></span>
+                      <textarea id="adresse-visible" rows="3" placeholder="Ex. 12 Avenue Mohammed V — peut être remplie depuis la carte"></textarea>
+                    </label>
+                    <input type="hidden" id="adresse" name="adresse" />
+                    <p id="location-msg" class="pd-edit-location-msg hidden" role="alert" aria-live="polite"></p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="ap-panel" id="ap-section-hours" data-ap-step="hours">
+                <header class="ap-panel__head">
+                  <span class="ap-panel__step" aria-hidden="true">3</span>
+                  <div class="ap-panel__titles">
+                    <h2 class="ap-panel__title">Horaires d'ouverture</h2>
+                    <p class="ap-panel__desc">Le badge ouvert / fermé est calculé automatiquement selon ce planning.</p>
+                  </div>
+                </header>
+
+                <div class="ap-field-card ap-hours-card">
+                  <p class="ap-hours-card__intro muted">Par défaut 9h–17h en semaine. Adaptez chaque jour ou appliquez le même créneau à tous les jours ouverts.</p>
+                  <p id="hours-msg" class="pd-edit-hours-msg hidden" role="alert" aria-live="polite"></p>
+                  <div id="add-weekly-hours-mount"></div>
+                  <p class="ap-hours-card__footer muted">Le mode de garde pourra être activé depuis la fiche pharmacie, une fois validée.</p>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <footer class="ap-form-footer">
+            <div class="ap-form-footer__inner">
+              <div class="ap-form-footer__status">
+                <p id="form-msg" class="ap-form-msg" role="status" aria-live="polite"></p>
+              </div>
+              <div class="ap-form-footer__actions">
+                <a href="pharmacie.html" class="btn btn-outline">Annuler</a>
+                <button type="submit" class="ap-submit" id="btn-submit">
+                  <svg class="ap-submit__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                  <span class="ap-submit__label">Ajouter</span>
+                </button>
+              </div>
+            </div>
+          </footer>
         </div>
       </form>
     </main>
-<script src="../../shared/js/api.js"></script>
+
+    <script src="../../shared/js/api.js"></script>
     <script src="../../shared/js/common.js"></script>
-    <script src="../../shared/js/pharmaAuth.js"></script>
+    <script src="../../shared/js/pharmaAuth.js?v=33"></script>
     <script src="../../shared/js/notifications.js"></script>
+    <script src="../../shared/js/weeklyPharmacyHours.js?v=8"></script>
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="../js/ajouterPharmacie.js"></script>
+    <script src="../js/ajouterPharmacie.js?v=10"></script>
   </body>
 </html>

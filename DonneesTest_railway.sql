@@ -12,9 +12,9 @@ INSERT IGNORE INTO utilisateurs (nom, email, mot_de_passe, role, statut) VALUES
 SET @id_pharma = (SELECT id FROM utilisateurs WHERE email = 'pharma@medicare.ma' LIMIT 1);
 
 INSERT IGNORE INTO pharmacies (nom, adresse, quartier, ville, latitude, longitude, telephone,
-  est_ouverte, est_de_garde, est_active, id_pharmacien) VALUES
-('Pharmacie Al Amal', '12 Av. Mohammed V', 'Guéliz', 'Marrakech', 31.6295, -7.9811, '0524000001', true, false, true, @id_pharma),
-('Pharmacie de Garde Centre', '45 Bd Zerktouni', 'Centre', 'Marrakech', 31.6340, -7.9990, '0524000002', true, true, true, @id_pharma);
+  est_de_garde, statut_admin, id_pharmacien) VALUES
+('Pharmacie Al Amal', '12 Av. Mohammed V', 'Guéliz', 'Marrakech', 31.6295, -7.9811, '0524000001', false, 'valide', @id_pharma),
+('Pharmacie de Garde Centre', '45 Bd Zerktouni', 'Centre', 'Marrakech', 31.6340, -7.9990, '0524000002', true, 'valide', @id_pharma);
 
 INSERT IGNORE INTO medicaments (nom, description, prix) VALUES
 ('Paracétamol 500mg', 'Antalgique', 25.00),

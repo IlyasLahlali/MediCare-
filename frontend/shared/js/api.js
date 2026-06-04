@@ -17,7 +17,11 @@ async function apiFetch(path, options = {}) {
 
   let res;
   try {
-    res = await fetch(`${API}${path}`, { ...options, headers });
+    res = await fetch(`${API}${path}`, {
+      cache: "no-store",
+      ...options,
+      headers,
+    });
   } catch {
     if (!navigator.onLine) {
       throw new Error(
@@ -43,7 +47,11 @@ async function apiFetch(path, options = {}) {
           "Base de données indisponible — vérifiez MySQL et backend/.env"
       );
     }
-    const errMsg = data.error || `Erreur ${res.status}`;
+    let errMsg = data.error || `Erreur ${res.status}`;
+    if (res.status === 404 && !data.error) {
+      errMsg =
+        "Route API introuvable — redémarrez le serveur backend (npm start dans le dossier backend).";
+    }
     throw new Error(data.detail ? `${errMsg} — ${data.detail}` : errMsg);
   }
   return data;
@@ -182,13 +190,24 @@ window.MediCareAPI = {
     apiFetch(
       `/pharmacien/geocode-reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`
     ),
+  pharmaGeocodeForward: ({ q, adresse, quartier, ville } = {}) => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    else {
+      if (adresse) params.set("adresse", adresse);
+      if (quartier) params.set("quartier", quartier);
+      if (ville) params.set("ville", ville);
+    }
+    const qs = params.toString();
+    return apiFetch(`/pharmacien/geocode-forward${qs ? `?${qs}` : ""}`);
+  },
   updatePharmaPharmacy: (id, body) =>
     apiFetch(`/pharmacien/pharmacies/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   deletePharmaPharmacy: (id) =>
     apiFetch(`/pharmacien/pharmacies/${id}`, { method: "DELETE" }),
 
   getPharmaStock: (pharmacyId) => apiFetch(`/pharmacien/pharmacies/${pharmacyId}/stock`),
-  getPharmaAvis: (pharmacyId) => apiFetch(`/avis/pharmacie/${pharmacyId}`),
+  getPharmaAvis: (pharmacyId) => apiFetch(`/pharmacien/pharmacies/${pharmacyId}/avis`),
   addPharmaStock: (pharmacyId, body) =>
     apiFetch(`/pharmacien/pharmacies/${pharmacyId}/stock`, {
       method: "POST",
@@ -205,6 +224,12 @@ window.MediCareAPI = {
     apiFetch(`/pharmacien/stock/${stockId}`, { method: "DELETE" }),
   searchMedicamentsCatalog: (q) =>
     apiFetch(`/pharmacien/medicaments/search?q=${encodeURIComponent(q)}`),
+
+  setPharmaManualClose: (pharmacyId, ferme) =>
+    apiFetch(
+      `/pharmacien/pharmacies/${pharmacyId}/${ferme ? "marquer-ferme" : "marquer-ouverte"}`,
+      { method: "POST" }
+    ),
 
   getGardeSummary: () => apiFetch("/pharmacien/garde"),
   activateGarde: (pharmacyId, body) =>

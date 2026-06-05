@@ -13,12 +13,56 @@ function showMessage(text, error = false) {
   el.className = error ? "admin-feedback error" : "admin-feedback success";
 }
 
+let adminPharmacyNom = "";
+
 function closeModal(id) {
-  document.getElementById(id)?.classList.add("hidden");
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add("hidden");
+  if (!document.querySelector(".admin-confirm-modal:not(.hidden)")) {
+    document.body.classList.remove("admin-confirm-modal-open");
+  }
 }
 
 function openModal(id) {
-  document.getElementById(id)?.classList.remove("hidden");
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove("hidden");
+  document.body.classList.add("admin-confirm-modal-open");
+  el.querySelector(".admin-confirm-modal__btn-confirm, .btn-primary, .btn-danger")?.focus();
+}
+
+function setAdminConfirmModalPharmacyName(nom) {
+  adminPharmacyNom = nom || "cette pharmacie";
+  const label = `« ${adminPharmacyNom} »`;
+  const validerName = document.getElementById("modal-valider-name");
+  const refuserName = document.getElementById("modal-refuser-name");
+  if (validerName) validerName.textContent = label;
+  if (refuserName) refuserName.textContent = label;
+}
+
+function initAdminConfirmModals() {
+  if (window._adminConfirmModalsBound) return;
+  window._adminConfirmModalsBound = true;
+
+  document.addEventListener("click", (e) => {
+    const closeBtn = e.target.closest("[data-close-modal]");
+    if (closeBtn) {
+      closeModal(closeBtn.getAttribute("data-close-modal"));
+      return;
+    }
+    const backdrop = e.target.closest(".admin-confirm-modal__backdrop");
+    if (backdrop) {
+      closeModal(backdrop.getAttribute("data-close-modal"));
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    document.querySelectorAll(".admin-confirm-modal:not(.hidden)").forEach((modal) => {
+      closeModal(modal.id);
+    });
+  });
 }
 
 window.closeModal = closeModal;
@@ -146,6 +190,7 @@ async function loadPharmacyDetail() {
   try {
     const p = await MediCareAPI.getAdminPharmacy(pharmacyId);
     document.title = `${p.nom} — Admin MediCare+`;
+    setAdminConfirmModalPharmacyName(p.nom);
     detail.innerHTML = renderAdminPharmacyHero(p);
     mountPharmacyLocationMap(document.getElementById("adminPharmacyMapHost"), p, {
       mapClass: "pharmacy-location-map admin-pharmacy-location-map",
@@ -159,15 +204,27 @@ async function loadPharmacyDetail() {
   }
 }
 
+async function refreshAdminNotificationsAfterAction(titre, message) {
+  if (window.NotificationCenter?.refresh) {
+    await NotificationCenter.refresh();
+  }
+  if (window.NotificationCenter?.showToast) {
+    NotificationCenter.showToast({ type: "SYSTEM", titre, message });
+  }
+}
+
 async function confirmValider() {
   closeModal("modalValider");
   try {
     const data = await MediCareAPI.validateAdminPharmacy(pharmacyId);
     showMessage(data.message || "Pharmacie validée");
-    window.NotificationCenter?.refresh?.();
+    await refreshAdminNotificationsAfterAction(
+      "Validation enregistrée",
+      `« ${adminPharmacyNom} » est validée.`
+    );
     setTimeout(() => {
       window.location.href = backUrl;
-    }, 800);
+    }, 1200);
   } catch (err) {
     showMessage(err.message, true);
   }
@@ -178,10 +235,13 @@ async function confirmRefuser() {
   try {
     const data = await MediCareAPI.refuseAdminPharmacy(pharmacyId);
     showMessage(data.message || "Pharmacie refusée");
-    window.NotificationCenter?.refresh?.();
+    await refreshAdminNotificationsAfterAction(
+      "Refus enregistré",
+      `« ${adminPharmacyNom} » est refusée.`
+    );
     setTimeout(() => {
       window.location.href = backUrl;
-    }, 800);
+    }, 1200);
   } catch (err) {
     showMessage(err.message, true);
   }
@@ -192,6 +252,7 @@ window.confirmRefuser = confirmRefuser;
 
 document.addEventListener("DOMContentLoaded", () => {
   if (!initAdminPage()) return;
+  initAdminConfirmModals();
   initAdminStockPanel();
   initPharmacyDetailHoursToggle();
   const backLink = document.getElementById("admin-detail-back-link");

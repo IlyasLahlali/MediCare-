@@ -35,13 +35,22 @@ async function notifyAdminsPharmacyPending(pharmacyId, pharmacyName, pharmacienN
   );
 }
 
-/** Admin ayant validé : confirmation. */
+function resolveAdminUserId(user) {
+  const id = Number(user?.id ?? user?.userId);
+  return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+/** Admin ayant validé : confirmation (titre distinct des notifs pharmacien). */
 async function notifyAdminPharmacyValidated(adminId, pharmacyId, pharmacyName) {
-  if (!adminId) return;
-  await createNotification({
-    userId: adminId,
+  const userId = resolveAdminUserId({ id: adminId });
+  if (!userId) {
+    console.warn("notifyAdminPharmacyValidated: id admin invalide", adminId);
+    return null;
+  }
+  return createNotification({
+    userId,
     type: "SYSTEM",
-    titre: "Pharmacie validée",
+    titre: "Validation enregistrée",
     message: `Vous avez validé « ${pharmacyName} ». Elle est visible sur MediCare+.`,
     lien: adminPharmacyDetailLink(pharmacyId, "/Admin/html/pharmacie.html?statut=valide"),
   });
@@ -49,11 +58,15 @@ async function notifyAdminPharmacyValidated(adminId, pharmacyId, pharmacyName) {
 
 /** Admin ayant refusé : confirmation. */
 async function notifyAdminPharmacyRefused(adminId, pharmacyId, pharmacyName) {
-  if (!adminId) return;
-  await createNotification({
-    userId: adminId,
+  const userId = resolveAdminUserId({ id: adminId });
+  if (!userId) {
+    console.warn("notifyAdminPharmacyRefused: id admin invalide", adminId);
+    return null;
+  }
+  return createNotification({
+    userId,
     type: "SYSTEM",
-    titre: "Pharmacie refusée",
+    titre: "Refus enregistré",
     message: `Vous avez refusé « ${pharmacyName} ». Elle n’est pas publiée sur MediCare+.`,
     lien: adminPharmacyDetailLink(pharmacyId, "/Admin/html/pharmacie.html?statut=refuse"),
   });

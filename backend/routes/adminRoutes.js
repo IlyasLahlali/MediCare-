@@ -214,16 +214,21 @@ router.put("/pharmacies/:id/valider", async (req, res) => {
     await setPharmacyStatut(id, "valide");
 
     if (rows[0].owner_id) {
-      await notifyOwner(id, {
-        titre: "Pharmacie validée",
-        message: `« ${rows[0].nom} » est publiée sur MediCare+ et visible par le public.`,
-      });
+      try {
+        await notifyOwner(id, {
+          titre: "Pharmacie validée",
+          message: `« ${rows[0].nom} » est publiée sur MediCare+ et visible par le public.`,
+        });
+      } catch (notifErr) {
+        console.warn("Notification pharmacien (validation):", notifErr.message);
+      }
     }
 
     try {
-      await notifyAdminPharmacyValidated(req.user.id, id, rows[0].nom);
+      const notifId = await notifyAdminPharmacyValidated(req.user.id, id, rows[0].nom);
+      if (notifId) console.log(`Notification admin validation #${notifId} → user ${req.user.id}`);
     } catch (notifErr) {
-      console.warn("Notification admin validation:", notifErr.message);
+      console.error("Notification admin validation:", notifErr.message);
     }
 
     res.json({ success: true, message: "Pharmacie validée avec succès" });
@@ -243,15 +248,21 @@ router.put("/pharmacies/:id/refuser", async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: "Pharmacie introuvable" });
 
     await setPharmacyStatut(id, "refuse");
-    await notifyOwner(id, {
-      titre: "Pharmacie refusée",
-      message: `« ${rows[0].nom} » n'a pas été publiée. Contactez l'administration pour plus d'informations.`,
-    });
 
     try {
-      await notifyAdminPharmacyRefused(req.user.id, id, rows[0].nom);
+      await notifyOwner(id, {
+        titre: "Pharmacie refusée",
+        message: `« ${rows[0].nom} » n'a pas été publiée. Contactez l'administration pour plus d'informations.`,
+      });
     } catch (notifErr) {
-      console.warn("Notification admin refus:", notifErr.message);
+      console.warn("Notification pharmacien (refus):", notifErr.message);
+    }
+
+    try {
+      const notifId = await notifyAdminPharmacyRefused(req.user.id, id, rows[0].nom);
+      if (notifId) console.log(`Notification admin refus #${notifId} → user ${req.user.id}`);
+    } catch (notifErr) {
+      console.error("Notification admin refus:", notifErr.message);
     }
 
     res.json({ success: true, message: "Pharmacie refusée" });

@@ -903,44 +903,212 @@ body.admin-page {
   border: 1px solid #fca5a5;
 }
 
-/* Modals */
-.modal-overlay {
+/* Modales confirmation admin (validation / refus pharmacie) */
+body.admin-confirm-modal-open {
+  overflow: hidden;
+}
+
+.admin-confirm-modal {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 300;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(15, 23, 42, 0.45);
 }
 
-.modal-overlay.hidden {
+.admin-confirm-modal.hidden {
   display: none;
 }
 
-.modal-box,
-.admin-modal {
-  background: #fff;
-  border-radius: 14px;
+.admin-confirm-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(4px);
+}
+
+.admin-confirm-modal__panel {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 420px;
-  padding: 1.25rem 1.5rem;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  max-width: 440px;
+  padding: 0;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.06),
+    0 24px 48px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+  animation: admin-confirm-modal-in 0.22s ease-out;
 }
 
-.admin-modal h3,
-.modal-box h3 {
+@keyframes admin-confirm-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.admin-confirm-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.15rem 1.15rem 1rem 1.35rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-confirm-modal__header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-confirm-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.35rem;
+  height: 2.35rem;
+  margin: -0.15rem -0.05rem 0 0;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.admin-confirm-modal__close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.admin-confirm-modal__close:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
+}
+
+.admin-confirm-modal--danger .admin-confirm-modal__close:focus-visible {
+  outline-color: #dc2626;
+}
+
+.admin-confirm-modal--success .admin-confirm-modal__header {
+  background: linear-gradient(180deg, #ecfdf5 0%, #fff 100%);
+}
+
+.admin-confirm-modal--danger .admin-confirm-modal__header {
+  background: linear-gradient(180deg, #fef2f2 0%, #fff 100%);
+}
+
+.admin-confirm-modal__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.admin-confirm-modal--success .admin-confirm-modal__icon {
+  color: #047857;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+}
+
+.admin-confirm-modal--danger .admin-confirm-modal__icon {
+  color: #b91c1c;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+}
+
+.admin-confirm-modal__header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.admin-confirm-modal__text {
+  margin: 0;
+  padding: 1.1rem 1.35rem 0.35rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #334155;
+}
+
+.admin-confirm-modal__text strong {
   color: #0f766e;
-  margin: 0 0 10px;
+  font-weight: 800;
 }
 
-.modal-actions {
+.admin-confirm-modal--danger .admin-confirm-modal__text strong {
+  color: #b91c1c;
+}
+
+.admin-confirm-modal__hint {
+  margin: 0;
+  padding: 0 1.35rem 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.admin-confirm-modal__footer {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 1.25rem;
+  gap: 0.65rem;
   justify-content: flex-end;
+  padding: 1rem 1.35rem 1.2rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.admin-confirm-modal__footer .btn {
+  min-width: 7.5rem;
+  font-weight: 700;
+}
+
+.admin-confirm-modal__btn-cancel {
+  color: #475569 !important;
+  background: #fff !important;
+  border: 2px solid #cbd5e1 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.admin-confirm-modal__btn-cancel:hover {
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  text-decoration: none;
+}
+
+@media (max-width: 480px) {
+  .admin-confirm-modal__footer {
+    flex-direction: column-reverse;
+  }
+
+  .admin-confirm-modal__footer .btn {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 /* ─── Login admin (page dédiée) ─── */

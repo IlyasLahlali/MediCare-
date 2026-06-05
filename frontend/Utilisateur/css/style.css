@@ -36,10 +36,15 @@
   max-width: 1180px;
   margin: 0 auto;
   width: 100%;
+  min-width: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2.5rem 3rem;
   align-items: center;
+}
+
+.public-hero__copy {
+  min-width: 0;
 }
 
 .public-hero__badge {
@@ -622,12 +627,35 @@
 }
 
 @media (max-width: 520px) {
+  .public-hero {
+    padding: 4.25rem 1rem 2.25rem;
+  }
+
+  .public-hero__title {
+    font-size: 1.65rem;
+  }
+
+  .hero-search-card {
+    border-radius: 16px;
+  }
+
+  .hero-search-panel {
+    padding: 1rem 1rem 0.35rem;
+  }
+
   .hero-search-grid {
     grid-template-columns: 1fr;
   }
 
   .public-stats__grid {
     grid-template-columns: 1fr;
+  }
+
+  .public-home .site-header,
+  .public-home .app-header {
+    position: relative;
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    box-shadow: 0 2px 12px rgba(15, 118, 110, 0.2);
   }
 }
 

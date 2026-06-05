@@ -223,6 +223,63 @@
   border-width: 1.5px;
 }
 
+@media (max-width: 640px) {
+  .map-page {
+    margin: 0;
+    min-height: calc(100dvh - 4rem);
+  }
+
+  .map-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .map-toolbar h1 {
+    font-size: 1rem;
+    min-width: 0;
+  }
+
+  .map-filters {
+    justify-content: flex-start;
+  }
+
+  .map-actions {
+    width: 100%;
+  }
+
+  .map-actions .btn {
+    width: 100%;
+  }
+
+  .map-wrap,
+  #pharmacy-map {
+    min-height: 50dvh;
+  }
+
+  .map-legend {
+    left: 0.5rem;
+    bottom: 0.5rem;
+    font-size: 0.7rem;
+    max-width: calc(100% - 1rem);
+  }
+
+  .map-status {
+    max-width: calc(100% - 1.5rem);
+    right: 0.5rem;
+    top: 0.5rem;
+  }
+
+  .leaflet-popup-content {
+    min-width: 0;
+  }
+
+  .popup-actions--enhanced {
+    flex-wrap: wrap;
+  }
+}
+
 @media (min-width: 768px) {
   .map-page {
     min-height: calc(100vh - 5rem);

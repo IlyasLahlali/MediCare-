@@ -1730,7 +1730,7 @@ function mountPharmacyList(container, list, options = {}) {
     if (document.querySelector('link[data-mc-layout="1"]')) return;
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = new URL("../../shared/css/layout.css", location.href).href;
+    link.href = new URL("../../shared/css/layout.css?v=9", location.href).href;
     link.dataset.mcLayout = "1";
     document.head.appendChild(link);
   }

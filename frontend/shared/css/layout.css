@@ -330,18 +330,48 @@
 }
 
 @media (max-width: 860px) {
-  .app-header .header-menu-toggle {
-    display: inline-flex;
-    margin-left: auto;
+  .app-header .inner {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
   }
 
-  .app-header .inner {
-    flex-wrap: wrap;
+  .app-header .logo {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .app-header .header-menu-toggle {
+    display: inline-flex;
+    order: 3;
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+
+  .app-header .header-toolbar {
+    order: 2;
+    flex-shrink: 0;
+    gap: 0.35rem;
+  }
+
+  /* Boutons texte du toolbar : dans le menu déroulant, pas dans la barre compacte */
+  .app-header .header-toolbar .btn,
+  .app-header .header-toolbar .header-nav-link--quiet {
+    display: none !important;
+  }
+
+  /* Zone publique : pas d’icônes dans la barre — tout le toolbar dans le menu */
+  .app-header[data-zone="public"] .header-toolbar {
+    display: none;
+  }
+
+  .app-header[data-zone="public"].is-menu-open .header-toolbar {
+    display: flex;
   }
 
   .app-header .header-nav {
     display: none;
-    order: 3;
+    order: 4;
     width: 100%;
     flex-direction: column;
     align-items: stretch;
@@ -349,16 +379,34 @@
     border-top: 1px solid rgba(255, 255, 255, 0.2);
   }
 
+  .app-header.is-menu-open .inner {
+    flex-wrap: wrap;
+  }
+
   .app-header.is-menu-open .header-nav {
     display: flex;
   }
 
-  .app-header .header-nav-link {
-    padding: 0.65rem 0.5rem;
+  .app-header.is-menu-open .header-toolbar {
+    order: 5;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.65rem 0 0.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
   }
 
-  .app-header .header-toolbar {
-    order: 2;
+  .app-header.is-menu-open .header-toolbar .btn,
+  .app-header.is-menu-open .header-toolbar .header-nav-link--quiet {
+    display: inline-flex;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+  }
+
+  .app-header .header-nav-link {
+    padding: 0.65rem 0.5rem;
   }
 
   .app-header.app-header--auth .header-menu-toggle {
@@ -371,6 +419,10 @@
 }
 
 @media (max-width: 520px) {
+  .app-header .logo-text {
+    font-size: 1rem;
+  }
+
   .app-header .header-user-name {
     display: none;
   }
@@ -382,5 +434,9 @@
   .app-header .header-favoris-btn {
     width: 2.5rem;
     padding: 0;
+  }
+
+  .app-header .user-account-label {
+    display: none;
   }
 }

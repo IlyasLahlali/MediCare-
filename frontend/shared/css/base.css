@@ -1,7 +1,14 @@
+@import url("./layout.css?v=9");
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -10,6 +17,15 @@ body {
   background: #f0f4f8;
   color: #1e293b;
   line-height: 1.5;
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+img,
+video,
+svg {
+  max-width: 100%;
+  height: auto;
 }
 
 a {
@@ -60,6 +76,16 @@ a:hover {
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+}
+
+@media (max-width: 860px) {
+  .site-header:not(.app-header) .header-actions .btn-outline {
+    display: none;
+  }
+
+  .site-header:not(.app-header) .header-actions {
+    gap: 0.35rem;
+  }
 }
 
 .btn {

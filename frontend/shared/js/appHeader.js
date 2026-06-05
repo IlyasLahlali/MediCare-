@@ -56,11 +56,17 @@ function initAppHeader() {
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
   });
 
+  function closeMobileMenu() {
+    header.classList.remove("is-menu-open");
+    toggle.setAttribute("aria-expanded", "false");
+  }
+
   nav.querySelectorAll("a").forEach((a) => {
-    a.addEventListener("click", () => {
-      header.classList.remove("is-menu-open");
-      toggle.setAttribute("aria-expanded", "false");
-    });
+    a.addEventListener("click", closeMobileMenu);
+  });
+
+  header.querySelectorAll(".header-toolbar a, .header-toolbar .btn").forEach((el) => {
+    el.addEventListener("click", closeMobileMenu);
   });
 
   document.addEventListener("keydown", (e) => {
